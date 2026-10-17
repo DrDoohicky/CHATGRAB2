@@ -1,0 +1,6 @@
+{
+  "name": "ChatGrab",
+  "description": "Continuous intelligence from saved conversations. Capture ChatGPT threads, analyze records, and unify them into a connected knowledge corpus.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
