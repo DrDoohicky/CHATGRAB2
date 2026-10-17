@@ -27,6 +27,9 @@ import { ExportModal } from './components/ExportModal';
 import { ThreadViewer } from './components/ThreadViewer';
 import { InsightsView } from './components/InsightsView';
 import { GeminiChatbot } from './components/GeminiChatbot';
+import { AdaptivePortionsView } from './components/AdaptivePortionsView';
+import { SupportMaterialModal } from './components/SupportMaterialModal';
+import { OnboardingGuideModal } from './components/OnboardingGuideModal';
 
 const STORAGE_KEY = 'chatgrab_corpus_threads';
 
@@ -53,10 +56,12 @@ export default function App() {
   const [activeThread, setActiveThread] = useState<ConversationThread | null>(null);
 
   // Active Tab in Workspace
-  const [workspaceTab, setWorkspaceTab] = useState<'transcript' | 'insights'>('transcript');
+  const [workspaceTab, setWorkspaceTab] = useState<'transcript' | 'insights' | 'portions'>('transcript');
 
   // Modals state (Capture modal opens by default as in SS1.jpeg)
-  const [isCaptureModalOpen, setIsCaptureModalOpen] = useState(true);
+  const [isCaptureModalOpen, setIsCaptureModalOpen] = useState(false);
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isCorpusOpen, setIsCorpusOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
@@ -155,6 +160,64 @@ export default function App() {
     }
   };
 
+  const handleRenameThread = (threadId: string, nextTitle: string) => {
+    const title = nextTitle.trim();
+    if (!title) return;
+    const renamedAt = new Date().toISOString();
+    setCorpus(prev => prev.map(t => t.id === threadId ? { ...t, title, renamedAt } : t));
+    setActiveThread(prev => prev?.id === threadId ? { ...prev, title, renamedAt } : prev);
+    showToast('Conversation renamed');
+  };
+
+  const handleMergeThreads = (threadIds: string[]) => {
+    const selected = corpus.filter(t => threadIds.includes(t.id))
+      .sort((a, b) => new Date(a.capturedAt).getTime() - new Date(b.capturedAt).getTime());
+    if (selected.length < 2) return;
+    const base = selected[0].title || 'Merged context';
+    const proposed = selected.every(t => t.title.trim().toLowerCase() === base.trim().toLowerCase())
+      ? `${base} — Annotated + Furtherance`
+      : `${base} — Merged Context`;
+    const title = prompt('Name the merged context record', proposed)?.trim();
+    if (!title) return;
+    const messages = selected.flatMap((thread, sourceIndex) => thread.messages.map((m, messageIndex) => ({
+      ...m,
+      id: `merge-${sourceIndex + 1}:${m.id || messageIndex}`,
+      sourceThreadId: thread.id,
+      sourceMessageId: m.id,
+    })));
+    const merged: ConversationThread = {
+      id: crypto.randomUUID(),
+      title,
+      capturedAt: new Date().toISOString(),
+      model: 'Merged sources',
+      messages,
+      mergeMeta: {
+        kind: 'derived_context_merge',
+        preservesSources: true,
+        sources: selected.map((t, i) => ({
+          id: t.id,
+          title: t.title,
+          capturedAt: t.capturedAt,
+          label: i === 0 ? 'Annotated / first source' : i === 1 ? 'Furtherance / later source' : `Continuation ${i + 1}`,
+          messageCount: t.messages.length,
+        })),
+      },
+    };
+    setCorpus(prev => [merged, ...prev]);
+    setActiveThread(merged);
+    setWorkspaceTab('transcript');
+    showToast('Merged context created; originals preserved');
+  };
+
+  const handleAssetLinked = (threadId: string, assetId: string) => {
+    setCorpus(prev => prev.map(t => t.id === threadId
+      ? { ...t, supportAssetIds: Array.from(new Set([...(t.supportAssetIds || []), assetId])) }
+      : t));
+    setActiveThread(prev => prev?.id === threadId
+      ? { ...prev, supportAssetIds: Array.from(new Set([...(prev.supportAssetIds || []), assetId])) }
+      : prev);
+  };
+
   const handleExportCorpusBackup = () => {
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(corpus, null, 2));
     const downloadAnchor = document.createElement('a');
@@ -224,6 +287,8 @@ export default function App() {
         onOpenCapture={() => setIsCaptureModalOpen(true)}
         onOpenCorpus={() => setIsCorpusOpen(true)}
         onOpenChat={() => setIsChatbotOpen(true)}
+        onOpenSupport={() => setIsSupportOpen(true)}
+        onOpenGuide={() => setIsGuideOpen(true)}
         onExportCorpusBackup={handleExportCorpusBackup}
         onClearCorpus={handleClearCorpus}
       />
@@ -284,43 +349,67 @@ export default function App() {
           </div>
         </div>
 
-        {/* If no conversation is active: Welcome & Getting Started view */}
+        {/* If no conversation is active: visual landing workspace */}
         {!activeThread ? (
-          <div className="bg-white rounded-3xl p-8 sm:p-12 border border-slate-200 shadow-sm text-center max-w-2xl mx-auto my-12 space-y-6">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto shadow-xs">
-              <MessageSquare className="w-7 h-7" />
-            </div>
-
-            <div>
-              <div className="text-xs font-bold tracking-wider text-blue-600 uppercase mb-1">
-                &gt; Getting started:
+          <div className="space-y-5 my-5">
+            <section className="relative overflow-hidden bg-white rounded-[2rem] border border-blue-100 shadow-sm">
+              <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-28 left-1/3 w-96 h-96 bg-indigo-200/25 rounded-full blur-3xl pointer-events-none" />
+              <div className="relative grid lg:grid-cols-[1.05fr_.95fr] gap-6 items-center p-6 sm:p-9 lg:p-12">
+                <div>
+                  <div className="text-[11px] sm:text-xs font-extrabold tracking-[.24em] text-blue-700 uppercase">UNIFY · ANALYZE · PRESERVE · REINTEGRATE</div>
+                  <h2 className="mt-3 text-4xl sm:text-5xl lg:text-6xl font-black tracking-[-.045em] leading-[.98] text-[#0a2050]">Turn conversations into <span className="text-blue-600">connected knowledge.</span></h2>
+                  <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600 max-w-xl">Capture public ChatGPT conversations, preserve the files and source material around them, find patterns and corrections, and carry useful context into the work that comes next.</p>
+                  <div className="mt-6 flex flex-wrap gap-3">
+                    <button type="button" onClick={() => setIsCaptureModalOpen(true)} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-blue-700 to-blue-600 text-white font-bold text-sm shadow-lg shadow-blue-700/20 hover:translate-y-[-1px] transition">Capture a Conversation <ArrowRight className="w-4 h-4" /></button>
+                    <button type="button" onClick={() => setIsSupportOpen(true)} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white border border-blue-200 text-blue-800 font-bold text-sm shadow-sm hover:bg-blue-50 transition"><FileText className="w-4 h-4" />Add Files / Artifacts</button>
+                    <button type="button" onClick={() => setIsGuideOpen(true)} className="inline-flex items-center gap-2 px-4 py-3 rounded-xl text-slate-600 font-semibold text-sm hover:bg-slate-50"><HelpCircle className="w-4 h-4" />Show me how</button>
+                  </div>
+                </div>
+                <div className="relative">
+                  <img src="/chatgrab-hero.svg" alt="Illustration of conversations becoming connected knowledge with preserved source material, analysis, and reports" className="w-full max-w-[620px] mx-auto drop-shadow-[0_26px_40px_rgba(30,90,180,.18)]" />
+                </div>
               </div>
-              <h2 className="text-2xl font-extrabold text-slate-900 mb-2">
-                Bring in a public ChatGPT share URL
-              </h2>
-              <p className="text-sm text-slate-500 leading-relaxed max-w-md mx-auto">
-                ChatGrab preserves the source, analyzes the full back-and-forth record, and connects it to your personal corpus.
-              </p>
-            </div>
 
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <button
-                type="button"
-                onClick={handleQuickPaste}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs shadow-xs transition-colors cursor-pointer"
-              >
-                <Clipboard className="w-4 h-4 text-slate-500" />
-                <span>Paste Clipboard</span>
+              <form onSubmit={handleQuickCaptureSubmit} className="relative mx-5 sm:mx-9 lg:mx-12 mb-7 sm:mb-9 p-3 sm:p-4 rounded-2xl bg-white/95 border border-blue-100 shadow-[0_12px_35px_rgba(29,78,216,.10)] grid lg:grid-cols-[1fr_auto_auto] gap-2">
+                <div className="flex items-center gap-2 px-3 h-12 rounded-xl border border-slate-200 bg-white">
+                  <Share2 className="w-4 h-4 text-blue-600 shrink-0" />
+                  <input value={quickUrl} onChange={e => setQuickUrl(e.target.value)} placeholder="Paste a public ChatGPT share URL…" className="w-full bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400" />
+                </div>
+                <button type="button" onClick={handleQuickPaste} className="h-12 px-4 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 text-sm font-bold hover:bg-blue-100 flex items-center justify-center gap-2"><Clipboard className="w-4 h-4" />Paste Clipboard</button>
+                <button type="submit" className="h-12 px-5 rounded-xl bg-[#0d5ed7] hover:bg-[#084fb9] text-white text-sm font-bold flex items-center justify-center gap-2">Capture Thread <ArrowRight className="w-4 h-4" /></button>
+                <div className="lg:col-span-3 text-[11px] text-slate-500 px-1">Once captured, the conversation stays in your browser-local workspace where it can be analyzed, organized, merged, and exported.</div>
+              </form>
+            </section>
+
+            <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
+              {[
+                ['Preserve','Keep the original conversation intact','◉'],
+                ['Organize','Group related work without changing sources','▣'],
+                ['Analyze','Find patterns, corrections and drift','⌕'],
+                ['Reintegrate','Carry useful context forward','↻'],
+                ['Artifacts','Keep PDFs, images and source files nearby','◇'],
+                ['Export','Create useful reports and backups','↗'],
+              ].map(([title,desc,glyph]) => (
+                <div key={title} className="rounded-2xl bg-white border border-slate-200 p-4 shadow-xs">
+                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 text-blue-700 grid place-items-center font-black text-lg">{glyph}</div>
+                  <div className="mt-3 font-extrabold text-sm text-[#102a56]">{title}</div>
+                  <div className="mt-1 text-[11px] leading-relaxed text-slate-500">{desc}</div>
+                </div>
+              ))}
+            </section>
+
+            <section className="grid md:grid-cols-3 gap-4">
+              <button type="button" onClick={() => setIsCorpusOpen(true)} className="text-left rounded-2xl bg-white border border-slate-200 p-5 shadow-sm hover:border-blue-300 hover:shadow-md transition">
+                <Database className="w-5 h-5 text-blue-600" /><h3 className="mt-3 font-extrabold text-[#102a56]">Your conversation library</h3><p className="mt-1 text-sm text-slate-500">Rename, compare, merge, and reopen preserved conversations.</p><span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-blue-700">Open Library <ChevronRight className="w-3.5 h-3.5" /></span>
               </button>
-              <button
-                type="button"
-                onClick={() => setIsCaptureModalOpen(true)}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#0e274c] hover:bg-[#163666] text-white font-semibold text-xs shadow-md transition-all cursor-pointer active:scale-95"
-              >
-                <span>Capture New Thread</span>
-                <ArrowRight className="w-4 h-4" />
+              <button type="button" onClick={() => setIsSupportOpen(true)} className="text-left rounded-2xl bg-white border border-slate-200 p-5 shadow-sm hover:border-blue-300 hover:shadow-md transition">
+                <FileText className="w-5 h-5 text-rose-500" /><h3 className="mt-3 font-extrabold text-[#102a56]">Files around the conversation</h3><p className="mt-1 text-sm text-slate-500">Attach PDFs, screenshots, generated media, JSON, audio, video, and evidence.</p><span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-blue-700">Open Support Library <ChevronRight className="w-3.5 h-3.5" /></span>
               </button>
-            </div>
+              <button type="button" onClick={() => setIsGuideOpen(true)} className="text-left rounded-2xl bg-white border border-slate-200 p-5 shadow-sm hover:border-blue-300 hover:shadow-md transition">
+                <HelpCircle className="w-5 h-5 text-amber-500" /><h3 className="mt-3 font-extrabold text-[#102a56]">Four-step visual guide</h3><p className="mt-1 text-sm text-slate-500">See exactly where the three dots, Share, Copy link, and ChatGrab paste controls are.</p><span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-blue-700">Show the Guide <ChevronRight className="w-3.5 h-3.5" /></span>
+              </button>
+            </section>
           </div>
         ) : (
           /* Active Thread Workspace */
@@ -390,6 +479,17 @@ export default function App() {
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   )}
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => setWorkspaceTab('portions')}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    workspaceTab === 'portions' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Database className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Context Map</span>
+                </button>
               </div>
             </div>
 
@@ -407,6 +507,16 @@ export default function App() {
                 isAnalyzing={isAnalyzing}
               />
             )}
+
+            {workspaceTab === 'portions' && (
+              <AdaptivePortionsView
+                thread={activeThread}
+                onOpenAssistantWithPortion={(portion) => {
+                  setIsChatbotOpen(true);
+                  showToast(`Assistant opened for ${portion.title}`);
+                }}
+              />
+            )}
           </div>
         )}
       </main>
@@ -419,6 +529,7 @@ export default function App() {
           setQuickUrl('');
         }}
         initialUrl={quickUrl}
+        onOpenSupport={() => { setIsCaptureModalOpen(false); setIsSupportOpen(true); }}
         onThreadCaptured={(thread) => {
           handleThreadCaptured(thread);
           setQuickUrl('');
@@ -437,6 +548,8 @@ export default function App() {
         }}
         onDeleteThread={handleDeleteThread}
         onToggleFavorite={handleToggleFavorite}
+        onRenameThread={handleRenameThread}
+        onMergeThreads={handleMergeThreads}
         onOpenNewCapture={() => {
           setIsCorpusOpen(false);
           setIsCaptureModalOpen(true);
@@ -451,6 +564,20 @@ export default function App() {
           thread={activeThread}
         />
       )}
+
+      <SupportMaterialModal
+        isOpen={isSupportOpen}
+        onClose={() => setIsSupportOpen(false)}
+        threads={corpus}
+        activeThread={activeThread}
+        onAssetLinked={handleAssetLinked}
+      />
+
+      <OnboardingGuideModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
+        onStartCapture={() => setIsCaptureModalOpen(true)}
+      />
 
       {/* Floating Action Button for Gemini Chatbot */}
       {!isChatbotOpen && (
