@@ -367,7 +367,7 @@ export default function App() {
                   </div>
                 </div>
                 <div className="relative">
-                  <img src="/chatgrab-hero.svg" alt="Illustration of conversations becoming connected knowledge with preserved source material, analysis, and reports" className="w-full max-w-[620px] mx-auto drop-shadow-[0_26px_40px_rgba(30,90,180,.18)]" />
+                  <img src="/chatgrab-feature-illustration.svg" alt="Illustrated ChatGrab feature graphic: Find patterns, organize by project, preserve source material, generate insights, export useful reports" className="w-full max-w-[720px] mx-auto drop-shadow-[0_26px_40px_rgba(30,90,180,.18)]" />
                 </div>
               </div>
 
