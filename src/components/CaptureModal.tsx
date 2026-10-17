@@ -7,6 +7,7 @@ interface CaptureModalProps {
   onClose: () => void;
   onThreadCaptured: (thread: ConversationThread) => void;
   initialUrl?: string;
+  onOpenSupport?: () => void;
 }
 
 export const CaptureModal: React.FC<CaptureModalProps> = ({
@@ -14,6 +15,7 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
   onClose,
   onThreadCaptured,
   initialUrl,
+  onOpenSupport,
 }) => {
   const [url, setUrl] = useState(initialUrl || '');
   const [rawText, setRawText] = useState('');
@@ -241,6 +243,13 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
                 >
                   Paste Raw Conversation
                 </button>
+                <button
+                  type="button"
+                  onClick={onOpenSupport}
+                  className="pb-1 font-semibold text-slate-500 hover:text-blue-700 transition-colors cursor-pointer"
+                >
+                  Upload File / Artifact
+                </button>
               </div>
 
               {mode === 'url' ? (
@@ -365,7 +374,7 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
 
             {/* Helper Footer */}
             <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-              <span>Supports public ChatGPT share links and raw transcripts</span>
+              <span>Supports share links, raw transcripts, and linked support files</span>
               <span className="font-medium text-slate-500">Stored locally in your corpus</span>
             </div>
           </div>
