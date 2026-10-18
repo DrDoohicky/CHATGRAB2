@@ -1,5 +1,3 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node';
-
 function parseShare(html: string) {
   const nextMatch = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
   if (nextMatch) {
@@ -68,7 +66,7 @@ function parseShare(html: string) {
   return null;
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: any, res: any) {
   res.setHeader('Content-Type','application/json; charset=utf-8');
   res.setHeader('Cache-Control','no-store');
   if(req.method!=='POST') return res.status(405).json({success:false,error:'Use POST to capture a conversation.'});
