@@ -16,6 +16,11 @@ app.use(express.json({ limit: '15mb' }));
 
 // Initialize Gemini SDK with User-Agent header as required
 const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY || 'unconfigured',
+  httpOptions: { headers: { 'User-Agent': 'aistudio-build' } },
+});
+/* original SDK config retained for reference
+const unusedAi = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
   httpOptions: {
     headers: {
@@ -23,6 +28,7 @@ const ai = new GoogleGenAI({
     },
   },
 });
+*/
 
 /**
  * Extract conversation from React Router / Turbo Stream format in modern ChatGPT share pages
@@ -260,7 +266,10 @@ app.get('/api/seed-thread', async (_req, res) => {
  * Automatically rectifies messy pastes (e.g. from Zoom chat) containing a ChatGPT share link
  */
 app.post('/api/fetch-share', async (req, res) => {
-  const { url, rawText } = req.body;
+  const { url, rawText } = req.body || {};
+  if (url && !/(?:chatgpt\.com|chat\.openai\.com)\/share\//i.test(url)) {
+    return res.status(400).json({ success: false, error: 'This is not a public ChatGPT share link. In ChatGPT, open the conversation menu, choose Share, then Copy link. The URL must contain /share/ rather than /s/t_.' });
+  }
 
   try {
     // Check if either url or rawText contains a ChatGPT share URL (rectification)
@@ -834,6 +843,8 @@ ${conversationSnippet}`;
 
 
 
+export default app;
+
 // Setup Vite middleware in dev or static files in production
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
@@ -858,4 +869,4 @@ async function startServer() {
   });
 }
 
-startServer();
+if (!process.env.VERCEL) startServer();
