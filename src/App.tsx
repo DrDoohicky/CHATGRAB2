@@ -69,6 +69,8 @@ export default function App() {
 
   // Quick inline URL input in empty state
   const [quickUrl, setQuickUrl] = useState('');
+  const [quickCaptureError, setQuickCaptureError] = useState<string | null>(null);
+  const [isQuickCapturing, setIsQuickCapturing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Persist corpus to localStorage
@@ -236,34 +238,73 @@ export default function App() {
     showToast('Corpus cleared');
   };
 
+  // The landing-page capture bar is a complete capture workflow; it never opens a modal.
+  const extractPublicShareUrl = (text: string): string | null =>
+    text.match(/https?:\/\/(?:chatgpt\.com|chat\.openai\.com)\/share\/[a-zA-Z0-9_-]+/i)?.[0] || null;
+
   const handleQuickPaste = async () => {
+    setQuickCaptureError(null);
     try {
-      const text = await navigator.clipboard.readText();
-      if (text) {
-        const match = text.match(/(https?:\/\/(?:chatgpt\.com|chat\.openai\.com)\/share\/[a-zA-Z0-9_-]+)/i);
-        if (match) {
-          setQuickUrl(match[1]);
-          setIsCaptureModalOpen(true);
-          showToast(`Rectified shared link: ${match[1]}`);
-        } else {
-          setQuickUrl(text.trim());
-          setIsCaptureModalOpen(true);
-        }
+      const text = (await navigator.clipboard.readText()).trim();
+      const shareUrl = extractPublicShareUrl(text);
+      if (shareUrl) {
+        setQuickUrl(shareUrl);
+      } else if (text) {
+        // Keep what was copied visible for inspection, but never treat a private /s/t_ URL as a public share.
+        setQuickUrl(text);
+        setQuickCaptureError('The clipboard does not contain a public ChatGPT share link. Open the conversation in ChatGPT, choose Share → Copy link, and paste the URL containing /share/.');
       } else {
-        setIsCaptureModalOpen(true);
+        setQuickCaptureError('Your clipboard is empty. Copy a public ChatGPT share link first.');
       }
     } catch {
-      setIsCaptureModalOpen(true);
+      setQuickCaptureError('Clipboard access was blocked. Paste the public ChatGPT share link directly into the field with Ctrl+V or long-press Paste.');
     }
   };
 
-  const handleQuickCaptureSubmit = (e: React.FormEvent) => {
+  const handleQuickCaptureSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!quickUrl.trim()) {
-      setIsCaptureModalOpen(true);
+    if (isQuickCapturing) return;
+    setQuickCaptureError(null);
+    const shareUrl = extractPublicShareUrl(quickUrl);
+    if (!shareUrl) {
+      setQuickCaptureError('Please use a public ChatGPT share link containing /share/. The /s/t_ links are not public conversation shares.');
       return;
     }
-    setIsCaptureModalOpen(true);
+    setQuickUrl(shareUrl);
+    setIsQuickCapturing(true);
+    try {
+      const response = await fetch('/api/fetch-share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: shareUrl }),
+      });
+      const body = await response.text();
+      let result: any;
+      try {
+        result = JSON.parse(body);
+      } catch {
+        throw new Error('The capture service did not return a valid response. Please retry in a moment.');
+      }
+      if (!response.ok || !result.success || !Array.isArray(result.data?.messages) || !result.data.messages.length) {
+        throw new Error(result.error || 'Unable to read messages from this shared conversation.');
+      }
+      const thread: ConversationThread = {
+        id: `thread-${Date.now()}`,
+        title: result.data.title || 'Captured Conversation',
+        sourceUrl: result.data.sourceUrl || shareUrl,
+        capturedAt: new Date().toISOString(),
+        originalCreatedAt: result.data.originalCreatedAt || new Date().toISOString(),
+        model: result.data.model || 'ChatGPT',
+        messages: result.data.messages,
+      };
+      handleThreadCaptured(thread);
+      setQuickUrl('');
+      // Analysis is optional; successful preservation must never depend on an AI quota.
+    } catch (err: any) {
+      setQuickCaptureError(err?.message || 'Capture failed. Please check the link and try again.');
+    } finally {
+      setIsQuickCapturing(false);
+    }
   };
 
   const totalWords = activeThread
@@ -374,10 +415,11 @@ export default function App() {
               <form onSubmit={handleQuickCaptureSubmit} className="relative mx-5 sm:mx-9 lg:mx-12 mb-7 sm:mb-9 p-3 sm:p-4 rounded-2xl bg-white/95 border border-blue-100 shadow-[0_12px_35px_rgba(29,78,216,.10)] grid lg:grid-cols-[1fr_auto_auto] gap-2">
                 <div className="flex items-center gap-2 px-3 h-12 rounded-xl border border-slate-200 bg-white">
                   <Share2 className="w-4 h-4 text-blue-600 shrink-0" />
-                  <input value={quickUrl} onChange={e => setQuickUrl(e.target.value)} placeholder="Paste a public ChatGPT share URL…" className="w-full bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400" />
+                  <input value={quickUrl} onChange={e => { setQuickUrl(e.target.value); setQuickCaptureError(null); }} placeholder="Paste a public ChatGPT share URL…" className="w-full bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400" />
                 </div>
-                <button type="button" onClick={handleQuickPaste} className="h-12 px-4 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 text-sm font-bold hover:bg-blue-100 flex items-center justify-center gap-2"><Clipboard className="w-4 h-4" />Paste Clipboard</button>
-                <button type="submit" className="h-12 px-5 rounded-xl bg-[#0d5ed7] hover:bg-[#084fb9] text-white text-sm font-bold flex items-center justify-center gap-2">Capture Thread <ArrowRight className="w-4 h-4" /></button>
+                <button type="button" onClick={handleQuickPaste} disabled={isQuickCapturing} className="h-12 px-4 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 text-sm font-bold hover:bg-blue-100 flex items-center justify-center gap-2"><Clipboard className="w-4 h-4" />Paste Clipboard</button>
+                <button type="submit" disabled={isQuickCapturing} className="h-12 px-5 rounded-xl bg-[#0d5ed7] hover:bg-[#084fb9] text-white text-sm font-bold flex items-center justify-center gap-2">{isQuickCapturing ? "Capturing…" : "Capture Thread"} <ArrowRight className="w-4 h-4" /></button>
+                {quickCaptureError && <div role="alert" className="lg:col-span-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{quickCaptureError}</div>}
                 <div className="lg:col-span-3 text-[11px] text-slate-500 px-1">Once captured, the conversation stays in your browser-local workspace where it can be analyzed, organized, merged, and exported.</div>
               </form>
             </section>
