@@ -103,6 +103,11 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
     const extractedFromRaw = extractChatGPTUrl(rawText);
     const targetUrl = extractedFromUrl || extractedFromRaw || (mode === 'url' ? url.trim() : null);
 
+    if (targetUrl && !extractChatGPTUrl(targetUrl)) {
+      setError('That is not a public ChatGPT share link. In ChatGPT, use the three-dot menu → Share → Copy link. The link must contain /share/.');
+      return;
+    }
+
     if (targetUrl) {
       // URL ingestion mode with rectified URL
       setUrl(targetUrl);
@@ -134,7 +139,13 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const responseText = await res.text();
+      let data: any;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error('The ChatGrab capture server did not return a valid response. The API may be unavailable; please try again shortly.');
+      }
 
       if (!res.ok || !data.success) {
         if (data.allowFallbackPaste) {
