@@ -365,7 +365,7 @@ export default function App() {
       {/* Main Header */}
       <Header
         corpusCount={corpus.length}
-        onOpenCapture={() => setIsCaptureModalOpen(true)}
+        onOpenCapture={() => document.querySelector<HTMLInputElement>('input[placeholder="Paste a public ChatGPT share URL…"]')?.focus()}
         onOpenCorpus={() => setIsCorpusOpen(true)}
         onOpenChat={() => setIsChatbotOpen(true)}
         onOpenSupport={() => setIsSupportOpen(true)}
@@ -377,7 +377,7 @@ export default function App() {
       {/* Workspace Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-5">
         {/* If no conversation is active: visual landing workspace */}
-        {(
+        <>
           <div className="space-y-5 my-1">
             <section className="relative overflow-hidden bg-white rounded-[2rem] border border-blue-100 shadow-sm">
               <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl pointer-events-none" />
@@ -399,7 +399,6 @@ export default function App() {
                   <Share2 className="w-4 h-4 text-blue-600 shrink-0" />
                   <input value={quickUrl} onFocus={() => { if (!quickUrl) void handleQuickPaste(); }} onChange={e => { setQuickUrl(e.target.value); setQuickCaptureError(null); setCaptureNotice(null); }} placeholder="Paste a public ChatGPT share URL…" className="w-full bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400" />
                 </div>
-                <button type="button" onClick={handleQuickPaste} disabled={isQuickCapturing} className="h-12 px-4 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 text-sm font-bold hover:bg-blue-100 flex items-center justify-center gap-2"><Clipboard className="w-4 h-4" />Paste Clipboard</button>
                 <button type="submit" disabled={isQuickCapturing} className="h-12 px-5 rounded-xl bg-[#0d5ed7] hover:bg-[#084fb9] text-white text-sm font-bold flex items-center justify-center gap-2">{isQuickCapturing ? "Capturing…" : "Capture Thread"} <ArrowRight className="w-4 h-4" /></button>
                 {captureNotice && <div role="status" className="lg:col-span-2 text-sm text-emerald-700 px-2">{captureNotice}</div>}
                 {quickCaptureError && <div role="alert" className="lg:col-span-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{quickCaptureError}</div>}
@@ -444,7 +443,7 @@ export default function App() {
               </button>
             </section>
           </div>
-        ) : (
+          {activeThread && (
           /* Active Thread Workspace */
           <div className="space-y-5">
             {/* Thread Metadata Strip */}
@@ -551,7 +550,8 @@ export default function App() {
               />
             )}
           </div>
-        )}
+          )}
+        </>
       </main>
 
       {/* Capture Modal (SS1.jpeg replica) */}
