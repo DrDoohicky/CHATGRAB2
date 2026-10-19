@@ -70,6 +70,9 @@ export default function App() {
   // Quick inline URL input in empty state
   const [quickUrl, setQuickUrl] = useState('');
   const [quickCaptureError, setQuickCaptureError] = useState<string | null>(null);
+  const [captureNotice, setCaptureNotice] = useState<string | null>(null);
+  const [batchMode, setBatchMode] = useState(false);
+  const [batchInput, setBatchInput] = useState('');
   const [isQuickCapturing, setIsQuickCapturing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
@@ -248,17 +251,54 @@ export default function App() {
       const text = (await navigator.clipboard.readText()).trim();
       const shareUrl = extractPublicShareUrl(text);
       if (shareUrl) {
-        setQuickUrl(shareUrl);
+        if (shareUrl !== quickUrl) { setQuickUrl(shareUrl); setCaptureNotice('Share link pasted from clipboard.'); }
       } else if (text) {
         // Keep what was copied visible for inspection, but never treat a private /s/t_ URL as a public share.
-        setQuickUrl(text);
-        setQuickCaptureError('The clipboard does not contain a public ChatGPT share link. Open the conversation in ChatGPT, choose Share → Copy link, and paste the URL containing /share/.');
+        if (text !== quickUrl) { setQuickUrl(text); setCaptureNotice('Clipboard content loaded. A public /share/ URL is required for link capture.'); }
       } else {
-        setQuickCaptureError('Your clipboard is empty. Copy a public ChatGPT share link first.');
+        // Empty clipboard: leave input untouched.
       }
     } catch {
-      setQuickCaptureError('Clipboard access was blocked. Paste the public ChatGPT share link directly into the field with Ctrl+V or long-press Paste.');
+      // Browser clipboard permissions vary; users can still paste manually.
     }
+  };
+
+  useEffect(() => {
+    const onFocus = () => { if (!quickUrl && document.visibilityState === 'visible') void handleQuickPaste(); };
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onFocus);
+    return () => { window.removeEventListener('focus', onFocus); document.removeEventListener('visibilitychange', onFocus); };
+  }, [quickUrl]);
+
+  const importConversationFile = async (file: File) => {
+    try {
+      if (file.type.startsWith('image/')) {
+        setIsSupportOpen(true);
+        setCaptureNotice('Use the artifact library to attach images as evidence.');
+        return;
+      }
+      const text = await file.text();
+      let title = file.name;
+      let messages: ConversationThread['messages'];
+      if (file.name.toLowerCase().endsWith('.json')) {
+        const data = JSON.parse(text);
+        const items = Array.isArray(data) ? data : (data.messages || data.data?.messages);
+        if (!Array.isArray(items) || !items.length) throw new Error('JSON needs a messages array.');
+        title = data.title || title;
+        messages = items.map((m: any, i: number) => ({ id: String(m.id || i), role: m.role === 'assistant' || m.role === 'system' ? m.role : 'user', content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? '') }));
+      } else {
+        if (!text.trim()) throw new Error('The selected file is empty.');
+        messages = [{ id: 'text-0', role: 'user', content: text }];
+      }
+      handleThreadCaptured({ id: `import-${Date.now()}`, title, capturedAt: new Date().toISOString(), model: 'Imported source', messages });
+      setCaptureNotice('File imported into the local workspace.');
+    } catch (err: any) { setQuickCaptureError(err.message || 'Import failed.'); }
+  };
+
+  const importCopiedText = () => {
+    if (!quickUrl.trim()) { setQuickCaptureError('Paste conversation text into the field first.'); return; }
+    handleThreadCaptured({ id: `text-${Date.now()}`, title: 'Pasted conversation text', capturedAt: new Date().toISOString(), model: 'Manual import', messages: [{ id: 'text-0', role: 'user', content: quickUrl }] });
+    setQuickUrl('');
   };
 
   const handleQuickCaptureSubmit = async (e: React.FormEvent) => {
@@ -336,63 +376,9 @@ export default function App() {
 
       {/* Workspace Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-5">
-        {/* Workspace Top Bar (matching background in SS1.jpeg) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
-          <div>
-            <div className="text-[11px] font-bold tracking-widest text-[#2f558a] uppercase">
-              CHATGRAB WORKSPACE
-            </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-              {activeThread ? activeThread.title : 'No conversation loaded'}
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3 text-xs font-semibold text-slate-600">
-            {/* Generate PDF */}
-            <button
-              type="button"
-              onClick={() => {
-                if (activeThread) setIsExportOpen(true);
-                else setIsCaptureModalOpen(true);
-              }}
-              className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5"
-            >
-              <Printer className="w-3.5 h-3.5 text-rose-500" />
-              <span>Generate PDF</span>
-            </button>
-
-            {/* Share Link */}
-            <button
-              type="button"
-              onClick={() => {
-                if (activeThread) {
-                  navigator.clipboard.writeText(activeThread.sourceUrl || window.location.href);
-                  showToast('Link copied to clipboard!');
-                } else {
-                  setIsCaptureModalOpen(true);
-                }
-              }}
-              className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5"
-            >
-              <Share2 className="w-3.5 h-3.5 text-blue-600" />
-              <span>Share link</span>
-            </button>
-
-            {/* About / New Capture */}
-            <button
-              type="button"
-              onClick={() => setIsCaptureModalOpen(true)}
-              className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5"
-            >
-              <HelpCircle className="w-3.5 h-3.5 text-slate-500" />
-              <span>About / New Capture</span>
-            </button>
-          </div>
-        </div>
-
         {/* If no conversation is active: visual landing workspace */}
-        {!activeThread ? (
-          <div className="space-y-5 my-5">
+        {(
+          <div className="space-y-5 my-1">
             <section className="relative overflow-hidden bg-white rounded-[2rem] border border-blue-100 shadow-sm">
               <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute -bottom-28 left-1/3 w-96 h-96 bg-indigo-200/25 rounded-full blur-3xl pointer-events-none" />
@@ -401,26 +387,31 @@ export default function App() {
                   <div className="text-[11px] sm:text-xs font-extrabold tracking-[.24em] text-blue-700 uppercase">UNIFY · ANALYZE · PRESERVE · REINTEGRATE</div>
                   <h2 className="mt-3 text-4xl sm:text-5xl lg:text-6xl font-black tracking-[-.045em] leading-[.98] text-[#0a2050]">Preserve, Validate &amp; Reintegrate Past Chats into <span className="text-blue-600">an Evolving Digital Awareness.</span></h2>
                   <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600 max-w-xl">Build an evolving, evidence-grounded canonical record of conversations, decisions, corrections, and discoveries. Here, awareness means governed continuity of information—not consciousness or sentience.</p>
-                  <div className="mt-6 flex flex-wrap gap-3">
-                    <button type="button" onClick={() => setIsCaptureModalOpen(true)} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-blue-700 to-blue-600 text-white font-bold text-sm shadow-lg shadow-blue-700/20 hover:translate-y-[-1px] transition">Capture a Conversation <ArrowRight className="w-4 h-4" /></button>
-                    <button type="button" onClick={() => setIsSupportOpen(true)} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white border border-blue-200 text-blue-800 font-bold text-sm shadow-sm hover:bg-blue-50 transition"><FileText className="w-4 h-4" />Add Files / Artifacts</button>
-                    <button type="button" onClick={() => setIsGuideOpen(true)} className="inline-flex items-center gap-2 px-4 py-3 rounded-xl text-slate-600 font-semibold text-sm hover:bg-slate-50"><HelpCircle className="w-4 h-4" />Show me how</button>
-                  </div>
+
                 </div>
                 <div className="relative">
                   <img src="/chatgrab-feature-illustration.svg" alt="Illustrated ChatGrab feature graphic: Find patterns, organize by project, preserve source material, generate insights, export useful reports" className="w-full max-w-[720px] mx-auto drop-shadow-[0_26px_40px_rgba(30,90,180,.18)]" />
                 </div>
               </div>
 
-              <form onSubmit={handleQuickCaptureSubmit} className="relative mx-5 sm:mx-9 lg:mx-12 mb-7 sm:mb-9 p-3 sm:p-4 rounded-2xl bg-white/95 border border-blue-100 shadow-[0_12px_35px_rgba(29,78,216,.10)] grid lg:grid-cols-[1fr_auto_auto] gap-2">
+              <form onSubmit={handleQuickCaptureSubmit} className="relative mx-5 sm:mx-9 lg:mx-12 mb-7 sm:mb-9 p-3 sm:p-4 rounded-2xl bg-white/95 border border-blue-100 shadow-[0_12px_35px_rgba(29,78,216,.10)] grid lg:grid-cols-[1fr_auto] gap-2">
                 <div className="flex items-center gap-2 px-3 h-12 rounded-xl border border-slate-200 bg-white">
                   <Share2 className="w-4 h-4 text-blue-600 shrink-0" />
-                  <input value={quickUrl} onChange={e => { setQuickUrl(e.target.value); setQuickCaptureError(null); }} placeholder="Paste a public ChatGPT share URL…" className="w-full bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400" />
+                  <input value={quickUrl} onFocus={() => { if (!quickUrl) void handleQuickPaste(); }} onChange={e => { setQuickUrl(e.target.value); setQuickCaptureError(null); setCaptureNotice(null); }} placeholder="Paste a public ChatGPT share URL…" className="w-full bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400" />
                 </div>
                 <button type="button" onClick={handleQuickPaste} disabled={isQuickCapturing} className="h-12 px-4 rounded-xl border border-blue-200 bg-blue-50 text-blue-700 text-sm font-bold hover:bg-blue-100 flex items-center justify-center gap-2"><Clipboard className="w-4 h-4" />Paste Clipboard</button>
                 <button type="submit" disabled={isQuickCapturing} className="h-12 px-5 rounded-xl bg-[#0d5ed7] hover:bg-[#084fb9] text-white text-sm font-bold flex items-center justify-center gap-2">{isQuickCapturing ? "Capturing…" : "Capture Thread"} <ArrowRight className="w-4 h-4" /></button>
-                {quickCaptureError && <div role="alert" className="lg:col-span-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{quickCaptureError}</div>}
-                <div className="lg:col-span-3 text-[11px] text-slate-500 px-1">Once captured, the conversation stays in your browser-local workspace where it can be analyzed, organized, merged, and exported.</div>
+                {captureNotice && <div role="status" className="lg:col-span-2 text-sm text-emerald-700 px-2">{captureNotice}</div>}
+                {quickCaptureError && <div role="alert" className="lg:col-span-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{quickCaptureError}</div>}
+                <div className="lg:col-span-2 flex flex-wrap gap-2 pt-3 border-t border-blue-100">
+                  <label className="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import JSON <input className="hidden" type="file" accept=".json,application/json" onChange={e => { const f=e.target.files?.[0]; if(f) void importConversationFile(f); e.target.value=''; }} /></label>
+                  <button type="button" onClick={importCopiedText} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import copied text</button>
+                  <label className="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import file <input className="hidden" type="file" accept=".json,.txt,.md,.csv,text/*" onChange={e => { const f=e.target.files?.[0]; if(f) void importConversationFile(f); e.target.value=''; }} /></label>
+                  <button type="button" onClick={() => setIsSupportOpen(true)} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import image / artifact</button>
+                  <button type="button" onClick={() => setBatchMode(!batchMode)} className="ml-auto px-3 py-2 text-sm font-bold text-white bg-slate-800 rounded-lg">{batchMode ? 'Single' : 'Batch process'}</button>
+                </div>
+                {batchMode && <div className="lg:col-span-2 space-y-2"><p className="text-sm text-slate-600">Batch capture processes public /share/ links one at a time, preserving each successful capture in the local library. Enter one link per line.</p><textarea value={batchInput} onChange={e => setBatchInput(e.target.value)} rows={4} className="w-full border border-slate-300 rounded-xl p-3 text-sm" placeholder="One public share URL per line" /><button type="button" disabled={isQuickCapturing} className="bg-blue-700 text-white px-4 py-2 rounded-lg" onClick={async () => { const links=Array.from(new Set(batchInput.split(/\n/).map(x=>extractPublicShareUrl(x)).filter(Boolean) as string[])); if(!links.length){setQuickCaptureError('Add at least one valid /share/ URL.');return;} setIsQuickCapturing(true); let ok=0; for(const link of links){try{const res=await fetch('/api/fetch-share',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:link})});const json=await res.json();if(!res.ok||!json.success||!Array.isArray(json.data?.messages))continue;handleThreadCaptured({id:`batch-${Date.now()}-${ok}`,title:json.data.title||'Captured Conversation',sourceUrl:link,capturedAt:new Date().toISOString(),model:json.data.model||'ChatGPT',messages:json.data.messages});ok++;}catch{}}setIsQuickCapturing(false);setCaptureNotice(`Batch captured ${ok} of ${links.length} links.`); }}>Capture batch</button></div>}
+                <div className="lg:col-span-2 text-xs text-slate-500 px-1">Your library stays in this browser. Export a backup to preserve it on another device.</div>
               </form>
             </section>
 
