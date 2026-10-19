@@ -414,6 +414,29 @@ export default function App() {
               </form>
             </section>
 
+            <section className="rounded-[1.75rem] border border-slate-200 bg-white/95 p-5 sm:p-7 shadow-sm">
+              <div className="flex flex-wrap justify-between items-center gap-3 mb-5">
+                <div><div className="text-[11px] font-bold uppercase tracking-[.2em] text-blue-600">Continuity library</div><h3 className="text-2xl font-black text-[#102a56]">Your Workspace</h3><p className="text-sm text-slate-500">Captured conversations, organized and ready for review.</p></div>
+                <button type="button" onClick={() => setIsCorpusOpen(true)} className="px-4 py-2 rounded-xl border border-blue-200 text-blue-700 font-semibold text-sm">Browse Library ({corpus.length})</button>
+              </div>
+              {corpus.length > 0 ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {corpus.slice(0, 6).map(thread => (
+                    <button key={thread.id} type="button" onClick={() => { setActiveThread(thread); setWorkspaceTab('transcript'); }} className="text-left rounded-2xl p-4 bg-gradient-to-br from-[#10264e] to-[#184c89] text-white shadow-lg hover:shadow-xl transition">
+                      <MessageSquare className="w-6 h-6 mb-4 text-sky-300" />
+                      <div className="font-bold text-base line-clamp-2">{thread.title}</div>
+                      <div className="text-xs text-blue-200 mt-3">{thread.messages.length} messages · {new Date(thread.capturedAt).toLocaleDateString()}</div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-7 text-center">
+                  <Database className="w-9 h-9 mx-auto text-blue-600 mb-2" />
+                  <p className="text-slate-700 font-semibold">Your first captured conversation will appear here, ready to explore.</p>
+                </div>
+              )}
+            </section>
+
             <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
               {[
                 ['Preserve','Keep the original conversation intact','◉'],
