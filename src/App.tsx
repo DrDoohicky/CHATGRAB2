@@ -399,8 +399,8 @@ export default function App() {
               <div className="relative grid lg:grid-cols-[1.05fr_.95fr] gap-6 items-center p-6 sm:p-9 lg:p-12">
                 <div>
                   <div className="text-[11px] sm:text-xs font-extrabold tracking-[.24em] text-blue-700 uppercase">UNIFY · ANALYZE · PRESERVE · REINTEGRATE</div>
-                  <h2 className="mt-3 text-4xl sm:text-5xl lg:text-6xl font-black tracking-[-.045em] leading-[.98] text-[#0a2050]">Turn conversations into <span className="text-blue-600">connected knowledge.</span></h2>
-                  <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600 max-w-xl">Capture public ChatGPT conversations, preserve the files and source material around them, find patterns and corrections, and carry useful context into the work that comes next.</p>
+                  <h2 className="mt-3 text-4xl sm:text-5xl lg:text-6xl font-black tracking-[-.045em] leading-[.98] text-[#0a2050]">Preserve, validate &amp; reintegrate past conversations into <span className="text-blue-600">Evolving Digital Awareness.</span></h2>
+                  <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600 max-w-xl">Build an evolving, evidence-grounded canonical record of conversations, decisions, corrections, and discoveries. Here, awareness means governed continuity of information—not consciousness or sentience.</p>
                   <div className="mt-6 flex flex-wrap gap-3">
                     <button type="button" onClick={() => setIsCaptureModalOpen(true)} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-blue-700 to-blue-600 text-white font-bold text-sm shadow-lg shadow-blue-700/20 hover:translate-y-[-1px] transition">Capture a Conversation <ArrowRight className="w-4 h-4" /></button>
                     <button type="button" onClick={() => setIsSupportOpen(true)} className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-white border border-blue-200 text-blue-800 font-bold text-sm shadow-sm hover:bg-blue-50 transition"><FileText className="w-4 h-4" />Add Files / Artifacts</button>
