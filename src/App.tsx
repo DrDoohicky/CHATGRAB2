@@ -1,7 +1,7 @@
 import './chatgrab-mockup.css';
 import { ChatGrabDashboard } from './components/ChatGrabDashboard';
 import type { CGPage } from './components/ChatGrabDashboard';
-import { PanelLeftClose, PanelLeftOpen, Menu, X, MessageSquare, LayoutDashboard, LibraryBig, Images, FileArchive, Download, HelpCircle, Settings, Layers, BarChart3, RefreshCw } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, Menu, X, LayoutDashboard, LibraryBig, Images, Download, Settings, Layers, BarChart3, RefreshCw } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { cloud } from './lib/cloud';
