@@ -1,3 +1,4 @@
+import './chatgrab-mockup.css';
 import React, { useState, useEffect } from 'react';
 import {
   Sparkles,
@@ -353,7 +354,7 @@ export default function App() {
   const readTimeMinutes = Math.max(1, Math.ceil(totalWords / 200));
 
   return (
-    <div className="min-h-screen bg-slate-100/70 text-slate-900 flex flex-col font-sans selection:bg-blue-600/20">
+    <div className="cg-app min-h-screen text-slate-900 flex flex-col font-sans">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white text-xs font-semibold rounded-2xl shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-200">
@@ -374,19 +375,33 @@ export default function App() {
         onClearCorpus={handleClearCorpus}
       />
 
+      <div className="cg-body">
+      <aside className="cg-sidebar">
+        <div className="cg-sidebar-links">
+          <button className="cg-selected" onClick={() => document.getElementById('cg-capture')?.scrollIntoView({behavior:'smooth'})}>↗ &nbsp; Capture</button>
+          <button onClick={() => document.getElementById('cg-workspace')?.scrollIntoView({behavior:'smooth'})}>▣ &nbsp; Workspace</button>
+          <button onClick={() => setIsCorpusOpen(true)}>▤ &nbsp; Library <span>{corpus.length || ''}</span></button>
+          <button onClick={() => { if(activeThread) setWorkspaceTab('insights'); else setIsCorpusOpen(true); }}>◉ &nbsp; Analysis</button>
+          <button onClick={() => setIsSupportOpen(true)}>▧ &nbsp; Artifacts</button>
+          <button onClick={() => { setBatchMode(true); document.getElementById('cg-capture')?.scrollIntoView({behavior:'smooth'}); }}>▣ &nbsp; Batch Process</button>
+          <button onClick={() => { if(activeThread) setIsExportOpen(true); else if(corpus.length) handleExportCorpusBackup(); else document.getElementById('cg-capture')?.scrollIntoView({behavior:'smooth'}); }}>⇧ &nbsp; Exports</button>
+          <button onClick={() => setIsGuideOpen(true)}>⚙ &nbsp; Help & Settings</button>
+        </div>
+        <div className="cg-sidebar-foot"><strong>◉ &nbsp;Continuity Record</strong><p>Preserve history</p><p>Validate evidence</p><p>Reintegrate context</p><p>Build continuity</p></div>
+      </aside>
       {/* Workspace Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-5">
+      <main className="cg-main flex-1 w-full p-4 sm:p-6 space-y-5">
         {/* If no conversation is active: visual landing workspace */}
         <>
           <div className="space-y-5 my-1">
-            <section className="relative overflow-hidden bg-white rounded-[2rem] border border-blue-100 shadow-sm">
+            <section className="cg-hero relative overflow-hidden rounded-[2rem] shadow-sm">
               <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute -bottom-28 left-1/3 w-96 h-96 bg-indigo-200/25 rounded-full blur-3xl pointer-events-none" />
-              <div className="relative grid lg:grid-cols-[1.05fr_.95fr] gap-6 items-center p-6 sm:p-9 lg:p-12">
+              <div className="cg-hero-content relative grid lg:grid-cols-[1.05fr_.95fr] gap-6 items-center p-6 sm:p-9 lg:p-12">
                 <div>
                   <div className="text-[11px] sm:text-xs font-extrabold tracking-[.24em] text-blue-700 uppercase">UNIFY · ANALYZE · PRESERVE · REINTEGRATE</div>
-                  <h2 className="mt-3 text-4xl sm:text-5xl lg:text-6xl font-black tracking-[-.045em] leading-[.98] text-[#0a2050]">Preserve, Validate &amp; Reintegrate Past Chats into <span className="text-blue-600">an Evolving Digital Awareness.</span></h2>
-                  <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600 max-w-xl">Build an evolving, evidence-grounded canonical record of conversations, decisions, corrections, and discoveries. Here, awareness means governed continuity of information—not consciousness or sentience.</p>
+                  <h2 className="mt-3 text-4xl sm:text-5xl lg:text-6xl font-black tracking-[-.045em] leading-[.98] text-[#0a2050]">Validate, Reintegrate &amp; Preserve Past Chats into <span className="text-blue-600">a Continuously Evolving Textual Record.</span></h2>
+                  <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600 max-w-xl">Capture conversations, validate what was established, preserve original evidence, and reintegrate reliable context into a continuously evolving textual record.</p>
 
                 </div>
                 <div className="relative">
@@ -394,7 +409,7 @@ export default function App() {
                 </div>
               </div>
 
-              <form onSubmit={handleQuickCaptureSubmit} className="relative mx-5 sm:mx-9 lg:mx-12 mb-7 sm:mb-9 p-3 sm:p-4 rounded-2xl bg-white/95 border border-blue-100 shadow-[0_12px_35px_rgba(29,78,216,.10)] grid lg:grid-cols-[1fr_auto] gap-2">
+              <form id="cg-capture" onSubmit={handleQuickCaptureSubmit} className="cg-capture relative mx-5 sm:mx-9 lg:mx-12 mb-7 sm:mb-9 p-3 sm:p-4 rounded-2xl bg-white/95 border border-blue-100 shadow-[0_12px_35px_rgba(29,78,216,.10)] grid lg:grid-cols-[1fr_auto] gap-2">
                 <div className="flex items-center gap-2 px-3 h-12 rounded-xl border border-slate-200 bg-white">
                   <Share2 className="w-4 h-4 text-blue-600 shrink-0" />
                   <input value={quickUrl} onFocus={() => { if (!quickUrl) void handleQuickPaste(); }} onChange={e => { setQuickUrl(e.target.value); setQuickCaptureError(null); setCaptureNotice(null); }} placeholder="Paste a public ChatGPT share URL…" className="w-full bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400" />
@@ -414,7 +429,7 @@ export default function App() {
               </form>
             </section>
 
-            <section className="rounded-[1.75rem] border border-slate-200 bg-white/95 p-5 sm:p-7 shadow-sm">
+            <section id="cg-workspace" className="cg-workspace rounded-[1.75rem] border border-slate-200 bg-white/95 p-5 sm:p-7 shadow-sm">
               <div className="flex flex-wrap justify-between items-center gap-3 mb-5">
                 <div><div className="text-[11px] font-bold uppercase tracking-[.2em] text-blue-600">Continuity library</div><h3 className="text-2xl font-black text-[#102a56]">Your Workspace</h3><p className="text-sm text-slate-500">Captured conversations, organized and ready for review.</p></div>
                 <button type="button" onClick={() => setIsCorpusOpen(true)} className="px-4 py-2 rounded-xl border border-blue-200 text-blue-700 font-semibold text-sm">Browse Library ({corpus.length})</button>
@@ -437,7 +452,7 @@ export default function App() {
               )}
             </section>
 
-            <section className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
+            <section className="cg-benefits grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
               {[
                 ['Preserve','Keep the original conversation intact','◉'],
                 ['Organize','Group related work without changing sources','▣'],
@@ -454,7 +469,7 @@ export default function App() {
               ))}
             </section>
 
-            <section className="grid md:grid-cols-3 gap-4">
+            <section className="cg-resources grid md:grid-cols-3 gap-4">
               <button type="button" onClick={() => setIsCorpusOpen(true)} className="text-left rounded-2xl bg-white border border-slate-200 p-5 shadow-sm hover:border-blue-300 hover:shadow-md transition">
                 <Database className="w-5 h-5 text-blue-600" /><h3 className="mt-3 font-extrabold text-[#102a56]">Your conversation library</h3><p className="mt-1 text-sm text-slate-500">Rename, compare, merge, and reopen preserved conversations.</p><span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-blue-700">Open Library <ChevronRight className="w-3.5 h-3.5" /></span>
               </button>
@@ -576,6 +591,7 @@ export default function App() {
           )}
         </>
       </main>
+      </div>
 
       {/* Capture Modal (SS1.jpeg replica) */}
       <CaptureModal
