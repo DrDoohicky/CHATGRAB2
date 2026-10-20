@@ -399,9 +399,9 @@ export default function App() {
               <div className="absolute -bottom-28 left-1/3 w-96 h-96 bg-indigo-200/25 rounded-full blur-3xl pointer-events-none" />
               <div className="cg-hero-content relative grid lg:grid-cols-[1.05fr_.95fr] gap-6 items-center p-6 sm:p-9 lg:p-12">
                 <div>
-                  <div className="text-[11px] sm:text-xs font-extrabold tracking-[.24em] text-blue-700 uppercase">UNIFY · ANALYZE · PRESERVE · REINTEGRATE</div>
-                  <h2 className="mt-3 text-4xl sm:text-5xl lg:text-6xl font-black tracking-[-.045em] leading-[.98] text-[#0a2050]">Validate, Reintegrate &amp; Preserve Past Chats into <span className="text-blue-600">a Continuously Evolving Textual Record.</span></h2>
-                  <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600 max-w-xl">Capture conversations, validate what was established, preserve original evidence, and reintegrate reliable context into a continuously evolving textual record.</p>
+                  <div className="text-[11px] sm:text-xs font-extrabold tracking-[.24em] text-blue-700 uppercase">VALIDATE · REINTEGRATE · TRANSFORM</div>
+                  <h2 className="mt-3 text-4xl sm:text-5xl lg:text-6xl font-black tracking-[-.045em] leading-[.98] text-[#0a2050]">Validate, Reintegrate &amp; Transform Past Chats into <span className="text-blue-600">an Interactive, Contextually Superfly AI Companion.</span></h2>
+                  <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600 max-w-xl">Capture your past conversations, validate the evidence, and reintegrate their most useful context into an interactive AI companion. Original conversations remain preserved.</p>
 
                 </div>
                 <div className="relative">
