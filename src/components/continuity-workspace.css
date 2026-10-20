@@ -25,3 +25,5 @@
 .cg-draft{white-space:pre-wrap;overflow-wrap:anywhere;padding:14px;margin-top:15px;line-height:1.65;background:#f1f5fc;border-radius:12px;max-height:450px;overflow:auto}
 .cg-empty{padding:20px;color:#647a96}
 @media(max-width:800px){.cg-continuity{padding:16px}.cg-continuity-columns{grid-template-columns:1fr}.cg-continuity-panel{padding:15px}}
+
+.cg-message-picker{margin-top:20px}.cg-message-picker details{border:1px solid #d6e3f2;border-radius:10px;padding:12px;margin-top:10px}.cg-message-picker summary{font-weight:800;color:#234c83;cursor:pointer}.cg-message-picker .cg-thread-options{margin-top:12px;max-height:300px}
