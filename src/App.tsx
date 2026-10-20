@@ -2,6 +2,7 @@ import './chatgrab-mockup.css';
 import { HeroIntro } from './components/HeroIntro';
 import { LibraryExplorer } from './components/LibraryExplorer';
 import { ChatGrabDashboard } from './components/ChatGrabDashboard';
+import { ContinuityWorkspace } from './components/ContinuityWorkspace';
 import type { CGPage } from './components/ChatGrabDashboard';
 import React, { useState, useEffect, useRef } from 'react';
 import type { User } from '@supabase/supabase-js';
@@ -70,7 +71,7 @@ export default function App() {
 
   // Modals state (Capture modal opens by default as in SS1.jpeg)
   const [page, setPage] = useState<CGPage>('capture');
-  const openPage = (next: CGPage) => { setPage(next); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const openPage = (next: CGPage) => { const anchor = next==='analyze'?'workspace-analytics':next==='reintegrate'?'workspace-reintegration':null; setPage(anchor?'workspace':next); if(anchor) setTimeout(()=>document.getElementById(anchor)?.scrollIntoView({behavior:'smooth',block:'start'}),75); else window.scrollTo({ top: 0, behavior: 'smooth' }); };
   useEffect(() => {
     if (page === 'capture' && activeThread) {
       document.getElementById('cg-active-thread')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -447,7 +448,7 @@ export default function App() {
       <div className="cg-body">
       {/* Workspace Area */}
       <main className="cg-main flex-1 w-full p-4 sm:p-6 space-y-5">
-        {(page === 'analyze' || page === 'library' || page === 'organize') ? (
+        {(page === 'library' || page === 'organize') ? (
           <LibraryExplorer key={accountUser?.id || 'guest'} threads={corpus} storageScope={accountUser?.id || 'guest'} analysis={page === 'analyze'}
             onBack={()=>openPage('workspace')} onRenameThread={handleRenameThread}
             onOpenThread={(thread,tab)=>{setActiveThread(thread);setWorkspaceTab(tab);openPage('capture');}}
@@ -628,6 +629,7 @@ export default function App() {
           )}
         </>
         </div>) : (
+          <>
           <ChatGrabDashboard
             page={page}
             onAnalyze={()=>{if(activeThread){setWorkspaceTab('insights');openPage('capture');}else{requestedThreadTab.current='insights';setIsCorpusOpen(true);}}}
@@ -640,6 +642,11 @@ export default function App() {
             onOpenGuide={()=>setIsGuideOpen(true)}
             onExport={()=>{if(activeThread)setIsExportOpen(true);else if(corpus.length)handleExportCorpusBackup();else openPage('capture');}}
           />
+          {page==='workspace' && <>
+            <ContinuityWorkspace threads={corpus} mode="analytics" onOpenThread={(thread)=>{setActiveThread(thread);setWorkspaceTab('transcript');openPage('capture');}} />
+            <ContinuityWorkspace threads={corpus} mode="reintegrate" onOpenThread={(thread)=>{setActiveThread(thread);setWorkspaceTab('transcript');openPage('capture');}} />
+          </>}
+          </>
         )}
       </main>
       </div>
