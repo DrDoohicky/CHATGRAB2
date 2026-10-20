@@ -1,24 +1,8 @@
 import type { CSSProperties } from 'react';
-
-// Viewports into the user's original artwork, keeping its pixels unchanged.
-const regions = {
-  preserve: [36, 204, 314, 118], organize: [375, 204, 306, 118],
-  analyze: [708, 204, 306, 118], reintegrate: [1040, 204, 306, 118],
-  artifacts: [1374, 204, 306, 118], export: [1707, 204, 306, 118],
-  library: [359, 478, 310, 177], support: [1060, 478, 270, 177],
-  guide: [1735, 465, 265, 187], logo: [76, 19, 59, 43],
-} as const;
-
-export function ReferenceArtwork({ name, className = '' }: {
-  name: keyof typeof regions; className?: string;
-}) {
-  const [x, y, width, height] = regions[name];
-  const style: CSSProperties = {
-    width: `${2048 / width * 100}%`, height: `${683 / height * 100}%`,
-    left: `${-x / width * 100}%`, top: `${-y / height * 100}%`,
-  };
-  return <span className={`cg-reference-art ${className}`} style={{ aspectRatio: `${width}/${height}` }} aria-hidden="true">
-    <img src="/images/workspace-reference.png" alt="" style={style} draggable={false} />
-  </span>;
+// Nine independently rendered illustrations in a three-column, three-row atlas.
+const cells={preserve:[0,0],organize:[1,0],analyze:[2,0],reintegrate:[0,1],artifacts:[1,1],export:[2,1],library:[0,2],support:[1,2],guide:[2,2]} as const;
+export function ReferenceArtwork({name,className=''}:{name:keyof typeof cells;className?:string}){
+  const [column,row]=cells[name];
+  const style:CSSProperties={width:'300%',height:'300%',left:`${-column*100}%`,top:`${-row*100}%`};
+  return <span className={`cg-reference-art ${className}`} style={{aspectRatio:'3/2'}} aria-hidden="true"><img src="/images/workspace-ink-atlas.png" alt="" style={style} draggable={false}/></span>;
 }
-

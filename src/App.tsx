@@ -38,6 +38,7 @@ import { GeminiChatbot } from './components/GeminiChatbot';
 import { AdaptivePortionsView } from './components/AdaptivePortionsView';
 import { SupportMaterialModal } from './components/SupportMaterialModal';
 import { OnboardingGuideModal } from './components/OnboardingGuideModal';
+import './graphic-editorial.css';
 
 const STORAGE_KEY = 'chatgrab_corpus_threads';
 
@@ -462,7 +463,7 @@ export default function App() {
               <div className="cg-hero-content relative grid lg:grid-cols-[1.05fr_.95fr] gap-6 items-center p-6 sm:p-9 lg:p-12">
                 <HeroIntro/>
                 <div className="cg-globe-visual">
-                  <img src="/images/capture-globe.png" alt="A connected globe with conversation panels, images, documents and audio" className="cg-globe-image" fetchPriority="high" />
+                  <img src="/images/capture-globe-ink.png" alt="A connected globe with conversation panels, images, documents and audio" className="cg-globe-image" fetchPriority="high" />
                 </div>
               </div>
 

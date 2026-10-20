@@ -48,7 +48,7 @@ export function ChatGrabDashboard(props: Props) {
     </section>;
   }
   return <section className="cg-dash" aria-label="Workspace tools">
-    <div className="cg-dash-intro"><div><h1>Welcome back! <span aria-hidden="true">👋</span></h1><p>Preserve, organize, and make more from your conversations.</p></div>
+    <div className="cg-dash-intro"><div><h1>Your workspace.</h1><p>Preserve, organize, and make more from your conversations.</p></div>
       <button className="cg-count" onClick={onOpenLibrary}><Database size={21}/><strong>{count}</strong><span>saved conversations</span><ArrowRight size={17}/></button>
     </div>
     <div className="cg-feature-grid">{features.map(item => <button key={item.id} className={`cg-feature cg-feature-${item.id}`} onClick={() => onNavigate(item.id)}>
@@ -62,4 +62,3 @@ export function ChatGrabDashboard(props: Props) {
     </div>
   </section>;
 }
-
