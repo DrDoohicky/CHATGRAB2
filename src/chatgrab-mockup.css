@@ -1,0 +1,41 @@
+/* ChatGrab mockup-aligned visual system. Live controls remain real React components. */
+.cg-app{background:#eaf4fc;color:#0c2347;min-height:100vh}
+.cg-app header{background:#04172e!important;border-color:#173a62!important;color:white!important}
+.cg-app header>div{max-width:none!important}
+.cg-app header button{color:#dceeff}
+.cg-app header button:hover{background:#123458}
+.cg-app header button .text-slate-900,.cg-app header button .text-slate-500{color:#fff!important}
+.cg-app header button .text-slate-500{color:#9db9d9!important}
+.cg-app header button .bg-blue-50{background:#0c4b8c}
+.cg-app header .text-xl{font-size:1.65rem;color:#fff!important}
+.cg-body{display:flex;flex:1;min-width:0}
+.cg-sidebar{width:238px;flex:0 0 238px;background:linear-gradient(165deg,#04162d,#072446 60%,#04172d);color:#c7e4ff;padding:26px 14px;display:flex;flex-direction:column;gap:50px;min-height:calc(100vh - 70px)}
+.cg-sidebar-links{display:flex;flex-direction:column;gap:7px}
+.cg-sidebar-links button{color:#c9def4;text-align:left;width:100%;padding:13px 15px;border-radius:11px;font-weight:650;font-size:14px;transition:background .2s}
+.cg-sidebar-links button:hover{background:#113c69}
+.cg-sidebar-links button.cg-selected{color:#fff;background:linear-gradient(90deg,#0669e8,#1889ff);box-shadow:0 9px 25px #006cfe4b}
+.cg-sidebar-links button span{float:right;color:#fff;background:#0878f7;border-radius:999px;padding:0 8px}
+.cg-sidebar-foot{margin-top:auto;border:1px solid #185183;border-radius:17px;padding:18px 14px;background:linear-gradient(155deg,#0b315b,#071e39);box-shadow:0 0 35px #0366ff1a}
+.cg-sidebar-foot strong{font-size:14px;color:#fff}
+.cg-sidebar-foot p{font-size:12px;color:#acd5ff;margin-top:11px;padding-left:10px}
+.cg-sidebar-foot p:before{content:'✓';color:#5cf4d3;margin-right:10px}
+.cg-main{max-width:none!important;min-width:0;padding:0 22px 35px!important}
+.cg-hero{border-radius:0 0 26px 26px!important;background:radial-gradient(circle at 72% 30%,#095aab 0,transparent 38%),linear-gradient(120deg,#020b19 12%,#061b36 60%,#0b396e 100%)!important;border:1px solid #184977;box-shadow:0 18px 40px #052d5a30;overflow:visible!important}
+.cg-hero>.absolute{display:none}
+.cg-hero-content{padding:34px 30px 28px!important;min-height:365px}
+.cg-hero-content>div:first-child>div:first-child{color:#93cfff!important;font-size:11px}
+.cg-hero h2{color:#fff!important;font-size:clamp(2rem,3.4vw,3.7rem)!important;line-height:1.05!important;max-width:780px}
+.cg-hero h2 span{color:#3db6ff!important}
+.cg-hero p{color:#d1e7ff!important;font-size:clamp(.95rem,1.25vw,1.14rem)!important;line-height:1.5!important}
+.cg-hero-content img{max-height:340px;object-fit:contain;filter:drop-shadow(0 0 20px #168fff77)}
+.cg-capture{background:linear-gradient(160deg,#fff,#e8f4ff)!important;border:1px solid #d2e5fb!important;box-shadow:0 20px 35px #011d3c35!important;border-radius:21px!important;margin:0 22px 24px!important;padding:22px!important;position:relative;z-index:3}
+.cg-capture:before{content:'↗  Add a Conversation';display:block;grid-column:1/-1;color:#0a2450;font-weight:900;font-size:23px;margin-bottom:7px}
+.cg-capture input:not([type=file]){font-size:15px}
+.cg-capture button[type=submit]{background:#0872f5!important;border-radius:12px!important;box-shadow:0 8px 18px #096dff30}
+.cg-capture button[type=button],.cg-capture label{border:1px solid #d2e4fa}
+.cg-workspace{margin-top:20px;background:linear-gradient(150deg,#fff,#f0f8ff)!important;box-shadow:0 10px 28px #0d427019}
+.cg-workspace h3{font-size:25px}
+.cg-benefits>div{background:white;border-radius:17px;border:1px solid #d7e6f5}
+.cg-resources button{background:white}
+@media(max-width:1050px){.cg-sidebar{width:190px;flex-basis:190px}.cg-hero-content{grid-template-columns:1fr!important}.cg-hero-content img{max-height:240px}.cg-hero h2{font-size:clamp(2rem,5vw,3rem)!important}}
+@media(max-width:700px){.cg-sidebar{display:none}.cg-main{padding:0 12px 25px!important}.cg-hero-content{padding:26px 18px!important}.cg-hero h2{font-size:clamp(1.8rem,7vw,2.5rem)!important}.cg-capture{margin:0 10px 15px!important;padding:16px!important;grid-template-columns:1fr!important}.cg-capture>div,.cg-capture>button{grid-column:1/-1!important}.cg-capture:before{font-size:20px}.cg-hero-content img{max-height:190px}}
