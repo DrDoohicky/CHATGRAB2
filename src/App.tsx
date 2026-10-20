@@ -1,4 +1,7 @@
 import './chatgrab-mockup.css';
+import { ChatGrabDashboard } from './components/ChatGrabDashboard';
+import type { CGPage } from './components/ChatGrabDashboard';
+import { PanelLeftClose, PanelLeftOpen, Menu, X, MessageSquare, LayoutDashboard, LibraryBig, Images, FileArchive, Download, HelpCircle, Settings, Layers, BarChart3, RefreshCw } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { cloud } from './lib/cloud';
@@ -63,6 +66,11 @@ export default function App() {
   const [workspaceTab, setWorkspaceTab] = useState<'transcript' | 'insights' | 'portions'>('transcript');
 
   // Modals state (Capture modal opens by default as in SS1.jpeg)
+  const [page, setPage] = useState<CGPage>('workspace');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => { try { return localStorage.getItem('chatgrab_sidebar_collapsed')==='1'; } catch { return false; } });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const openPage=(p:CGPage)=>{setPage(p);setMobileMenuOpen(false);window.scrollTo({top:0,behavior:'smooth'});};
+  const toggleSidebar=()=>setSidebarCollapsed(prev=>{try{localStorage.setItem('chatgrab_sidebar_collapsed',prev?'0':'1');}catch{}return !prev;});
   const [isCaptureModalOpen, setIsCaptureModalOpen] = useState(false);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
@@ -409,7 +417,7 @@ export default function App() {
   const readTimeMinutes = Math.max(1, Math.ceil(totalWords / 200));
 
   return (
-    <div className="cg-app min-h-screen text-slate-900 flex flex-col font-sans">
+    <div className="cg-app cg-v2 min-h-screen text-slate-900 flex flex-col font-sans">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white text-xs font-semibold rounded-2xl shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-200">
@@ -435,21 +443,20 @@ export default function App() {
       />
 
       <div className="cg-body">
-      <aside className="cg-sidebar">
-        <div className="cg-sidebar-links">
-          <button className="cg-selected" onClick={() => document.getElementById('cg-capture')?.scrollIntoView({behavior:'smooth'})}>↗ &nbsp; Capture</button>
-          <button onClick={() => document.getElementById('cg-workspace')?.scrollIntoView({behavior:'smooth'})}>▣ &nbsp; Workspace</button>
-          <button onClick={() => setIsCorpusOpen(true)}>▤ &nbsp; Library <span>{corpus.length || ''}</span></button>
-          <button onClick={() => { if(activeThread) setWorkspaceTab('insights'); else setIsCorpusOpen(true); }}>◉ &nbsp; Analysis</button>
-          <button onClick={() => setIsSupportOpen(true)}>▧ &nbsp; Artifacts</button>
-          <button onClick={() => { setBatchMode(true); document.getElementById('cg-capture')?.scrollIntoView({behavior:'smooth'}); }}>▣ &nbsp; Batch Process</button>
-          <button onClick={() => { if(activeThread) setIsExportOpen(true); else if(corpus.length) handleExportCorpusBackup(); else document.getElementById('cg-capture')?.scrollIntoView({behavior:'smooth'}); }}>⇧ &nbsp; Exports</button>
-          <button onClick={() => setIsGuideOpen(true)}>⚙ &nbsp; Help & Settings</button>
-        </div>
-        <div className="cg-sidebar-foot"><strong>◉ &nbsp;Continuity Record</strong><p>Preserve history</p><p>Validate evidence</p><p>Reintegrate context</p><p>Build continuity</p></div>
+      <button type="button" className="cg-mobile-toggle" aria-label="Open navigation" onClick={()=>setMobileMenuOpen(true)}><Menu size={23}/></button>
+      <button type="button" aria-label="Close navigation" className={'cg-mobile-scrim '+(mobileMenuOpen?'cg-visible':'')} onClick={()=>setMobileMenuOpen(false)} />
+      <aside className={'cg-sidebar '+(sidebarCollapsed?'cg-collapsed ':'')+(mobileMenuOpen?'cg-mobile-open':'')} aria-label="Main navigation">
+        <div className="cg-sidebar-top"><span className="cg-sidebar-brand">ChatGrab</span><button type="button" className="cg-collapse" title={sidebarCollapsed?'Expand navigation':'Collapse navigation'} aria-label={sidebarCollapsed?'Expand sidebar':'Collapse sidebar'} onClick={toggleSidebar}>{sidebarCollapsed?<PanelLeftOpen size={20}/>:<PanelLeftClose size={20}/>}</button><button type="button" className="cg-close-mobile" aria-label="Close mobile navigation" onClick={()=>setMobileMenuOpen(false)}><X size={20}/></button></div>
+        <nav className="cg-sidebar-links">
+         {([
+          ['capture','Capture',MessageSquare],['workspace','Workspace',LayoutDashboard],['library','Library',LibraryBig],['stillboards','Stillboards',Layers],['analyze','Analyze',BarChart3],['reintegrate','Reintegrate',RefreshCw],['artifacts','Artifacts',Images],['export','Export',Download],['guide','Help',HelpCircle],['settings','Settings',Settings]
+         ] as const).map(([id,label,Icon])=><button key={id} type="button" title={sidebarCollapsed?label:undefined} className={page===id?'cg-selected':''} onClick={()=>openPage(id as CGPage)}><Icon size={20}/><span className="cg-menu-label">{label}{id==='library'&&corpus.length>0?' ('+corpus.length+')':''}</span></button>)}
+        </nav>
+        <div className="cg-sidebar-foot"><strong>Continuity Record</strong><p>Preserve originals</p><p>Keep evidence and corrections separate</p></div>
       </aside>
       {/* Workspace Area */}
       <main className="cg-main flex-1 w-full p-4 sm:p-6 space-y-5">
+        {page === 'capture' ? (<div className="cg-capture-original">
         {/* If no conversation is active: visual landing workspace */}
         <>
           <div className="space-y-5 my-1">
@@ -649,6 +656,17 @@ export default function App() {
           </div>
           )}
         </>
+        </div>) : (
+          <ChatGrabDashboard
+            page={page}
+            count={corpus.length}
+            onNavigate={openPage}
+            onOpenLibrary={()=>setIsCorpusOpen(true)}
+            onOpenSupport={()=>setIsSupportOpen(true)}
+            onOpenGuide={()=>setIsGuideOpen(true)}
+            onExport={()=>{if(activeThread)setIsExportOpen(true);else if(corpus.length)handleExportCorpusBackup();else openPage('capture');}}
+          />
+        )}
       </main>
       </div>
 
