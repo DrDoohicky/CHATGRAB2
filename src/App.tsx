@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { ConversationThread, ThreadInsights } from './types';
 import { Header } from './components/Header';
+import { WorkspaceCards } from './components/WorkspaceCards';
 import { CaptureModal } from './components/CaptureModal';
 import { CorpusModal } from './components/CorpusModal';
 import { ExportModal } from './components/ExportModal';
@@ -409,6 +410,15 @@ export default function App() {
             )}
           </div>
         )}
+        <WorkspaceCards onAction={(action) => {
+          if (action === 'capture') setIsCaptureModalOpen(true);
+          else if (action === 'library' || action === 'corpus') setIsCorpusOpen(true);
+          else if (action === 'export') handleExportCorpusBackup();
+          else if (action === 'analyze') {
+            if (activeThread) { setWorkspaceTab('insights'); window.scrollTo({top:0,behavior:'smooth'}); }
+            else setIsCorpusOpen(true);
+          }
+        }} />
       </main>
 
       {/* Capture Modal (SS1.jpeg replica) */}
