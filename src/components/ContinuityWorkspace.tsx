@@ -28,12 +28,15 @@ export function ContinuityWorkspace({threads,mode,onOpenThread}:Props){
  const [purpose,setPurpose]=useState('');
  const [draft,setDraft]=useState('');
  const [filter,setFilter]=useState('');
+ const [chosenMessages,setChosenMessages]=useState<string[]>([]);
  const chosen=useMemo(()=>threads.filter(t=>selected.includes(t.id)),[threads,selected]);
  useEffect(()=>{setResult(null);setDraft('');setError('');},[mode]);
  const makeDraft=()=>{
   if(chosen.length===0||!target||!purpose.trim()){setError('Choose a source conversation, a destination, and the reason for reintegration.');return;}
   const destination=threads.find(t=>t.id===target);
-  const lines=['# Reintegration proposal','', 'Status: DRAFT — not applied to original conversations','Purpose: '+purpose.trim(),'Destination: '+(destination?.title||'New continuity record'),'', '## Sources',...chosen.map(t=>'- '+t.title+' ('+t.id+')'),'', '## Review before applying','Verify original context, resolve contradictions, decide what should be carried forward, and preserve source references.','', '## Source material preview',...chosen.map(t=>'### '+t.title+'\n'+t.messages.slice(0,8).map(m=>m.role+': '+m.content.slice(0,450)).join('\n'))];
+  const included=chosen.flatMap(t=>t.messages.map((m,i)=>({thread:t,id:String(m.id||'message-'+i),message:m})).filter(row=>chosenMessages.includes(row.thread.id+'::'+row.id)));
+  if(included.length===0){setError('Select the specific source messages you want to carry forward.');return;}
+  const lines=['# Reintegration proposal','', 'Status: DRAFT — not applied to original conversations','Purpose: '+purpose.trim(),'Destination: '+(destination?.title||'New continuity record'),'', '## Sources',...chosen.map(t=>'- '+t.title+' ('+t.id+')'),'', '## Review before applying','Verify original context, resolve contradictions, decide what should be carried forward, and preserve source references.','', '## Proposed source excerpts',...included.map(row=>'### '+row.thread.title+' — '+row.id+'\nRole: '+row.message.role+'\n'+row.message.content)];
   setDraft(lines.join('\n'));setError('');
  };
  const run=async()=>{
@@ -50,6 +53,9 @@ export function ContinuityWorkspace({threads,mode,onOpenThread}:Props){
  const download=(text:string,name:string)=>{const blob=new Blob([text],{type:'text/markdown;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);};
  return <section className="cg-continuity" id={mode==='analytics'?'workspace-analytics':'workspace-reintegration'} style={{scrollMarginTop:130}}>
   <div className="cg-continuity-head"><span>{mode==='analytics'?'WORKSPACE ANALYTICS':'GOVERNED REINTEGRATION'}</span><h2>{mode==='analytics'?'Analyze conversations together':'What are we reintegrating, where, and why?'}</h2><p>{mode==='analytics'?'Select source conversations, then select the kinds of context analysis you want. The report should explain what occurred and cite the underlying messages.':'Build a reviewable, source-linked draft. No original messages are overwritten and no content is automatically inserted into another chat.'}</p></div>
+  {mode==='reintegrate'&&chosen.length>0&&<div className="cg-continuity-panel cg-message-picker"><h3>Choose the exact passages to carry forward</h3><p className="cg-limits">Source excerpts stay attributed to their original conversation and message IDs. Nothing is copied into the destination automatically.</p>
+    {chosen.map(t=><details key={t.id}><summary>{t.title} — {t.messages.length} messages</summary><div className="cg-thread-options">{t.messages.map((m,i)=>{const id=String(m.id||'message-'+i);const key=t.id+'::'+id;return <label key={key}><input type="checkbox" checked={chosenMessages.includes(key)} onChange={()=>setChosenMessages(old=>mapSelection(old,key))}/><span><strong>{m.role} · {id}</strong><small>{m.content.slice(0,420)}{m.content.length>420?'…':''}</small></span></label>})}</div></details>)}
+    <p className="cg-selection-count">{chosenMessages.filter(key=>selected.some(id=>key.startsWith(id+'::'))).length} passages selected</p></div>}
   <div className="cg-continuity-columns">
    <div className="cg-continuity-panel"><h3>1. Choose source conversations</h3>
     <label className="cg-filter"><Search size={17}/><input aria-label="Filter conversations" value={filter} onChange={e=>setFilter(e.target.value)} placeholder="Search your library"/></label>
