@@ -1,7 +1,6 @@
 import './chatgrab-mockup.css';
 import { ChatGrabDashboard } from './components/ChatGrabDashboard';
 import type { CGPage } from './components/ChatGrabDashboard';
-import { PanelLeftClose, PanelLeftOpen, Menu, X, LayoutDashboard, LibraryBig, Images, Download, Settings, Layers, BarChart3, RefreshCw } from 'lucide-react';
 import React, { useState, useEffect, useRef } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { cloud } from './lib/cloud';
@@ -64,13 +63,16 @@ export default function App() {
 
   // Active Tab in Workspace
   const [workspaceTab, setWorkspaceTab] = useState<'transcript' | 'insights' | 'portions'>('transcript');
+  const requestedThreadTab = useRef<'transcript' | 'insights' | 'portions'>('transcript');
 
   // Modals state (Capture modal opens by default as in SS1.jpeg)
-  const [page, setPage] = useState<CGPage>('workspace');
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => { try { return localStorage.getItem('chatgrab_sidebar_collapsed')==='1'; } catch { return false; } });
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const openPage=(p:CGPage)=>{setPage(p);setMobileMenuOpen(false);window.scrollTo({top:0,behavior:'smooth'});};
-  const toggleSidebar=()=>setSidebarCollapsed(prev=>{try{localStorage.setItem('chatgrab_sidebar_collapsed',prev?'0':'1');}catch{}return !prev;});
+  const [page, setPage] = useState<CGPage>('capture');
+  const openPage = (next: CGPage) => { setPage(next); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  useEffect(() => {
+    if (page === 'capture' && activeThread) {
+      document.getElementById('cg-active-thread')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [page, activeThread?.id, workspaceTab]);
   const [isCaptureModalOpen, setIsCaptureModalOpen] = useState(false);
   const [isSupportOpen, setIsSupportOpen] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
@@ -128,18 +130,19 @@ export default function App() {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(corpus));
       } else if (cloud && activeOwnerRef.current === accountUser.id) {
         const ownerId = accountUser.id;
+        const cloudClient = cloud;
         const snapshot = [...corpus];
         cloudQueue.current = cloudQueue.current.then(async () => {
           if (activeOwnerRef.current !== ownerId) return;
           const records = snapshot.map(t => ({owner_id: ownerId, thread_id: t.id, content: t, updated_at: new Date().toISOString()}));
           if (records.length) {
-            const { error } = await cloud.from('conversation_libraries').upsert(records, {onConflict:'owner_id,thread_id'});
+            const { error } = await cloudClient.from('conversation_libraries').upsert(records, {onConflict:'owner_id,thread_id'});
             if (error) throw error;
             const ids = records.map(r=>'"'+r.thread_id.replace(/["\\]/g,'')+'"').join(',');
-            const removed = await cloud.from('conversation_libraries').delete().eq('owner_id', ownerId).not('thread_id','in', '('+ids+')');
+            const removed = await cloudClient.from('conversation_libraries').delete().eq('owner_id', ownerId).not('thread_id','in', '('+ids+')');
             if (removed.error) throw removed.error;
           } else {
-            const cleared = await cloud.from('conversation_libraries').delete().eq('owner_id', ownerId);
+            const cleared = await cloudClient.from('conversation_libraries').delete().eq('owner_id', ownerId);
             if (cleared.error) throw cleared.error;
           }
         }).catch(err => { console.error('Cloud library sync failed:', err); showToast('Cloud library sync failed. Export a backup before leaving.'); });
@@ -166,6 +169,7 @@ export default function App() {
       return [newThread, ...prev];
     });
 
+    openPage('capture');
     setActiveThread(newThread);
     setWorkspaceTab('transcript');
     showToast(`Successfully captured "${newThread.title}"`);
@@ -323,16 +327,9 @@ export default function App() {
         // Empty clipboard: leave input untouched.
       }
     } catch {
-      // Browser clipboard permissions vary; users can still paste manually.
+      setCaptureNotice('Paste directly into the field with Ctrl+V or Command+V.');
     }
   };
-
-  useEffect(() => {
-    const onFocus = () => { if (!quickUrl && document.visibilityState === 'visible') void handleQuickPaste(); };
-    window.addEventListener('focus', onFocus);
-    document.addEventListener('visibilitychange', onFocus);
-    return () => { window.removeEventListener('focus', onFocus); document.removeEventListener('visibilitychange', onFocus); };
-  }, [quickUrl]);
 
   const importConversationFile = async (file: File) => {
     try {
@@ -430,8 +427,10 @@ export default function App() {
       {cloud && !libraryReady && <div className="fixed inset-0 z-[90] bg-white/90 grid place-items-center"><p className="text-slate-700 font-semibold">Opening your private library…</p></div>}
       {/* Main Header */}
       <Header
+        page={page}
+        onNavigate={openPage}
         corpusCount={corpus.length}
-        onOpenCapture={() => document.querySelector<HTMLInputElement>('input[placeholder="Paste a public ChatGPT share URL…"]')?.focus()}
+        onOpenCapture={() => openPage('capture')}
         onOpenCorpus={() => setIsCorpusOpen(true)}
         onOpenChat={() => setIsChatbotOpen(true)}
         onOpenSupport={() => setIsSupportOpen(true)}
@@ -443,47 +442,37 @@ export default function App() {
       />
 
       <div className="cg-body">
-      <button type="button" className="cg-mobile-toggle" aria-label="Open navigation" onClick={()=>setMobileMenuOpen(true)}><Menu size={23}/></button>
-      <button type="button" aria-label="Close navigation" className={'cg-mobile-scrim '+(mobileMenuOpen?'cg-visible':'')} onClick={()=>setMobileMenuOpen(false)} />
-      <aside className={'cg-sidebar '+(sidebarCollapsed?'cg-collapsed ':'')+(mobileMenuOpen?'cg-mobile-open':'')} aria-label="Main navigation">
-        <div className="cg-sidebar-top"><span className="cg-sidebar-brand">ChatGrab</span><button type="button" className="cg-collapse" title={sidebarCollapsed?'Expand navigation':'Collapse navigation'} aria-label={sidebarCollapsed?'Expand sidebar':'Collapse sidebar'} onClick={toggleSidebar}>{sidebarCollapsed?<PanelLeftOpen size={20}/>:<PanelLeftClose size={20}/>}</button><button type="button" className="cg-close-mobile" aria-label="Close mobile navigation" onClick={()=>setMobileMenuOpen(false)}><X size={20}/></button></div>
-        <nav className="cg-sidebar-links">
-         {([
-          ['capture','Capture',MessageSquare],['workspace','Workspace',LayoutDashboard],['library','Library',LibraryBig],['stillboards','Stillboards',Layers],['analyze','Analyze',BarChart3],['reintegrate','Reintegrate',RefreshCw],['artifacts','Artifacts',Images],['export','Export',Download],['guide','Help',HelpCircle],['settings','Settings',Settings]
-         ] as const).map(([id,label,Icon])=><button key={id} type="button" title={sidebarCollapsed?label:undefined} className={page===id?'cg-selected':''} onClick={()=>openPage(id as CGPage)}><Icon size={20}/><span className="cg-menu-label">{label}{id==='library'&&corpus.length>0?' ('+corpus.length+')':''}</span></button>)}
-        </nav>
-        <div className="cg-sidebar-foot"><strong>Continuity Record</strong><p>Preserve originals</p><p>Keep evidence and corrections separate</p></div>
-      </aside>
       {/* Workspace Area */}
       <main className="cg-main flex-1 w-full p-4 sm:p-6 space-y-5">
         {page === 'capture' ? (<div className="cg-capture-original">
         {/* If no conversation is active: visual landing workspace */}
         <>
           <div className="space-y-5 my-1">
-            <section className="cg-hero relative overflow-hidden rounded-[2rem] shadow-sm">
+            <section className="cg-hero cg-capture-hero relative overflow-hidden rounded-[2rem] shadow-sm">
               <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute -bottom-28 left-1/3 w-96 h-96 bg-indigo-200/25 rounded-full blur-3xl pointer-events-none" />
               <div className="cg-hero-content relative grid lg:grid-cols-[1.05fr_.95fr] gap-6 items-center p-6 sm:p-9 lg:p-12">
                 <div>
                   <div className="text-[11px] sm:text-xs font-extrabold tracking-[.24em] text-blue-700 uppercase">VALIDATE · REINTEGRATE · TRANSFORM</div>
-                  <h2 className="mt-3 text-4xl sm:text-5xl lg:text-6xl font-black tracking-[-.045em] leading-[.98] text-[#0a2050]">Validate, Reintegrate &amp; Transform Past Chats into <span className="text-blue-600">an Interactive, Contextually Superfly AI Companion.</span></h2>
-                  <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600 max-w-xl">Capture your past conversations, validate the evidence, and reintegrate their most useful context into an interactive AI companion. Original conversations remain preserved.</p>
+                  <h2 className="mt-3 text-4xl sm:text-5xl lg:text-6xl font-black tracking-[-.045em] leading-[.98] text-[#0a2050]">Your conversations.<br/><span className="text-blue-600">A connected record.</span></h2>
+                  <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600 max-w-xl">Capture your conversations, keep the originals, and bring their most useful context forward. Start with a share link, a transcript, or a file.</p>
 
                 </div>
-                <div className="relative">
-                  <img src="/chatgrab-feature-illustration.svg" alt="Illustrated ChatGrab feature graphic: Find patterns, organize by project, preserve source material, generate insights, export useful reports" className="w-full max-w-[720px] mx-auto drop-shadow-[0_26px_40px_rgba(30,90,180,.18)]" />
+                <div className="cg-globe-visual">
+                  <img src="/images/capture-globe.png" alt="A connected globe with conversation panels, images, documents and audio" className="cg-globe-image" fetchPriority="high" />
                 </div>
               </div>
 
               <form id="cg-capture" onSubmit={handleQuickCaptureSubmit} className="cg-capture relative mx-5 sm:mx-9 lg:mx-12 mb-7 sm:mb-9 p-3 sm:p-4 rounded-2xl bg-white/95 border border-blue-100 shadow-[0_12px_35px_rgba(29,78,216,.10)] grid lg:grid-cols-[1fr_auto] gap-2">
                 <div className="flex items-center gap-2 px-3 h-12 rounded-xl border border-slate-200 bg-white">
                   <Share2 className="w-4 h-4 text-blue-600 shrink-0" />
-                  <input value={quickUrl} onFocus={() => { if (!quickUrl) void handleQuickPaste(); }} onChange={e => { setQuickUrl(e.target.value); setQuickCaptureError(null); setCaptureNotice(null); }} placeholder="Paste a public ChatGPT share URL…" className="w-full bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400" />
+                  <input aria-label="ChatGPT share link or conversation text" value={quickUrl} onChange={e => { setQuickUrl(e.target.value); setQuickCaptureError(null); setCaptureNotice(null); }} placeholder="Paste a public ChatGPT share URL…" className="w-full bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400" />
                 </div>
                 <button type="submit" disabled={isQuickCapturing} className="h-12 px-5 rounded-xl bg-[#0d5ed7] hover:bg-[#084fb9] text-white text-sm font-bold flex items-center justify-center gap-2">{isQuickCapturing ? "Capturing…" : "Capture Thread"} <ArrowRight className="w-4 h-4" /></button>
                 {captureNotice && <div role="status" className="lg:col-span-2 text-sm text-emerald-700 px-2">{captureNotice}</div>}
                 {quickCaptureError && <div role="alert" className="lg:col-span-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{quickCaptureError}</div>}
                 <div className="lg:col-span-2 flex flex-wrap gap-2 pt-3 border-t border-blue-100">
+                  <button type="button" onClick={() => void handleQuickPaste()} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Paste from clipboard</button>
                   <label className="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import JSON <input className="hidden" type="file" accept=".json,application/json" onChange={e => { const f=e.target.files?.[0]; if(f) void importConversationFile(f); e.target.value=''; }} /></label>
                   <button type="button" onClick={importCopiedText} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import copied text</button>
                   <label className="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import file <input className="hidden" type="file" accept=".json,.txt,.md,.csv,text/*" onChange={e => { const f=e.target.files?.[0]; if(f) void importConversationFile(f); e.target.value=''; }} /></label>
@@ -518,38 +507,16 @@ export default function App() {
               )}
             </section>
 
-            <section className="cg-benefits grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5">
-              {[
-                ['Preserve','Keep the original conversation intact','◉'],
-                ['Organize','Group related work without changing sources','▣'],
-                ['Analyze','Find patterns, corrections and drift','⌕'],
-                ['Reintegrate','Carry useful context forward','↻'],
-                ['Artifacts','Keep PDFs, images and source files nearby','◇'],
-                ['Export','Create useful reports and backups','↗'],
-              ].map(([title,desc,glyph]) => (
-                <div key={title} className="rounded-2xl bg-white border border-slate-200 p-4 shadow-xs">
-                  <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-100 text-blue-700 grid place-items-center font-black text-lg">{glyph}</div>
-                  <div className="mt-3 font-extrabold text-sm text-[#102a56]">{title}</div>
-                  <div className="mt-1 text-[11px] leading-relaxed text-slate-500">{desc}</div>
-                </div>
-              ))}
-            </section>
-
-            <section className="cg-resources grid md:grid-cols-3 gap-4">
-              <button type="button" onClick={() => setIsCorpusOpen(true)} className="text-left rounded-2xl bg-white border border-slate-200 p-5 shadow-sm hover:border-blue-300 hover:shadow-md transition">
-                <Database className="w-5 h-5 text-blue-600" /><h3 className="mt-3 font-extrabold text-[#102a56]">Your conversation library</h3><p className="mt-1 text-sm text-slate-500">Rename, compare, merge, and reopen preserved conversations.</p><span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-blue-700">Open Library <ChevronRight className="w-3.5 h-3.5" /></span>
-              </button>
-              <button type="button" onClick={() => setIsSupportOpen(true)} className="text-left rounded-2xl bg-white border border-slate-200 p-5 shadow-sm hover:border-blue-300 hover:shadow-md transition">
-                <FileText className="w-5 h-5 text-rose-500" /><h3 className="mt-3 font-extrabold text-[#102a56]">Files around the conversation</h3><p className="mt-1 text-sm text-slate-500">Attach PDFs, screenshots, generated media, JSON, audio, video, and evidence.</p><span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-blue-700">Open Support Library <ChevronRight className="w-3.5 h-3.5" /></span>
-              </button>
-              <button type="button" onClick={() => setIsGuideOpen(true)} className="text-left rounded-2xl bg-white border border-slate-200 p-5 shadow-sm hover:border-blue-300 hover:shadow-md transition">
-                <HelpCircle className="w-5 h-5 text-amber-500" /><h3 className="mt-3 font-extrabold text-[#102a56]">Four-step visual guide</h3><p className="mt-1 text-sm text-slate-500">See exactly where the three dots, Share, Copy link, and ChatGrab paste controls are.</p><span className="mt-4 inline-flex items-center gap-1 text-xs font-bold text-blue-700">Show the Guide <ChevronRight className="w-3.5 h-3.5" /></span>
-              </button>
-            </section>
+            <ChatGrabDashboard page="workspace" count={corpus.length} onNavigate={openPage}
+              onOpenLibrary={()=>setIsCorpusOpen(true)} onOpenSupport={()=>setIsSupportOpen(true)}
+              onOpenGuide={()=>setIsGuideOpen(true)} onExport={()=>{if(activeThread)setIsExportOpen(true);else handleExportCorpusBackup();}}
+              onAnalyze={()=>{if(activeThread){setWorkspaceTab('insights');openPage('capture');}else{requestedThreadTab.current='insights';setIsCorpusOpen(true);}}}
+              onReintegrate={()=>{if(activeThread){setWorkspaceTab('portions');openPage('capture');}else{requestedThreadTab.current='portions';setIsCorpusOpen(true);}}}
+              onAccount={()=>setAccountOpen(true)} />
           </div>
           {activeThread && (
           /* Active Thread Workspace */
-          <div className="space-y-5">
+          <div id="cg-active-thread" className="space-y-5" style={{scrollMarginTop:160}}>
             {/* Thread Metadata Strip */}
             <div className="bg-white rounded-2xl px-5 py-3 border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-3 flex-wrap">
@@ -659,6 +626,9 @@ export default function App() {
         </div>) : (
           <ChatGrabDashboard
             page={page}
+            onAnalyze={()=>{if(activeThread){setWorkspaceTab('insights');openPage('capture');}else{requestedThreadTab.current='insights';setIsCorpusOpen(true);}}}
+            onReintegrate={()=>{if(activeThread){setWorkspaceTab('portions');openPage('capture');}else{requestedThreadTab.current='portions';setIsCorpusOpen(true);}}}
+            onAccount={()=>setAccountOpen(true)}
             count={corpus.length}
             onNavigate={openPage}
             onOpenLibrary={()=>setIsCorpusOpen(true)}
@@ -692,8 +662,10 @@ export default function App() {
         corpus={corpus}
         activeThreadId={activeThread?.id}
         onSelectThread={(t) => {
+          openPage('capture');
           setActiveThread(t);
-          setWorkspaceTab('transcript');
+          setWorkspaceTab(requestedThreadTab.current);
+          requestedThreadTab.current='transcript';
         }}
         onDeleteThread={handleDeleteThread}
         onToggleFavorite={handleToggleFavorite}
@@ -734,7 +706,7 @@ export default function App() {
           type="button"
           onClick={() => setIsChatbotOpen(true)}
           className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-600 hover:from-blue-800 hover:to-indigo-700 text-white font-semibold text-xs rounded-2xl shadow-xl shadow-blue-900/20 hover:shadow-2xl transition-all cursor-pointer active:scale-95 group"
-          title="Open Gemini Multi-Turn Assistant"
+          aria-label="Conversation assistant" title="Open Gemini Multi-Turn Assistant"
         >
           <div className="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center">
             <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
