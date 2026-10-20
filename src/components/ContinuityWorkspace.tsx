@@ -1,0 +1,75 @@
+import React, {useEffect,useMemo,useState} from 'react';
+import type {ConversationThread} from '../types';
+import {ArrowRight,BookOpen,CheckSquare,RefreshCw,Search,Download,Link2} from 'lucide-react';
+import './continuity-workspace.css';
+
+const ANALYSES=[
+ ['contradictions','Contradictions','Explain conflicting positions, what each was about and whether the difference is resolved.'],
+ ['accomplishments','Accomplishments','What was actually completed, the evidence and what remains unverified.'],
+ ['apologies','Apologies & corrections','Explain the triggering situation, what was acknowledged, what changed and what followed.'],
+ ['decisions','Decisions','Record decisions, rationale, owners and subsequent developments.'],
+ ['themes','Themes & tropes','Identify recurring patterns across conversations, with examples.'],
+ ['neighbors','Neural neighbors','Find complementary ideas across otherwise separate chats and explain the connection.'],
+ ['evolution','Evolution & drift','Trace how a concept, requirement or position evolved over time.'],
+ ['narrative','Narrative synthesis','Write a coherent chronological narrative, grounded in the selected sources.'],
+ ['unresolved','Unresolved work','Identify open questions, blockers and missing evidence.']
+] as const;
+type Finding={type:string;title:string;context:string;evidence?:Array<{threadId:string;messageId:string;excerpt:string}>;interpretation?:string;status?:string};
+type Report={narrative:string;findings:Finding[];limitations:string[]};
+type Props={threads:ConversationThread[];mode:'analytics'|'reintegrate';onOpenThread:(t:ConversationThread)=>void};
+const mapSelection=(items:string[],id:string)=>items.includes(id)?items.filter(x=>x!==id):[...items,id];
+export function ContinuityWorkspace({threads,mode,onOpenThread}:Props){
+ const [selected,setSelected]=useState<string[]>([]);
+ const [kinds,setKinds]=useState<string[]>(['contradictions','themes']);
+ const [result,setResult]=useState<Report|null>(null);
+ const [busy,setBusy]=useState(false);
+ const [error,setError]=useState('');
+ const [target,setTarget]=useState<string>('');
+ const [purpose,setPurpose]=useState('');
+ const [draft,setDraft]=useState('');
+ const [filter,setFilter]=useState('');
+ const chosen=useMemo(()=>threads.filter(t=>selected.includes(t.id)),[threads,selected]);
+ useEffect(()=>{setResult(null);setDraft('');setError('');},[mode]);
+ const makeDraft=()=>{
+  if(chosen.length===0||!target||!purpose.trim()){setError('Choose a source conversation, a destination, and the reason for reintegration.');return;}
+  const destination=threads.find(t=>t.id===target);
+  const lines=['# Reintegration proposal','', 'Status: DRAFT — not applied to original conversations','Purpose: '+purpose.trim(),'Destination: '+(destination?.title||'New continuity record'),'', '## Sources',...chosen.map(t=>'- '+t.title+' ('+t.id+')'),'', '## Review before applying','Verify original context, resolve contradictions, decide what should be carried forward, and preserve source references.','', '## Source material preview',...chosen.map(t=>'### '+t.title+'\n'+t.messages.slice(0,8).map(m=>m.role+': '+m.content.slice(0,450)).join('\n'))];
+  setDraft(lines.join('\n'));setError('');
+ };
+ const run=async()=>{
+  if(!chosen.length||!kinds.length){setError('Select at least one conversation and one analysis.');return;}
+  setBusy(true);setError('');setResult(null);
+  try{
+   const response=await fetch('/api/continuity-analysis',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({analyses:kinds,threads:chosen.map(t=>({id:t.id,title:t.title,capturedAt:t.capturedAt,messages:t.messages}))})});
+   const data=await response.json().catch(()=>({error:'Analysis service did not return JSON.'}));
+   if(!response.ok||!data.success)throw new Error(data.error||'Analysis did not complete.');
+   if(!data.report||!Array.isArray(data.report.findings))throw new Error('Analysis response was not a valid report.');
+   setResult(data.report);
+  }catch(e:any){setError(e?.message||'Analysis failed. Nothing was changed.');}finally{setBusy(false);}
+ };
+ const download=(text:string,name:string)=>{const blob=new Blob([text],{type:'text/markdown;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);};
+ return <section className="cg-continuity" id={mode==='analytics'?'workspace-analytics':'workspace-reintegration'} style={{scrollMarginTop:130}}>
+  <div className="cg-continuity-head"><span>{mode==='analytics'?'WORKSPACE ANALYTICS':'GOVERNED REINTEGRATION'}</span><h2>{mode==='analytics'?'Analyze conversations together':'What are we reintegrating, where, and why?'}</h2><p>{mode==='analytics'?'Select source conversations, then select the kinds of context analysis you want. The report should explain what occurred and cite the underlying messages.':'Build a reviewable, source-linked draft. No original messages are overwritten and no content is automatically inserted into another chat.'}</p></div>
+  <div className="cg-continuity-columns">
+   <div className="cg-continuity-panel"><h3>1. Choose source conversations</h3>
+    <label className="cg-filter"><Search size={17}/><input aria-label="Filter conversations" value={filter} onChange={e=>setFilter(e.target.value)} placeholder="Search your library"/></label>
+    <div className="cg-picker-actions"><button onClick={()=>setSelected(threads.map(t=>t.id))}>Select all ({threads.length})</button><button onClick={()=>setSelected([])}>Clear selection</button></div>
+    <div className="cg-thread-options">{threads.filter(t=>t.title.toLowerCase().includes(filter.toLowerCase())).map(t=><label key={t.id}><input type="checkbox" checked={selected.includes(t.id)} onChange={()=>setSelected(old=>mapSelection(old,t.id))}/><span><strong>{t.title}</strong><small>{t.messages.length} messages</small></span><button type="button" onClick={e=>{e.preventDefault();onOpenThread(t);}} title="Open transcript"><ArrowRight size={16}/></button></label>)}
+     {threads.length===0&&<p className="cg-empty">Capture or import a conversation first; it will appear here.</p>}
+    </div><p className="cg-selection-count">{selected.length} conversation(s) selected</p>
+   </div>
+   <div className="cg-continuity-panel">
+    {mode==='analytics'?<><h3>2. Choose analyses</h3><div className="cg-analytic-options">{ANALYSES.map(([id,name,desc])=><label key={id}><input type="checkbox" checked={kinds.includes(id)} onChange={()=>setKinds(old=>mapSelection(old,id))}/><span><strong>{name}</strong><small>{desc}</small></span></label>)}</div>
+      <button className="cg-continuity-primary" onClick={run} disabled={busy||!chosen.length||!kinds.length}><CheckSquare size={18}/>{busy?'Analyzing source context…':'Run selected analyses'} <ArrowRight size={17}/></button><p className="cg-limits">AI interpretation must be checked against the cited source. A model response is not evidence by itself.</p></>:
+      <><h3>2. Destination and purpose</h3><label className="cg-form-label">Destination
+        <select value={target} onChange={e=>setTarget(e.target.value)}><option value="">Select destination</option><option value="new">New continuity record</option>{threads.filter(t=>!selected.includes(t.id)).map(t=><option key={t.id} value={t.id}>{t.title}</option>)}</select></label>
+        <label className="cg-form-label">Why reintegrate this material?
+         <textarea rows={5} value={purpose} onChange={e=>setPurpose(e.target.value)} placeholder="Example: carry the corrected project decision and its evidence into a future work record."/></label>
+        <button className="cg-continuity-primary" onClick={makeDraft} disabled={!chosen.length||!target||!purpose.trim()}><RefreshCw size={18}/>Prepare reintegration draft</button><p className="cg-limits">A draft is not a merge, a transfer, or a verified conclusion.</p></>}
+   </div>
+  </div>
+  {error&&<p role="alert" className="cg-continuity-error">{error}</p>}
+  {mode==='analytics'&&result&&<article className="cg-analysis-report"><div className="cg-report-top"><h3><BookOpen size={20}/> Contextual findings</h3><button onClick={()=>download(JSON.stringify(result,null,2),'chatgrab-analysis.json')}><Download size={16}/> Export findings</button></div><p className="cg-narrative">{result.narrative}</p>{result.findings.map((f,i)=><section key={i} className="cg-finding"><h4>{f.title}</h4><small>{f.type} · {f.status||'Needs source review'}</small><p>{f.context}</p>{f.interpretation&&<p><strong>Interpretation:</strong> {f.interpretation}</p>}<div className="cg-evidence">{(f.evidence||[]).map((ev,j)=>{const original=threads.find(t=>t.id===ev.threadId);const message=original?.messages.find(m=>m.id===ev.messageId);return <div key={j}><Link2 size={14}/><span><strong>{original?.title||ev.threadId}</strong> — {message?.content.slice(0,400)||ev.excerpt||'Message not available; verify citation'}</span></div>})}</div></section>)}{result.limitations?.length>0&&<aside><strong>Limitations</strong><p>{result.limitations.join(' ')}</p></aside>}</article>}
+  {mode==='reintegrate'&&draft&&<article className="cg-analysis-report"><div className="cg-report-top"><h3>Draft for human review</h3><button onClick={()=>download(draft,'chatgrab-reintegration-draft.md')}><Download size={17}/> Export draft</button></div><pre className="cg-draft">{draft}</pre></article>}
+ </section>;
+}
