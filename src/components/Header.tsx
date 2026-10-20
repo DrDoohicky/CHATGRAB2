@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { MessageCircle, LayoutGrid, Database, Images, Download, HelpCircle, Settings, UserRound, MoreHorizontal, Sparkles, Trash2 } from 'lucide-react';
 import type { CGPage } from './ChatGrabDashboard';
-import { BrandWord } from './BrandMark';
+import { BrandMark, BrandWord } from './BrandMark';
 interface HeaderProps {
   page: CGPage; onNavigate: (page: CGPage) => void;
   corpusCount: number; onOpenCapture: () => void; onOpenCorpus: () => void;
@@ -18,7 +18,7 @@ export function Header({ page, onNavigate, corpusCount, onOpenCapture, onOpenCor
     { id: 'export', label: 'Export', icon: Download, action: onExportCorpusBackup },
   ];
   return <header className="cg-topbar">
-    <button type="button" className="cg-brand" onClick={() => onNavigate('capture')} aria-label="ChatGrab home"><BrandWord/></button>
+    <button type="button" className="cg-brand" onClick={() => onNavigate('capture')} aria-label="ChatGrab home"><BrandMark/><span className="cg-brand-lockup"><BrandWord/><small>for ChatGPT</small></span></button>
     <nav className="cg-topnav" aria-label="Main navigation">{links.map(({ id, label, icon: Icon, action }) => <button key={id} type="button" onClick={action} aria-current={page === id ? 'page' : undefined}><Icon size={21}/><span>{label}</span>{id === 'library' && corpusCount > 0 && <small>{corpusCount}</small>}</button>)}</nav>
     <div className="cg-header-tools">
       <button type="button" onClick={onOpenGuide} aria-label="Help"><HelpCircle size={20}/><span>Help</span></button>

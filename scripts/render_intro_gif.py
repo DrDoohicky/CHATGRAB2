@@ -1,17 +1,17 @@
-"""Render the exact website panels as an ink/paper animated GIF, without raster inputs."""
+"""Render the exact website panels as an navy/green animated GIF, without raster inputs."""
 from pathlib import Path
 import json
 from PIL import Image,ImageDraw,ImageFont
 ROOT=Path(__file__).resolve().parents[1]
 slides=json.loads((ROOT/'src/hero-slides.json').read_text(encoding='utf-8-sig'))
 W,H=960,540
-PAPER=(241,243,245);INK=(32,33,39);BLUE=(37,76,163);RED=(189,59,55);PLUM=(104,69,94)
+PAPER=(255,255,255);INK=(18,54,91);BLUE=(40,95,157);GREEN=(24,128,92);SLATE=(85,114,141)
 base=Image.new('RGB',(W,H),PAPER);d=ImageDraw.Draw(base)
 d.line((64,426,896,426),fill=INK,width=1)
 small=ImageFont.truetype('C:/Windows/Fonts/segoeui.ttf',17)
-d.text((64,450),'VALIDATE. REINTEGRATE. TRANSFORM.',font=small,fill=PLUM)
+d.text((64,450),'VALIDATE. REINTEGRATE. TRANSFORM.',font=small,fill=SLATE)
 palette=[]
-for end in [INK,BLUE,RED,PLUM]:
+for end in [INK,BLUE,GREEN,SLATE]:
     for i in range(64):palette.extend(round(a+(b-a)*i/63) for a,b in zip(PAPER,end))
 pal=Image.new('P',(1,1));pal.putpalette(palette)
 frames=[];durations=[];poster=None
@@ -27,10 +27,10 @@ for idx,slide in enumerate(slides):
         color=INK if n==0 else BLUE
         if slide['id']=='brand':
             prefix="It's Chat";draw.text((64,top),prefix,font=font,fill=INK)
-            x=64+draw.textlength(prefix,font=font);draw.text((x,top),'Grab.',font=font,fill=RED)
+            x=64+draw.textlength(prefix,font=font);draw.text((x,top),'Grab.',font=font,fill=GREEN)
         else:draw.text((64,top+n*line_height),line,font=font,fill=color)
     for n in range(len(slides)):
-        x=790+n*17;draw.rectangle((x,459,x+5,464),fill=RED if n==idx else (174,177,184))
+        x=790+n*17;draw.rectangle((x,459,x+5,464),fill=GREEN if n==idx else (174,177,184))
     if slide['id']=='catalog':poster=complete.copy()
     for step in range(1,8):
         amount=step/7;amount=amount*amount*(3-2*amount);add_frame(Image.blend(base,complete,amount),80)

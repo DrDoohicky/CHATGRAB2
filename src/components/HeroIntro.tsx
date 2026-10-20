@@ -8,6 +8,7 @@ export function HeroIntro(){
   useEffect(()=>{const media=window.matchMedia('(prefers-reduced-motion: reduce)');const update=()=>{setReduced(media.matches);if(media.matches){setIndex(3);setPaused(true);}};update();media.addEventListener('change',update);return()=>media.removeEventListener('change',update);},[]);
   const slide=slides[index];
   return <div className="cg-hero-copy">
+    <p className="cg-platform-note">BUILT FOR CHATGPT</p>
     <h1 className="sr-only">All your conversations. One connected contextual catalog.</h1>
     <div className="cg-hero-stage" aria-hidden="true">
       <div key={slide.id} className={`cg-hero-slide cg-slide-${slide.id}`} data-paused={paused||reduced} style={{animationDuration:`${slide.duration}ms`}} onAnimationEnd={()=>{if(!paused&&!reduced)setIndex(previous=>(previous+1)%slides.length);}}>
@@ -20,6 +21,6 @@ export function HeroIntro(){
       <a href="/images/chatgrab-intro.gif" download="ChatGrab-intro.gif"><Download size={13}/> GIF</a>
     </div>
     <p className="cg-hero-motto">Validate. Reintegrate. Transform.</p>
-    <p className="cg-hero-description">Capture your conversations, keep the originals, and bring their most useful context forward. Start with a share link, a transcript, or a file.</p>
+    <p className="cg-hero-description">Capture your ChatGPT conversations, keep the originals, and bring their most useful context forward. Start with a share link, a transcript, or a file.</p>
   </div>;
 }
