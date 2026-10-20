@@ -108,7 +108,10 @@ export const CorpusModal: React.FC<CorpusModalProps> = ({
         }),
       });
 
-      const data = await res.json();
+      const raw = await res.text();
+      let data: any;
+      try { data = JSON.parse(raw); }
+      catch { throw new Error('The cross-thread analysis service is unavailable. Your saved conversations are safe; try again later.'); }
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Failed to query corpus');
       }
@@ -418,7 +421,7 @@ export const CorpusModal: React.FC<CorpusModalProps> = ({
                 </h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed mb-4">
-                Query across all {corpus.length} saved threads simultaneously. ChatGrab synthesizes insights, compares decisions, and provides verified citations.
+                Query across {corpus.length} saved threads. AI synthesis can compare decisions and cite supplied conversation excerpts when the service is configured; citations require source review.
               </p>
 
               {/* Query suggestions if corpus has threads */}
