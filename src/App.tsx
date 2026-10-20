@@ -1,5 +1,8 @@
 import './chatgrab-mockup.css';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import type { User } from '@supabase/supabase-js';
+import { cloud } from './lib/cloud';
+import { AccountPanel } from './components/AccountPanel';
 import {
   Sparkles,
   FileText,
@@ -77,14 +80,66 @@ export default function App() {
   const [isQuickCapturing, setIsQuickCapturing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  const [accountUser, setAccountUser] = useState<User | null>(null);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [libraryReady, setLibraryReady] = useState(!cloud);
+  const activeOwnerRef = useRef<string | null>(null);
+  const cloudQueue = useRef<Promise<void>>(Promise.resolve());
+  const readGuest = (): ConversationThread[] => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } };
+  const refreshAccount = async () => {
+    if (!cloud) return;
+    setLibraryReady(false);
+    const { data: { user } } = await cloud.auth.getUser();
+    activeOwnerRef.current = user?.id || null;
+    setAccountUser(user);
+    if (user) {
+      const { data, error } = await cloud.from('conversation_libraries').select('content').eq('owner_id', user.id).order('updated_at', { ascending: false });
+      if (error) {
+        console.error('Unable to load private library', error);
+        setLibraryReady(false);
+        return;
+      }
+      setCorpus((data || []).map((record: any) => record.content as ConversationThread));
+    } else {
+      setCorpus(readGuest());
+    }
+    setActiveThread(null);
+    setLibraryReady(true);
+  };
+  useEffect(() => {
+    if (!cloud) return;
+    void refreshAccount();
+    const { data: { subscription } } = cloud.auth.onAuthStateChange(() => { setTimeout(() => void refreshAccount(), 0); });
+    return () => subscription.unsubscribe();
+  }, []);
   // Persist corpus to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(corpus));
+      if (!libraryReady) return;
+      if (!accountUser) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(corpus));
+      } else if (cloud && activeOwnerRef.current === accountUser.id) {
+        const ownerId = accountUser.id;
+        const snapshot = [...corpus];
+        cloudQueue.current = cloudQueue.current.then(async () => {
+          if (activeOwnerRef.current !== ownerId) return;
+          const records = snapshot.map(t => ({owner_id: ownerId, thread_id: t.id, content: t, updated_at: new Date().toISOString()}));
+          if (records.length) {
+            const { error } = await cloud.from('conversation_libraries').upsert(records, {onConflict:'owner_id,thread_id'});
+            if (error) throw error;
+            const ids = records.map(r=>'"'+r.thread_id.replace(/["\\]/g,'')+'"').join(',');
+            const removed = await cloud.from('conversation_libraries').delete().eq('owner_id', ownerId).not('thread_id','in', '('+ids+')');
+            if (removed.error) throw removed.error;
+          } else {
+            const cleared = await cloud.from('conversation_libraries').delete().eq('owner_id', ownerId);
+            if (cleared.error) throw cleared.error;
+          }
+        }).catch(err => { console.error('Cloud library sync failed:', err); showToast('Cloud library sync failed. Export a backup before leaving.'); });
+      }
     } catch (e) {
       console.warn('Failed to save corpus to localStorage:', e);
     }
-  }, [corpus]);
+  }, [corpus, accountUser, libraryReady]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -238,7 +293,7 @@ export default function App() {
   const handleClearCorpus = () => {
     setCorpus([]);
     setActiveThread(null);
-    localStorage.removeItem(STORAGE_KEY);
+    if (!accountUser) localStorage.removeItem(STORAGE_KEY);
     showToast('Corpus cleared');
   };
 
@@ -363,6 +418,8 @@ export default function App() {
         </div>
       )}
 
+      {accountOpen && <AccountPanel user={accountUser} onClose={() => setAccountOpen(false)} onChange={refreshAccount} />}
+      {cloud && !libraryReady && <div className="fixed inset-0 z-[90] bg-white/90 grid place-items-center"><p className="text-slate-700 font-semibold">Opening your private library…</p></div>}
       {/* Main Header */}
       <Header
         corpusCount={corpus.length}
@@ -373,6 +430,8 @@ export default function App() {
         onOpenGuide={() => setIsGuideOpen(true)}
         onExportCorpusBackup={handleExportCorpusBackup}
         onClearCorpus={handleClearCorpus}
+        onOpenAccount={() => setAccountOpen(true)}
+        accountLabel={accountUser?.user_metadata?.display_name || (accountUser ? 'My Profile' : 'Sign in')}
       />
 
       <div className="cg-body">
