@@ -8,7 +8,7 @@ type Props = { page: CGPage; count: number; onNavigate: (p: CGPage) => void; onO
 const features = [
   { id: 'preserve', title: 'Preserve', desc: 'Keep the original conversation intact.', action: 'Capture & Preserve' },
   { id: 'organize', title: 'Organize', desc: 'Group related work without changing sources.', action: 'Organize' },
-  { id: 'analyze', title: 'Analyze', desc: 'Find patterns, corrections and drift.', action: 'Analyze' },
+  { id: 'analyze', title: 'Chat Analysis', desc: 'Find patterns, corrections and drift.', action: 'Analyze' },
   { id: 'reintegrate', title: 'Reintegrate', desc: 'Carry useful context forward.', action: 'Reintegrate' },
   { id: 'artifacts', title: 'Artifacts', desc: 'Keep PDFs, images and source files nearby.', action: 'View Artifacts' },
   { id: 'export', title: 'Export', desc: 'Create useful reports and backups.', action: 'Export' },
@@ -16,7 +16,7 @@ const features = [
 const details = {
   preserve: ['Preserve', 'Capture an original conversation before interpreting it.'],
   organize: ['Organize', 'Search, rename and group your saved conversations in the library.'],
-  analyze: ['Analyze', 'Inspect insights and check them against the original conversation.'],
+  analyze: ['Chat Analysis', 'Inspect insights and check them against the original conversation.'],
   reintegrate: ['Reintegrate', 'Select context from a saved conversation to carry forward.'],
   artifacts: ['Artifacts', 'Attach supporting files and media to your work.'],
   export: ['Export', 'Download a conversation report or a portable library backup.'],
@@ -62,3 +62,4 @@ export function ChatGrabDashboard(props: Props) {
     </div>
   </section>;
 }
+
