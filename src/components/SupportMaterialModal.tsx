@@ -2,38 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { X, Upload, FileText, Image as ImageIcon, File, Link2, Pencil, ExternalLink } from 'lucide-react';
 import { ConversationThread, SupportAsset } from '../types';
 
-const DB = 'chatgrab_assets';
-const STORE = 'assets';
-
-function openDb(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.open(DB, 1);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE, { keyPath: 'id' });
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error);
-  });
-}
-
-async function listAssets(): Promise<(SupportAsset & { blob?: Blob })[]> {
-  const db = await openDb();
-  return new Promise((resolve, reject) => {
-    const req = db.transaction(STORE).objectStore(STORE).getAll();
-    req.onsuccess = () => resolve((req.result || []).sort((a, b) => b.uploadedAt.localeCompare(a.uploadedAt)));
-    req.onerror = () => reject(req.error);
-  });
-}
-
-async function saveAsset(asset: SupportAsset & { blob?: Blob }) {
-  const db = await openDb();
-  return new Promise<void>((resolve, reject) => {
-    const req = db.transaction(STORE, 'readwrite').objectStore(STORE).put(asset);
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
-  });
-}
+import { listAssets, saveAsset } from '../lib/assets';
 
 function formatBytes(n: number) {
   if (n < 1024) return `${n} B`;
@@ -87,6 +56,7 @@ export const SupportMaterialModal: React.FC<Props> = ({ isOpen, onClose, threads
         type: f.type || 'application/octet-stream',
         size: f.size,
         uploadedAt: new Date().toISOString(),
+        originalModifiedAt: new Date(f.lastModified).toISOString(),
         kind,
         notes: notes.trim() || undefined,
         linkedThreadId: threadId || undefined,

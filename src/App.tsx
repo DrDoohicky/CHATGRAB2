@@ -1,4 +1,5 @@
 import './chatgrab-mockup.css';
+import { LibraryExplorer } from './components/LibraryExplorer';
 import { ChatGrabDashboard } from './components/ChatGrabDashboard';
 import type { CGPage } from './components/ChatGrabDashboard';
 import React, { useState, useEffect, useRef } from 'react';
@@ -431,7 +432,7 @@ export default function App() {
         onNavigate={openPage}
         corpusCount={corpus.length}
         onOpenCapture={() => openPage('capture')}
-        onOpenCorpus={() => setIsCorpusOpen(true)}
+        onOpenCorpus={() => openPage('library')}
         onOpenChat={() => setIsChatbotOpen(true)}
         onOpenSupport={() => setIsSupportOpen(true)}
         onOpenGuide={() => setIsGuideOpen(true)}
@@ -444,7 +445,12 @@ export default function App() {
       <div className="cg-body">
       {/* Workspace Area */}
       <main className="cg-main flex-1 w-full p-4 sm:p-6 space-y-5">
-        {page === 'capture' ? (<div className="cg-capture-original">
+        {(page === 'analyze' || page === 'library' || page === 'organize') ? (
+          <LibraryExplorer key={accountUser?.id || 'guest'} threads={corpus} storageScope={accountUser?.id || 'guest'} analysis={page === 'analyze'}
+            onBack={()=>openPage('workspace')} onRenameThread={handleRenameThread}
+            onOpenThread={(thread,tab)=>{setActiveThread(thread);setWorkspaceTab(tab);openPage('capture');}}
+            onImport={()=>setIsSupportOpen(true)} onOpenLegacy={()=>setIsCorpusOpen(true)} />
+        ) : page === 'capture' ? (<div className="cg-capture-original">
         {/* If no conversation is active: visual landing workspace */}
         <>
           <div className="space-y-5 my-1">
@@ -508,7 +514,7 @@ export default function App() {
             </section>
 
             <ChatGrabDashboard page="workspace" count={corpus.length} onNavigate={openPage}
-              onOpenLibrary={()=>setIsCorpusOpen(true)} onOpenSupport={()=>setIsSupportOpen(true)}
+              onOpenLibrary={()=>openPage('library')} onOpenSupport={()=>setIsSupportOpen(true)}
               onOpenGuide={()=>setIsGuideOpen(true)} onExport={()=>{if(activeThread)setIsExportOpen(true);else handleExportCorpusBackup();}}
               onAnalyze={()=>{if(activeThread){setWorkspaceTab('insights');openPage('capture');}else{requestedThreadTab.current='insights';setIsCorpusOpen(true);}}}
               onReintegrate={()=>{if(activeThread){setWorkspaceTab('portions');openPage('capture');}else{requestedThreadTab.current='portions';setIsCorpusOpen(true);}}}
@@ -631,7 +637,7 @@ export default function App() {
             onAccount={()=>setAccountOpen(true)}
             count={corpus.length}
             onNavigate={openPage}
-            onOpenLibrary={()=>setIsCorpusOpen(true)}
+            onOpenLibrary={()=>openPage('library')}
             onOpenSupport={()=>setIsSupportOpen(true)}
             onOpenGuide={()=>setIsGuideOpen(true)}
             onExport={()=>{if(activeThread)setIsExportOpen(true);else if(corpus.length)handleExportCorpusBackup();else openPage('capture');}}

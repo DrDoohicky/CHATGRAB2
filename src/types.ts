@@ -63,6 +63,7 @@ export interface SupportAsset {
   type: string;
   size: number;
   uploadedAt: string;
+  originalModifiedAt?: string;
   kind: 'supplementary' | 'chat_artifact' | 'generated_media' | 'evidence' | 'other';
   notes?: string;
   linkedThreadId?: string;
