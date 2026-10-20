@@ -1,4 +1,5 @@
 import './chatgrab-mockup.css';
+import { HeroIntro } from './components/HeroIntro';
 import { LibraryExplorer } from './components/LibraryExplorer';
 import { ChatGrabDashboard } from './components/ChatGrabDashboard';
 import type { CGPage } from './components/ChatGrabDashboard';
@@ -455,15 +456,11 @@ export default function App() {
         <>
           <div className="space-y-5 my-1">
             <section className="cg-hero cg-capture-hero relative overflow-hidden rounded-[2rem] shadow-sm">
+              <div className="cg-hero-glow" aria-hidden="true"/>
               <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute -bottom-28 left-1/3 w-96 h-96 bg-indigo-200/25 rounded-full blur-3xl pointer-events-none" />
               <div className="cg-hero-content relative grid lg:grid-cols-[1.05fr_.95fr] gap-6 items-center p-6 sm:p-9 lg:p-12">
-                <div>
-                  <div className="text-[11px] sm:text-xs font-extrabold tracking-[.24em] text-blue-700 uppercase">VALIDATE · REINTEGRATE · TRANSFORM</div>
-                  <h2 className="mt-3 text-4xl sm:text-5xl lg:text-6xl font-black tracking-[-.045em] leading-[.98] text-[#0a2050]">Your conversations.<br/><span className="text-blue-600">A connected record.</span></h2>
-                  <p className="mt-5 text-base sm:text-lg leading-relaxed text-slate-600 max-w-xl">Capture your conversations, keep the originals, and bring their most useful context forward. Start with a share link, a transcript, or a file.</p>
-
-                </div>
+                <HeroIntro/>
                 <div className="cg-globe-visual">
                   <img src="/images/capture-globe.png" alt="A connected globe with conversation panels, images, documents and audio" className="cg-globe-image" fetchPriority="high" />
                 </div>

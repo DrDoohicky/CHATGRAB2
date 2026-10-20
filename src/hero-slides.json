@@ -1,0 +1,8 @@
+[
+  {"id":"rad","lines":["It's so rad…"],"duration":3600},
+  {"id":"fab","lines":["It's super fab…"],"duration":3600},
+  {"id":"brand","lines":["It's ChatGrab."],"duration":4000},
+  {"id":"catalog","lines":["All your conversations.","One connected", "contextual catalog."],"duration":6400},
+  {"id":"context","lines":["From scattered chats.","To connected context."],"duration":4800},
+  {"id":"carry","lines":["Keep the conversation.","Carry the context forward."],"duration":5200}
+]

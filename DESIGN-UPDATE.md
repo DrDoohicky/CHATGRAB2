@@ -28,3 +28,14 @@ Built-in image generation tool; input: the supplied blue globe image.
 - Empty batch capture validation verified.
 - Artifacts opened the working support material form with conversation linking.
 - No provider credentials changed; paid AI analysis and cloud account operations were not exercised.
+
+## Capture animation and explorer follow-up
+
+- Capture headline: All your conversations. One connected contextual catalog.
+- The small brand tagline appears beneath ChatGrab: Validate. Reintegrate. Transform.
+- Six fade-in/fade-out text panels share one source (`src/hero-slides.json`). The website includes pause and direct panel controls, with a static catalog headline for reduced motion.
+- Exported animation: `public/images/chatgrab-intro.gif` (84 frames, 27.6 seconds, looping). Rebuild with `scripts/render_intro_gif.py` and Pillow. Typography is rendered directly from the panel source.
+- Branding uses a two-color wordmark and a vector speech balloon/cog icon. The supplied globe artwork is retained with CSS edge fading, blended light trails and subtle twinkles.
+- Library and Chat Analysis share the actual conversation and support-file explorer: persistent nested folders, rename, move, details/small/medium/large views, name/date sorting, timestamps and stored-image previews.
+- Folder metadata is scoped to the signed-in account or guest on the current browser. Supporting files remain in the existing browser-local IndexedDB. No cloud folder synchronization is claimed.
+- Browser checks passed for folder creation, moving/renaming a sample conversation, persistence after reload, icon view persistence, image attachment linking and thumbnail rendering. The text animation progressed through its panels and the mobile hero was visually checked.
