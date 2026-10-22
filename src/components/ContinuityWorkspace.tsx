@@ -1,4 +1,4 @@
-import React, {useEffect,useMemo,useState} from 'react';
+import React, {useEffect,useMemo,useRef,useState} from 'react';
 import type {ConversationThread} from '../types';
 import {ArrowRight,BookOpen,CheckSquare,RefreshCw,Search,Download,Link2} from 'lucide-react';
 import './continuity-workspace.css';
@@ -19,6 +19,7 @@ type Report={narrative:string;findings:Finding[];limitations:string[]};
 type Props={threads:ConversationThread[];mode:'analytics'|'reintegrate';onOpenThread:(t:ConversationThread)=>void};
 const mapSelection=(items:string[],id:string)=>items.includes(id)?items.filter(x=>x!==id):[...items,id];
 export function ContinuityWorkspace({threads,mode,onOpenThread}:Props){
+ const requestRef=useRef<AbortController|null>(null);
  const [selected,setSelected]=useState<string[]>([]);
  const [kinds,setKinds]=useState<string[]>(['contradictions','themes']);
  const [result,setResult]=useState<Report|null>(null);
@@ -30,7 +31,7 @@ export function ContinuityWorkspace({threads,mode,onOpenThread}:Props){
  const [filter,setFilter]=useState('');
  const [chosenMessages,setChosenMessages]=useState<string[]>([]);
  const chosen=useMemo(()=>threads.filter(t=>selected.includes(t.id)),[threads,selected]);
- useEffect(()=>{setResult(null);setDraft('');setError('');},[mode]);
+ useEffect(()=>{requestRef.current?.abort();setBusy(false);setResult(null);setDraft('');setError('');return()=>requestRef.current?.abort();},[mode,selected,kinds,chosenMessages,target,purpose,threads]);
  const makeDraft=()=>{
   if(chosen.length===0||!target||!purpose.trim()){setError('Choose a source conversation, a destination, and the reason for reintegration.');return;}
   const destination=threads.find(t=>t.id===target);
@@ -41,16 +42,17 @@ export function ContinuityWorkspace({threads,mode,onOpenThread}:Props){
  };
  const run=async()=>{
   if(!chosen.length||!kinds.length){setError('Select at least one conversation and one analysis.');return;}
+  requestRef.current?.abort();const controller=new AbortController();requestRef.current=controller;
   setBusy(true);setError('');setResult(null);
   try{
-   const response=await fetch('/api/continuity-analysis',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({analyses:kinds,threads:chosen.map(t=>({id:t.id,title:t.title,capturedAt:t.capturedAt,messages:t.messages}))})});
+   const response=await fetch('/api/continuity-analysis',{signal:controller.signal,method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({analyses:kinds,threads:chosen.map(t=>({id:t.id,title:t.title,capturedAt:t.capturedAt,messages:t.messages}))})});
    const data=await response.json().catch(()=>({error:'Analysis service did not return JSON.'}));
    if(!response.ok||!data.success)throw new Error(data.error||'Analysis did not complete.');
    if(!data.report||!Array.isArray(data.report.findings))throw new Error('Analysis response was not a valid report.');
-   setResult(data.report);
-  }catch(e:any){setError(e?.message||'Analysis failed. Nothing was changed.');}finally{setBusy(false);}
+   if(!controller.signal.aborted)setResult(data.report);
+  }catch(e:any){if(!controller.signal.aborted)setError(e?.message||'Analysis failed. Nothing was changed.');}finally{if(requestRef.current===controller)setBusy(false);}
  };
- const download=(text:string,name:string)=>{const blob=new Blob([text],{type:'text/markdown;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);};
+ const download=(text:string,name:string)=>{const blob=new Blob([text],{type:name.endsWith('.json')?'application/json':'text/markdown;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);};
  return <section className="cg-continuity" id={mode==='analytics'?'workspace-analytics':'workspace-reintegration'} style={{scrollMarginTop:130}}>
   <div className="cg-continuity-head"><span>{mode==='analytics'?'WORKSPACE ANALYTICS':'GOVERNED REINTEGRATION'}</span><h2>{mode==='analytics'?'Analyze conversations together':'What are we reintegrating, where, and why?'}</h2><p>{mode==='analytics'?'Select source conversations, then select the kinds of context analysis you want. The report should explain what occurred and cite the underlying messages.':'Build a reviewable, source-linked draft. No original messages are overwritten and no content is automatically inserted into another chat.'}</p></div>
   {mode==='reintegrate'&&chosen.length>0&&<div className="cg-continuity-panel cg-message-picker"><h3>Choose the exact passages to carry forward</h3><p className="cg-limits">Source excerpts stay attributed to their original conversation and message IDs. Nothing is copied into the destination automatically.</p>

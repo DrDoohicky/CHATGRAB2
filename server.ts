@@ -1,4 +1,5 @@
 import express from 'express';
+import { validateContinuityFindings } from './lib/continuity-evidence';
 import dotenv from 'dotenv';
 import path from 'path';
 import { GoogleGenAI, Type } from '@google/genai';
@@ -415,15 +416,15 @@ app.post('/api/continuity-analysis', async (req, res) => {
     return res.status(400).json({success:false,error:'Select 1–20 conversations and at least one supported analysis.'});
   }
   if (!process.env.GEMINI_API_KEY) return res.status(503).json({success:false,error:'AI analysis is unavailable because the analysis service is not configured. Your conversations have not been changed.'});
-  const sourceIndex = new Map<string,Set<string>>();
+  const sourceIndex = new Map<string,Map<string,string>>();
   const normalized = threads.map((t:any)=>{
    if(typeof t?.id !== 'string'||typeof t?.title !== 'string'||!Array.isArray(t?.messages))throw new Error('A source conversation is invalid.');
    const messages=t.messages.slice(0,350).map((m:any,i:number)=>({
-    id:String(m.id||'message-'+i).slice(0,100),
+    id:String(m.id||'message-'+i),
     role:String(m.role||'unknown').slice(0,25),
     text:String(m.content||'').slice(0,2200)
    }));
-   sourceIndex.set(t.id,new Set(messages.map((m:any)=>m.id)));
+   sourceIndex.set(t.id,new Map(messages.map((m:any)=>[m.id,m.text])));
    return {id:t.id,title:t.title,messages};
   });
   const allText=JSON.stringify(normalized);
@@ -437,12 +438,10 @@ No fabricated source messages, no claims of project execution absent evidence, n
   let report:any;
   try{report=JSON.parse(response.text||'{}');}catch{return res.status(502).json({success:false,error:'Analysis service returned invalid JSON. No sources were changed.'});}
   if(typeof report.narrative!=='string'||!Array.isArray(report.findings))return res.status(502).json({success:false,error:'Analysis service returned an incomplete report.'});
-  report.findings=report.findings.filter((f:any)=>f&&typeof f.title==='string'&&allowed.has(String(f.type))&&analyses.includes(f.type)).map((f:any)=>({
-   type:String(f.type),title:String(f.title),context:String(f.context||''),
-   interpretation:String(f.interpretation||''),status:String(f.status||'unresolved'),
-   evidence:Array.isArray(f.evidence)?f.evidence.filter((e:any)=>sourceIndex.get(String(e.threadId))?.has(String(e.messageId))).map((e:any)=>({threadId:String(e.threadId),messageId:String(e.messageId),excerpt:String(e.excerpt||'')})):[]
-  }));
+  const checked=validateContinuityFindings(report.findings,analyses,sourceIndex);
+  report.findings=checked.findings;
   report.limitations=Array.isArray(report.limitations)?report.limitations.map(String):[];
+  if(checked.repairedQuotes)report.limitations.push('Some generated quotations did not match their cited source and were replaced with the actual source text.');
   if(report.findings.some((f:any)=>f.evidence.length===0))report.limitations.push('Some interpretations lack verified source message references and require manual review.');
   return res.json({success:true,report});
  } catch(err:any) {

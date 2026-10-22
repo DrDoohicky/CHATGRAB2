@@ -449,7 +449,7 @@ export default function App() {
       {/* Workspace Area */}
       <main className="cg-main flex-1 w-full p-4 sm:p-6 space-y-5">
         {(page === 'library' || page === 'organize') ? (
-          <LibraryExplorer key={accountUser?.id || 'guest'} threads={corpus} storageScope={accountUser?.id || 'guest'} analysis={page === 'analyze'}
+          <LibraryExplorer key={accountUser?.id || 'guest'} threads={corpus} storageScope={accountUser?.id || 'guest'} analysis={false}
             onBack={()=>openPage('workspace')} onRenameThread={handleRenameThread}
             onOpenThread={(thread,tab)=>{setActiveThread(thread);setWorkspaceTab(tab);openPage('capture');}}
             onImport={()=>setIsSupportOpen(true)} onOpenLegacy={()=>setIsCorpusOpen(true)} />
