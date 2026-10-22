@@ -62,7 +62,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     {createPortal(<article id="chatgrab-print-report"><h1>{thread.title}</h1><p>Captured {new Date(thread.capturedAt).toLocaleString()} · {thread.model}</p>{thread.sourceUrl&&<p>Source: {thread.sourceUrl}</p>}{thread.insights&&<section><h2>Summary</h2><p>{thread.insights.summary}</p></section>}<h2>Original transcript</h2>{thread.messages.map(m=><section key={m.id}><h3>{m.role} · {m.id}</h3>{m.sourceThreadId&&<p>Source: {m.sourceThreadId} / {m.sourceMessageId}</p>}<p style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{m.content}</p></section>)}</article>,document.body)}
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div
-        className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 sm:p-7"
+        className="relative w-full max-w-lg max-h-[92dvh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 sm:p-7"
         onClick={(e) => e.stopPropagation()}
       >
         <button
