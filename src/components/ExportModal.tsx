@@ -1,3 +1,4 @@
+import {downloadText} from '../lib/download';
 import React, { useState } from 'react';
 import {createPortal} from 'react-dom';
 import './print-report.css';
@@ -19,13 +20,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     window.print();
   };
   const handleDownloadJSON = () => {
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(thread, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `chatgrab-${thread.id}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    downloadText(JSON.stringify(thread,null,2),`chatgrab-${thread.id}.json`,'application/json');
   };
   const handleDownloadMarkdown = () => {
     let md = `# ${thread.title}\n\n`;
@@ -51,17 +46,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       md += `### ${msg.role === 'user' ? 'User' : 'Assistant'} (${msg.timestamp || ''})\n\n`;
       md += `${msg.content}\n\n---\n\n`;
     });
-    const dataStr = 'data:text/markdown;charset=utf-8,' + encodeURIComponent(md);
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `chatgrab-${thread.id}.md`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    downloadText(md,`chatgrab-${thread.id}.md`,'text/markdown;charset=utf-8');
   };
-  const handleCopyLink = () => {
-    const shareUrl = thread.sourceUrl || window.location.href;
-    navigator.clipboard.writeText(shareUrl);
+  const handleCopyLink = async () => {
+    const shareUrl = thread.sourceUrl;
+    if(!shareUrl)return;
+    try{await navigator.clipboard.writeText(shareUrl);}catch{setCopiedType('failed');return;}
     setCopiedType('link');
     setTimeout(() => setCopiedType(null), 2000);
   };
@@ -89,6 +79,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             Preserve and export "{thread.title}" into standard knowledge formats.
           </p>
         </div>
+        {copiedType==='failed'&&<p role="alert">Clipboard access was denied. Copy the source URL from the transcript instead.</p>}
         <div className="space-y-3">
           {/* 1. Generate PDF */}
           <button
@@ -161,6 +152,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           {/* 4. Copy Share Link */}
           <button
             onClick={handleCopyLink}
+            disabled={!thread.sourceUrl}
             className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer group text-left"
           >
             <div className="flex items-center gap-3">
@@ -169,10 +161,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               </div>
               <div>
                 <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
-                  Copy Share / Thread Link
+                  Copy Original Share Link
                 </p>
                 <p className="text-xs text-slate-500 truncate max-w-[240px]">
-                  {thread.sourceUrl || 'Applet thread reference'}
+                  {thread.sourceUrl || 'This imported conversation has no public share link'}
                 </p>
               </div>
             </div>

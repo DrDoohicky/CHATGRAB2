@@ -31,6 +31,7 @@ export const SupportMaterialModal: React.FC<Props> = ({ inline=false, isOpen, on
   const [threadId, setThreadId] = useState(activeThread?.id || '');
   const [notes, setNotes] = useState('');
   const [status, setStatus] = useState('');
+  const [renaming,setRenaming]=useState<{asset:SupportAsset & {blob?:Blob};name:string}|null>(null);
 
   const linkedTitle = useMemo(() => threads.find(t => t.id === threadId)?.title, [threads, threadId]);
 
@@ -45,6 +46,7 @@ export const SupportMaterialModal: React.FC<Props> = ({ inline=false, isOpen, on
   const ingest = async () => {
     if (!files.length) return;
     setStatus('Saving original files locally…');
+    try {
     for (const f of files) {
       let textPreview: string | undefined;
       if ((f.type.startsWith('text/') || /\.(json|md|txt|csv|html|xml)$/i.test(f.name)) && f.size <= 1_500_000) {
@@ -69,6 +71,7 @@ export const SupportMaterialModal: React.FC<Props> = ({ inline=false, isOpen, on
     }
     setFiles([]); setNotes(''); setStatus('Saved to the browser-local Support Library.');
     setAssets(await listAssets());
+    }catch{setStatus('Files could not be saved. Browser storage may be unavailable or full. Your original files were not changed.');}
   };
 
   const openAsset = async (asset: SupportAsset & { blob?: Blob }) => {
@@ -78,12 +81,11 @@ export const SupportMaterialModal: React.FC<Props> = ({ inline=false, isOpen, on
     setTimeout(() => URL.revokeObjectURL(url), 120000);
   };
 
-  const rename = async (asset: SupportAsset & { blob?: Blob }) => {
-    const next = prompt('Rename this support item', asset.name);
-    if (!next?.trim()) return;
-    const updated = { ...asset, name: next.trim() };
-    await saveAsset(updated);
-    setAssets(await listAssets());
+  const rename = (asset:SupportAsset & {blob?:Blob}) => setRenaming({asset,name:asset.name});
+  const saveRename=async(e:React.FormEvent)=>{
+   e.preventDefault();if(!renaming?.name.trim())return;
+   try{await saveAsset({...renaming.asset,name:renaming.name.trim()});setAssets(await listAssets());setRenaming(null);setStatus('File renamed.');}
+   catch{setStatus('The rename could not be saved.');}
   };
 
   return (
@@ -94,7 +96,7 @@ export const SupportMaterialModal: React.FC<Props> = ({ inline=false, isOpen, on
         <h2 className="text-2xl font-extrabold text-slate-900 mt-1">Add the files that belong around the conversation.</h2>
         <p className="text-sm text-slate-600 mt-2 max-w-3xl">PDFs, screenshots, generated images, JSON, documents, audio/video, exports, and external evidence can be preserved without pretending they were part of the transcript.</p>
 
-        <label className="mt-5 min-h-36 border-2 border-dashed border-blue-200 bg-blue-50/50 rounded-2xl flex flex-col items-center justify-center gap-2 p-5 text-center cursor-pointer hover:bg-blue-50">
+        <label onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();setFiles(Array.from(e.dataTransfer.files));}} className="mt-5 min-h-36 border-2 border-dashed border-blue-200 bg-blue-50/50 rounded-2xl flex flex-col items-center justify-center gap-2 p-5 text-center cursor-pointer hover:bg-blue-50">
           <Upload className="w-7 h-7 text-blue-600" />
           <b className="text-sm text-slate-900">Drop files here or choose from this device</b>
           <span className="text-xs text-slate-500">Multiple files are supported.</span>
@@ -119,6 +121,7 @@ export const SupportMaterialModal: React.FC<Props> = ({ inline=false, isOpen, on
         <div className="mt-3 flex items-center gap-3"><button onClick={ingest} disabled={!files.length} className="px-5 py-2.5 rounded-xl bg-[#0e274c] text-white text-sm font-semibold disabled:opacity-40">Save Support Material</button><span className="text-xs text-slate-500">Stored locally in this browser; no cloud-sync claim.</span></div>
         {status && <div className="mt-2 text-xs text-emerald-700 font-semibold">{status}</div>}
 
+        {renaming&&<form onSubmit={saveRename} className="mt-4 p-4 border rounded-xl"><label className="block font-semibold">File name<input autoFocus aria-label="File name" value={renaming.name} onChange={e=>setRenaming({...renaming,name:e.target.value})} className="block mt-2 border rounded-lg p-2 w-full"/></label><button type="submit" className="px-3 py-2 mt-2 text-blue-700 font-bold">Save file name</button><button type="button" onClick={()=>setRenaming(null)} className="px-3 py-2">Cancel rename</button></form>}
         <div className="mt-7 pt-5 border-t border-slate-200"><div className="flex items-center gap-2"><Link2 className="w-4 h-4 text-blue-600" /><h3 className="font-bold">Support Library</h3></div>
           <div className="mt-3 space-y-2">{assets.length ? assets.map(a => <div key={a.id} className="grid grid-cols-[auto_1fr_auto] gap-3 items-center p-3 border border-slate-200 rounded-xl">{iconFor(a.type)}<div className="min-w-0"><b className="text-sm block truncate">{a.name}</b><span className="text-xs text-slate-500 block truncate">{formatBytes(a.size)} · {a.linkedThreadTitle ? `Linked to ${a.linkedThreadTitle}` : 'Unlinked'}{a.notes ? ` · ${a.notes}` : ''}</span></div><div className="flex gap-1"><button onClick={() => openAsset(a)} className="p-2 rounded-lg hover:bg-slate-100" title="Open"><ExternalLink className="w-4 h-4" /></button><button onClick={() => rename(a)} className="p-2 rounded-lg hover:bg-slate-100" title="Rename"><Pencil className="w-4 h-4" /></button></div></div>) : <div className="text-sm text-slate-400 py-6 text-center">No support material saved yet.</div>}</div>
         </div>

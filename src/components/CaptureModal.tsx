@@ -167,7 +167,7 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
         messages: data.data.messages || [],
       };
 
-      // 2. Automatically generate intelligence with Gemini
+      // 2. Automatically generate intelligence with ChatGPT
       try {
         const analyzeRes = await fetch('/api/analyze-thread', {
           method: 'POST',

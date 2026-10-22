@@ -1,3 +1,5 @@
+import {parseConversationFile} from './lib/importConversations';
+import {downloadText} from './lib/download';
 import './chatgrab-mockup.css';
 import { WorkspaceNavigation } from './components/WorkspaceNavigation';
 import { HeroIntro } from './components/HeroIntro';
@@ -8,7 +10,7 @@ import type { CGPage } from './components/ChatGrabDashboard';
 import React, { useState, useEffect, useRef } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { cloud } from './lib/cloud';
-import { AccountPanel } from './components/AccountPanel';
+import { ChatGPTConnectionPanel } from './components/ChatGPTConnectionPanel';
 import {
   Sparkles,
   FileText,
@@ -36,7 +38,7 @@ import { CorpusModal } from './components/CorpusModal';
 import { ExportModal } from './components/ExportModal';
 import { ThreadViewer } from './components/ThreadViewer';
 import { InsightsView } from './components/InsightsView';
-import { GeminiChatbot } from './components/GeminiChatbot';
+import { ChatGPTCompanion } from './components/ChatGPTCompanion';
 import { AdaptivePortionsView } from './components/AdaptivePortionsView';
 import { SupportMaterialModal } from './components/SupportMaterialModal';
 import { OnboardingGuideModal } from './components/OnboardingGuideModal';
@@ -290,13 +292,7 @@ export default function App() {
       : prev);
   };
   const handleExportCorpusBackup = () => {
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(corpus, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `chatgrab_corpus_backup_${new Date().toISOString().slice(0, 10)}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    downloadText(JSON.stringify(corpus,null,2),`chatgrab_corpus_backup_${new Date().toISOString().slice(0,10)}.json`,'application/json');
     showToast('Corpus backup downloaded');
   };
   const handleClearCorpus = () => {
@@ -332,21 +328,10 @@ export default function App() {
         setCaptureNotice('Use the artifact library to attach images as evidence.');
         return;
       }
-      const text = await file.text();
-      let title = file.name;
-      let messages: ConversationThread['messages'];
-      if (file.name.toLowerCase().endsWith('.json')) {
-        const data = JSON.parse(text);
-        const items = Array.isArray(data) ? data : (data.messages || data.data?.messages);
-        if (!Array.isArray(items) || !items.length) throw new Error('JSON needs a messages array.');
-        title = data.title || title;
-        messages = items.map((m: any, i: number) => ({ id: String(m.id || i), role: m.role === 'assistant' || m.role === 'system' ? m.role : 'user', content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content ?? '') }));
-      } else {
-        if (!text.trim()) throw new Error('The selected file is empty.');
-        messages = [{ id: 'text-0', role: 'user', content: text }];
-      }
-      handleThreadCaptured({ id: `import-${Date.now()}`, title, capturedAt: new Date().toISOString(), model: 'Imported source', messages });
-      setCaptureNotice('File imported into the local workspace.');
+      const imported=parseConversationFile(await file.text(),file.name,corpus);
+      if(!imported.length){setCaptureNotice('These conversations are already in your library.');return;}
+      setCorpus(old=>[...imported,...old]);setActiveThread(imported[0]);setWorkspaceTab('transcript');openPage('capture');
+      setCaptureNotice(imported.length+' conversation(s) imported. Existing conversations were preserved.');
     } catch (err: any) { setQuickCaptureError(err.message || 'Import failed.'); }
   };
   const importCopiedText = () => {
@@ -412,7 +397,7 @@ export default function App() {
           <span>{toastMessage}</span>
         </div>
       )}
-      {accountOpen && <AccountPanel user={accountUser} onClose={() => setAccountOpen(false)} onChange={refreshAccount} />}
+      {accountOpen && <ChatGPTConnectionPanel onClose={() => setAccountOpen(false)} />}
       {cloud && !libraryReady && <div className="fixed inset-0 z-[90] bg-white/90 grid place-items-center"><p className="text-slate-700 font-semibold">Opening your private library…</p></div>}
       {/* Main Header */}
       <Header
@@ -428,7 +413,7 @@ export default function App() {
         onExportCorpusBackup={handleExportCorpusBackup}
         onClearCorpus={handleClearCorpus}
         onOpenAccount={() => setAccountOpen(true)}
-        accountLabel={accountUser?.user_metadata?.display_name || (accountUser ? 'My Profile' : 'Sign in')}
+        accountLabel={accountUser?.user_metadata?.display_name || (accountUser ? 'My Profile' : 'ChatGPT connection')}
       />
       <div className="cg-body">
       <WorkspaceNavigation page={navigationPage} onNavigate={openPage} collapsed={sidebarCollapsed} onCollapse={toggleSidebar} mobileOpen={mobileNavigation} onClose={closeNavigation}/>
@@ -446,7 +431,7 @@ export default function App() {
         ) : page === 'export' ? (
           <section className="cg-destination"><h1>Export your conversations</h1><p>Save a portable JSON backup, or choose a conversation for Markdown, JSON and print-to-PDF.</p><div className="cg-destination-panel"><h2>Library backup</h2><p>{corpus.length} saved conversations. Supporting file originals remain in this browser; download those separately from Artifacts.</p><button disabled={!corpus.length} onClick={handleExportCorpusBackup}>Download library JSON</button></div><div className="cg-destination-panel"><h2>Conversation exports</h2>{corpus.length?corpus.map(thread=><div className="cg-export-row" key={thread.id}><div><strong>{thread.title}</strong><small>{thread.messages.length} messages · {new Date(thread.capturedAt).toLocaleString()}</small></div><button onClick={()=>{setActiveThread(thread);setIsExportOpen(true);}}>Export {thread.title}</button></div>):<p>Capture a conversation to enable exports.</p>}</div></section>
         ) : page === 'settings' ? (
-          <section className="cg-destination"><h1>Settings</h1><div className="cg-destination-panel"><h2>Account and storage</h2><p>{accountUser?'Your conversation library is linked to your account.':'Your conversation library is saved in this browser.'} Supporting file originals are stored locally in IndexedDB.</p><button onClick={()=>setAccountOpen(true)}>{accountUser?'Manage account':'Sign in / account setup'}</button><button onClick={()=>openPage('export')}>Backup and export</button></div><div className="cg-destination-panel"><h2>Navigation</h2><p>The desktop sidebar preference is saved on this device.</p><button onClick={toggleSidebar}>{sidebarCollapsed?'Expand desktop sidebar':'Collapse desktop sidebar'}</button><button onClick={()=>openPage('guide')}>Open capture guide</button></div></section>
+          <section className="cg-destination"><h1>Settings</h1><div className="cg-destination-panel"><h2>Account and storage</h2><p>{accountUser?'Your conversation library is linked to your account.':'Your conversation library is saved in this browser.'} Supporting file originals are stored locally in IndexedDB.</p><button onClick={()=>setAccountOpen(true)}>ChatGPT connection</button><button onClick={()=>openPage('export')}>Backup and export</button></div><div className="cg-destination-panel"><h2>Navigation</h2><p>The desktop sidebar preference is saved on this device.</p><button onClick={toggleSidebar}>{sidebarCollapsed?'Expand desktop sidebar':'Collapse desktop sidebar'}</button><button onClick={()=>openPage('guide')}>Open capture guide</button></div></section>
         ) : page === 'capture' ? (<div className="cg-capture-original">
         {/* If no conversation is active: visual landing workspace */}
         <>
@@ -686,22 +671,22 @@ export default function App() {
         onClose={() => setIsGuideOpen(false)}
         onStartCapture={() => setIsCaptureModalOpen(true)}
       />
-      {/* Floating Action Button for Gemini Chatbot */}
+      {/* Floating Action Button for ChatGPT Chatbot */}
       {!isChatbotOpen && (
         <button
           type="button"
           onClick={() => setIsChatbotOpen(true)}
           className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-600 hover:from-blue-800 hover:to-indigo-700 text-white font-semibold text-xs rounded-2xl shadow-xl shadow-blue-900/20 hover:shadow-2xl transition-all cursor-pointer active:scale-95 group"
-          aria-label="Conversation assistant" title="Open Gemini Multi-Turn Assistant"
+          aria-label="Conversation assistant" title="Open ChatGPT Multi-Turn Assistant"
         >
           <div className="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center">
             <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
           </div>
-          <span>Gemini Assistant</span>
+          <span>ChatGPT Assistant</span>
         </button>
       )}
-      {/* Gemini Multi-Turn Chatbot */}
-      <GeminiChatbot
+      {/* ChatGPT Multi-Turn Chatbot */}
+      <ChatGPTCompanion
         isOpen={isChatbotOpen}
         onClose={() => setIsChatbotOpen(false)}
         activeThread={activeThread}

@@ -57,4 +57,4 @@
 .cg-app.cg-v2 header.cg-topbar{background:#ffffffed!important;border-color:#fff!important;color:#10234c!important}.cg-v2 .cg-topbar button:hover{background:#eaf2ff}.cg-v2 .cg-topbar .cg-account{color:#fff}
 .cg-v2 .cg-topbar button{color:#192c5b}.cg-v2 .cg-topbar button[aria-current=page]{color:#1264ff}.cg-v2 .cg-topbar .cg-account{color:#fff}
 @media(min-width:761px) and (max-width:1050px){.cg-v2 .cg-topbar{flex-wrap:wrap;justify-content:space-between}.cg-topnav{order:3;flex-basis:100%;justify-content:center;border-top:1px solid #eaf0fa;padding-top:6px}.cg-header-tools>button span{display:inline}.cg-v2 .cg-capture-hero .cg-hero-content{min-height:340px}.cg-v2 .cg-hero-content .cg-globe-image{height:290px}}
-@media(max-width:760px){.cg-app button[title="Open Gemini Multi-Turn Assistant"]{padding:12px;border-radius:50%;bottom:16px;right:16px}.cg-app button[title="Open Gemini Multi-Turn Assistant"]>span{display:none}}
+@media(max-width:760px){.cg-app button[title="Open ChatGPT Multi-Turn Assistant"]{padding:12px;border-radius:50%;bottom:16px;right:16px}.cg-app button[title="Open ChatGPT Multi-Turn Assistant"]>span{display:none}}

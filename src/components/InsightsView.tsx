@@ -39,7 +39,7 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
         </div>
         <h3 className="text-lg font-bold text-slate-900 mb-2">No Intelligence Generated Yet</h3>
         <p className="text-sm text-slate-500 max-w-md mx-auto mb-6">
-          ChatGrab uses Gemini to generate executive summaries, key takeaways, action items, and reusable prompts for this thread.
+          Native ChatGPT analysis is pending connection approval for this website. Capture and organize your source conversations without an API key.
         </p>
         <button
           onClick={onReanalyze}
@@ -102,7 +102,7 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
           onClick={onReanalyze}
           disabled={isAnalyzing}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-blue-700 bg-white hover:bg-blue-50 border border-blue-200 transition-colors cursor-pointer shadow-2xs"
-          title="Re-run deep analysis with Gemini"
+          title="Re-run deep analysis with ChatGPT"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isAnalyzing ? 'animate-spin' : ''}`} />
           <span>{isAnalyzing ? 'Analyzing...' : 'Refresh Insights'}</span>

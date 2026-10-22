@@ -168,7 +168,7 @@ export const AdaptivePortionsView: React.FC<AdaptivePortionsViewProps> = ({
     return result;
   };
 
-  // Fetch AI Semantic Portions via Gemini endpoint
+  // Fetch AI Semantic Portions via ChatGPT endpoint
   const fetchSemanticPortions = async () => {
     if (!thread || thread.messages.length === 0) return;
     setIsLoading(true);
@@ -235,7 +235,7 @@ export const AdaptivePortionsView: React.FC<AdaptivePortionsViewProps> = ({
     );
   }, [activePortionMessages, searchQuery]);
 
-  // Deep analyze a specific portion with Gemini
+  // Deep analyze a specific portion with ChatGPT
   const handleAnalyzePortion = async (portion: AdaptivePortion) => {
     setAnalyzingPortionId(portion.id);
     try {
@@ -261,7 +261,7 @@ ${snippet.slice(0, 15000)}`,
             },
           ],
           role: 'synthesizer',
-          model: 'gemini-3.8-flash',
+          model: 'chatgpt-account',
         }),
       });
 
@@ -549,7 +549,7 @@ ${snippet.slice(0, 15000)}`,
                           handleSendToAssistant(portion);
                         }}
                         className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-[10px] transition-colors"
-                        title="Send this portion to Gemini Assistant"
+                        title="Send this portion to ChatGPT Assistant"
                       >
                         <Bot className="w-3 h-3" />
                         <span>Chat</span>
@@ -593,7 +593,7 @@ ${snippet.slice(0, 15000)}`,
                     type="button"
                     onClick={() => handleSendToAssistant(activePortion)}
                     className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-all shadow-xs cursor-pointer active:scale-95"
-                    title="Focus Gemini Assistant on this portion"
+                    title="Focus ChatGPT Assistant on this portion"
                   >
                     <Bot className="w-3.5 h-3.5" />
                     <span>Focus AI Assistant</span>
