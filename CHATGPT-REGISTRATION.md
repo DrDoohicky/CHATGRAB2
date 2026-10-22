@@ -2,6 +2,12 @@
 
 Status: prepared for review; **not submitted or approved**. No API key is requested from users. Do not present native sign-in or inference as connected until registration and end-to-end tests succeed.
 
+Official application form: https://openai.com/form/sign-in-with-chatgpt-interest/
+
+The form requires work email, first name, last name, company/organization name, website, requested capabilities and product description. Owner contact/organization details have been requested; the form has not been submitted. Choose **Sign in and ChatGPT plan use for AI requests**. The product description ready for the form is:
+
+> ChatGrab is a hosted companion for ChatGPT users that preserves explicitly shared/imported conversations, organizes source material and supporting files, and prepares source-linked analysis and reviewed continuity records. We want users to sign in with their ChatGPT account and authorize eligible ChatGPT-plan AI requests without entering API keys. We do not request automatic access to users' ChatGPT history. Source conversations remain preserved and users choose which context to send for analysis.
+
 ## Application details
 
 - Application: ChatGrab, a companion for ChatGPT conversation preservation and continuity.
@@ -45,3 +51,10 @@ The open-source local-client loopback registration must not be repurposed for th
 - Public capture endpoint successfully fetched 1,011 messages from the public share already present in the repository, without AI provider credentials. Only status/count were logged.
 - Still not certified: downloaded JSON/PDF artifact inspection (browser download events timed out), hosted native authentication/inference (approval required), and cloud-account workflows.
 - This brief supersedes earlier instructions to configure a Gemini key in issue #1 and historical verification notes. Gemini has been removed from active application code and dependencies.
+
+## Resumed verification
+
+- The published native-connection panel was inspected successfully after the usage block cleared. It says approval is pending, requests no API key, and does not claim the account is connected.
+- Library and conversation export links now remain in the page as normal downloadable links, with copy/view controls for restricted browsers. The actual JSON payload was inspected in the UI: four test threads, exact source text, message IDs and continuity provenance were preserved. JSON and Markdown artifacts were saved locally from that UI content for inspection, outside Git. This is payload verification, not a claim of a completed browser download.
+- The print report DOM contains the selected source text. The OS print-to-PDF save step remains unverified through the available in-app browser controls.
+- Markdown exports now include conversation/message IDs and derived-record provenance and review notes.

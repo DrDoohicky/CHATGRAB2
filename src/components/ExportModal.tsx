@@ -1,4 +1,4 @@
-import {downloadText} from '../lib/download';
+import {DownloadFile} from './DownloadFile';
 import React, { useState } from 'react';
 import {createPortal} from 'react-dom';
 import './print-report.css';
@@ -19,16 +19,17 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const handlePrintPDF = () => {
     window.print();
   };
-  const handleDownloadJSON = () => {
-    downloadText(JSON.stringify(thread,null,2),`chatgrab-${thread.id}.json`,'application/json');
-  };
-  const handleDownloadMarkdown = () => {
+  const markdown = (() => {
     let md = `# ${thread.title}\n\n`;
     md += `*Captured by ChatGrab on ${new Date(thread.capturedAt).toLocaleString()}*\n`;
     if (thread.sourceUrl) {
       md += `*Original URL: ${thread.sourceUrl}*\n`;
     }
     md += `*Model: ${thread.model}*\n\n`;
+    md += `*Conversation ID: ${thread.id}*\n\n`;
+    if(thread.reintegrationMeta){
+      md += `## Reviewed continuity record\nStatus: ${thread.reintegrationMeta.status}\nPurpose: ${thread.reintegrationMeta.purpose}\nConflict review: ${thread.reintegrationMeta.conflictReview}\n\n`;
+    }
     if (thread.insights) {
       md += `## Executive Summary\n${thread.insights.summary}\n\n`;
       md += `## Key Takeaways\n`;
@@ -43,11 +44,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     }
     md += `## Conversation Transcript\n\n`;
     thread.messages.forEach((msg) => {
-      md += `### ${msg.role === 'user' ? 'User' : 'Assistant'} (${msg.timestamp || ''})\n\n`;
+      md += `### ${msg.role} · ${msg.id}${msg.timestamp?' ('+msg.timestamp+')':''}\n\n`;
+      if(msg.sourceThreadId)md += `Source conversation: ${msg.sourceThreadId} · source message: ${msg.sourceMessageId || 'unavailable'}\n\n`;
       md += `${msg.content}\n\n---\n\n`;
     });
-    downloadText(md,`chatgrab-${thread.id}.md`,'text/markdown;charset=utf-8');
-  };
+    return md;
+  })();
   const handleCopyLink = async () => {
     const shareUrl = thread.sourceUrl;
     if(!shareUrl)return;
@@ -104,8 +106,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </span>
           </button>
           {/* 2. Export Markdown */}
-          <button
-            onClick={handleDownloadMarkdown}
+          <DownloadFile text={markdown} filename={`chatgrab-${thread.id}.md`} type="text/markdown;charset=utf-8"
             className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer group text-left"
           >
             <div className="flex items-center gap-3">
@@ -125,10 +126,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               <Download className="w-3.5 h-3.5" />
               .md
             </span>
-          </button>
+          </DownloadFile>
           {/* 3. Export JSON */}
-          <button
-            onClick={handleDownloadJSON}
+          <DownloadFile text={JSON.stringify(thread,null,2)} filename={`chatgrab-${thread.id}.json`} type="application/json"
             className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer group text-left"
           >
             <div className="flex items-center gap-3">
@@ -148,7 +148,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               <Download className="w-3.5 h-3.5" />
               .json
             </span>
-          </button>
+          </DownloadFile>
           {/* 4. Copy Share Link */}
           <button
             onClick={handleCopyLink}
