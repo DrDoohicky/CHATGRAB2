@@ -1,3 +1,4 @@
+import {chatgptConnection as connection} from './lib/chatgpt-connection.js';
 import express from 'express';
 import path from 'node:path';
 import fetchShare from './api/fetch-share.js';
@@ -6,7 +7,6 @@ const app=express();
 app.use(express.json({limit:'15mb'}));
 app.post('/api/fetch-share',fetchShare);
 app.post('/api/corpus/query',corpusQuery);
-const connection={connected:false,mode:'hosted-approval-pending',requiresApiKey:false,historyAccess:false,message:'Native ChatGPT connection is pending approval for this website. No API key is required from users. Capture, library organization, supporting files, exports and reviewed reintegration records remain available.'};
 app.get('/api/chatgpt/status',(_req,res)=>{res.setHeader('Cache-Control','no-store');res.json(connection);});
 const awaitingConnection=(_req:express.Request,res:express.Response)=>res.status(409).json({success:false,code:'CHATGPT_CONNECTION_PENDING',error:connection.message});
 app.post('/api/continuity-analysis',(req,res)=>{

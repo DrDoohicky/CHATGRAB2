@@ -1,0 +1,1 @@
+export const chatgptConnection={connected:false,mode:'hosted-approval-pending',requiresApiKey:false,historyAccess:false,message:'Native ChatGPT connection is pending approval for this website. No API key is required from users. Capture, library organization, supporting files, exports and reviewed reintegration records remain available.'};
