@@ -1,0 +1,20 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+process.env.VERCEL='1';
+const {default:app}=await import('../server.js');
+delete process.env.GEMINI_API_KEY;
+const source={id:'qa',title:'API validation fixture',messages:[{id:'m1',role:'user',content:'Preserve this source.'}]};
+test('API validates requests and reports a missing provider without modifying sources',async()=>{
+ const server=app.listen(0,'127.0.0.1');await new Promise<void>(resolve=>server.once('listening',resolve));
+ const address=server.address() as {port:number};
+ const post=async(route:string,body:unknown)=>{const r=await fetch(`http://127.0.0.1:${address.port}/api/${route}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});return {status:r.status,data:await r.json()};};
+ try{
+  assert.equal((await post('continuity-analysis',{threads:[],analyses:[]})).status,400);
+  assert.equal((await post('continuity-analysis',{threads:[source,source],analyses:['themes']})).status,400);
+  assert.equal((await post('continuity-analysis',{threads:[{...source,messages:[source.messages[0],source.messages[0]]}],analyses:['themes']})).status,400);
+  const unavailable=await post('continuity-analysis',{threads:[source],analyses:['themes']});
+  assert.equal(unavailable.status,503);assert.match(unavailable.data.error,/not configured/);
+  assert.equal((await post('fetch-share',{url:'https://chatgpt.com/s/t_private'})).status,400);
+  assert.equal(source.messages[0].content,'Preserve this source.');
+ }finally{server.closeAllConnections();await new Promise<void>(resolve=>server.close(()=>resolve()));}
+});

@@ -1,5 +1,5 @@
 import express from 'express';
-import { validateContinuityFindings } from './lib/continuity-evidence';
+import { validateContinuityFindings } from './lib/continuity-evidence.js';
 import dotenv from 'dotenv';
 import path from 'path';
 import { GoogleGenAI, Type } from '@google/genai';
@@ -415,7 +415,17 @@ app.post('/api/continuity-analysis', async (req, res) => {
       !Array.isArray(analyses) || !analyses.length || analyses.some((a:any)=>!allowed.has(a))) {
     return res.status(400).json({success:false,error:'Select 1–20 conversations and at least one supported analysis.'});
   }
+  const threadIds = new Set<string>();
+  for (const t of threads) {
+   if(typeof t?.id!=='string'||!t.id||threadIds.has(t.id)||typeof t.title!=='string'||!Array.isArray(t.messages)||!t.messages.length) return res.status(400).json({success:false,error:'Each source needs a unique ID, title and nonempty message list.'});
+   threadIds.add(t.id);const ids=new Set<string>();
+   for (const m of t.messages) {
+    if(typeof m?.id!=='string'||!m.id||ids.has(m.id)||typeof m.content!=='string') return res.status(400).json({success:false,error:'Source messages need unique IDs and text content.'});
+    ids.add(m.id);
+   }
+  }
   if (!process.env.GEMINI_API_KEY) return res.status(503).json({success:false,error:'AI analysis is unavailable because the analysis service is not configured. Your conversations have not been changed.'});
+  const truncated=threads.some((t:any)=>t.messages.length>350||t.messages.some((m:any)=>m.content.length>2200));
   const sourceIndex = new Map<string,Map<string,string>>();
   const normalized = threads.map((t:any)=>{
    if(typeof t?.id !== 'string'||typeof t?.title !== 'string'||!Array.isArray(t?.messages))throw new Error('A source conversation is invalid.');
@@ -441,6 +451,7 @@ No fabricated source messages, no claims of project execution absent evidence, n
   const checked=validateContinuityFindings(report.findings,analyses,sourceIndex);
   report.findings=checked.findings;
   report.limitations=Array.isArray(report.limitations)?report.limitations.map(String):[];
+  if(truncated)report.limitations.push('Analysis used at most the first 350 messages and first 2,200 characters per message of each selected conversation. Originals remain complete.');
   if(checked.repairedQuotes)report.limitations.push('Some generated quotations did not match their cited source and were replaced with the actual source text.');
   if(report.findings.some((f:any)=>f.evidence.length===0))report.limitations.push('Some interpretations lack verified source message references and require manual review.');
   return res.json({success:true,report});
@@ -916,3 +927,4 @@ async function startServer() {
 }
 
 if (!process.env.VERCEL) startServer();
+

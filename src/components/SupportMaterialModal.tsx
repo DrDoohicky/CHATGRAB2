@@ -16,7 +16,7 @@ function iconFor(type: string) {
   return <File className="w-5 h-5 text-slate-500" />;
 }
 
-interface Props {
+interface Props { inline?: boolean;
   isOpen: boolean;
   onClose: () => void;
   threads: ConversationThread[];
@@ -24,7 +24,7 @@ interface Props {
   onAssetLinked?: (threadId: string, assetId: string) => void;
 }
 
-export const SupportMaterialModal: React.FC<Props> = ({ isOpen, onClose, threads, activeThread, onAssetLinked }) => {
+export const SupportMaterialModal: React.FC<Props> = ({ inline=false, isOpen, onClose, threads, activeThread, onAssetLinked }) => {
   const [assets, setAssets] = useState<(SupportAsset & { blob?: Blob })[]>([]);
   const [files, setFiles] = useState<File[]>([]);
   const [kind, setKind] = useState<SupportAsset['kind']>('supplementary');
@@ -87,9 +87,9 @@ export const SupportMaterialModal: React.FC<Props> = ({ isOpen, onClose, threads
   };
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-6 bg-slate-900/65 backdrop-blur-sm">
-      <div className="w-full max-w-4xl max-h-[92vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-slate-200 p-5 sm:p-7 relative">
-        <button onClick={onClose} className="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 grid place-items-center"><X className="w-4 h-4" /></button>
+    <div className={inline ? "cg-destination" : "fixed inset-0 z-[70] flex items-center justify-center p-3 sm:p-6 bg-slate-900/65 backdrop-blur-sm"}>
+      <div className={inline ? "bg-white rounded-3xl border border-slate-200 p-5 sm:p-7 relative" : "w-full max-w-4xl max-h-[92vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-slate-200 p-5 sm:p-7 relative"}>
+        {!inline && <button aria-label="Close" onClick={onClose} className="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 grid place-items-center"><X className="w-4 h-4" /></button>}
         <div className="text-[11px] font-bold tracking-widest text-blue-700 uppercase">SUPPORT MATERIAL</div>
         <h2 className="text-2xl font-extrabold text-slate-900 mt-1">Add the files that belong around the conversation.</h2>
         <p className="text-sm text-slate-600 mt-2 max-w-3xl">PDFs, screenshots, generated images, JSON, documents, audio/video, exports, and external evidence can be preserved without pretending they were part of the transcript.</p>

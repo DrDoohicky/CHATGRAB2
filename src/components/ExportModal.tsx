@@ -1,26 +1,23 @@
 import React, { useState } from 'react';
+import {createPortal} from 'react-dom';
+import './print-report.css';
 import { X, FileText, Download, Copy, Check, Printer, Share2, Code } from 'lucide-react';
 import { ConversationThread } from '../types';
-
 interface ExportModalProps {
   isOpen: boolean;
   onClose: () => void;
   thread: ConversationThread;
 }
-
 export const ExportModal: React.FC<ExportModalProps> = ({
   isOpen,
   onClose,
   thread,
 }) => {
   const [copiedType, setCopiedType] = useState<string | null>(null);
-
   if (!isOpen) return null;
-
   const handlePrintPDF = () => {
     window.print();
   };
-
   const handleDownloadJSON = () => {
     const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(thread, null, 2));
     const downloadAnchor = document.createElement('a');
@@ -30,7 +27,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     downloadAnchor.click();
     downloadAnchor.remove();
   };
-
   const handleDownloadMarkdown = () => {
     let md = `# ${thread.title}\n\n`;
     md += `*Captured by ChatGrab on ${new Date(thread.capturedAt).toLocaleString()}*\n`;
@@ -38,7 +34,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       md += `*Original URL: ${thread.sourceUrl}*\n`;
     }
     md += `*Model: ${thread.model}*\n\n`;
-
     if (thread.insights) {
       md += `## Executive Summary\n${thread.insights.summary}\n\n`;
       md += `## Key Takeaways\n`;
@@ -51,13 +46,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       });
       md += `\n`;
     }
-
     md += `## Conversation Transcript\n\n`;
     thread.messages.forEach((msg) => {
       md += `### ${msg.role === 'user' ? 'User' : 'Assistant'} (${msg.timestamp || ''})\n\n`;
       md += `${msg.content}\n\n---\n\n`;
     });
-
     const dataStr = 'data:text/markdown;charset=utf-8,' + encodeURIComponent(md);
     const downloadAnchor = document.createElement('a');
     downloadAnchor.setAttribute('href', dataStr);
@@ -66,15 +59,15 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     downloadAnchor.click();
     downloadAnchor.remove();
   };
-
   const handleCopyLink = () => {
     const shareUrl = thread.sourceUrl || window.location.href;
     navigator.clipboard.writeText(shareUrl);
     setCopiedType('link');
     setTimeout(() => setCopiedType(null), 2000);
   };
-
   return (
+    <>
+    {createPortal(<article id="chatgrab-print-report"><h1>{thread.title}</h1><p>Captured {new Date(thread.capturedAt).toLocaleString()} · {thread.model}</p>{thread.sourceUrl&&<p>Source: {thread.sourceUrl}</p>}{thread.insights&&<section><h2>Summary</h2><p>{thread.insights.summary}</p></section>}<h2>Original transcript</h2>{thread.messages.map(m=><section key={m.id}><h3>{m.role} · {m.id}</h3>{m.sourceThreadId&&<p>Source: {m.sourceThreadId} / {m.sourceMessageId}</p>}<p style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{m.content}</p></section>)}</article>,document.body)}
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div
         className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 sm:p-7"
@@ -82,11 +75,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       >
         <button
           onClick={onClose}
+          aria-label="Close export"
           className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
-
         <div className="mb-5">
           <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
             <Share2 className="w-5 h-5" />
@@ -96,7 +89,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             Preserve and export "{thread.title}" into standard knowledge formats.
           </p>
         </div>
-
         <div className="space-y-3">
           {/* 1. Generate PDF */}
           <button
@@ -120,7 +112,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               Print
             </span>
           </button>
-
           {/* 2. Export Markdown */}
           <button
             onClick={handleDownloadMarkdown}
@@ -144,7 +135,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               .md
             </span>
           </button>
-
           {/* 3. Export JSON */}
           <button
             onClick={handleDownloadJSON}
@@ -168,7 +158,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               .json
             </span>
           </button>
-
           {/* 4. Copy Share Link */}
           <button
             onClick={handleCopyLink}
@@ -204,5 +193,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         </div>
       </div>
     </div>
+    </>
   );
 };

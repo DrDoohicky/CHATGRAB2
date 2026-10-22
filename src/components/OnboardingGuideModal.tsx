@@ -1,7 +1,7 @@
 import React from 'react';
 import { X, MoreVertical, Share2, Link, Clipboard, ArrowRight } from 'lucide-react';
 
-interface Props { isOpen: boolean; onClose: () => void; onStartCapture: () => void; }
+interface Props { inline?: boolean; isOpen: boolean; onClose: () => void; onStartCapture: () => void; }
 
 const Step = ({ n, title, children, visual }: { n: number; title: string; children: React.ReactNode; visual: React.ReactNode }) => (
   <div className="bg-white rounded-2xl border border-slate-200 p-4 grid sm:grid-cols-[1fr_220px] gap-4 items-center">
@@ -9,10 +9,10 @@ const Step = ({ n, title, children, visual }: { n: number; title: string; childr
   </div>
 );
 
-export const OnboardingGuideModal: React.FC<Props> = ({ isOpen, onClose, onStartCapture }) => {
+export const OnboardingGuideModal: React.FC<Props> = ({ inline=false, isOpen, onClose, onStartCapture }) => {
   if (!isOpen) return null;
-  return <div className="fixed inset-0 z-[80] bg-slate-950/65 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto"><div className="max-w-4xl mx-auto bg-slate-50 rounded-3xl p-5 sm:p-7 relative shadow-2xl">
-    <button onClick={onClose} className="absolute right-4 top-4 w-9 h-9 rounded-full bg-white border border-slate-200 grid place-items-center"><X className="w-4 h-4" /></button>
+  return <div className={inline ? "cg-destination" : "fixed inset-0 z-[80] bg-slate-950/65 backdrop-blur-sm p-3 sm:p-6 overflow-y-auto"}><div className="max-w-4xl mx-auto bg-slate-50 rounded-3xl p-5 sm:p-7 relative shadow-2xl">
+    {!inline && <button aria-label="Close" onClick={onClose} className="absolute right-4 top-4 w-9 h-9 rounded-full bg-white border border-slate-200 grid place-items-center"><X className="w-4 h-4" /></button>}
     <div className="text-[11px] font-bold tracking-widest text-blue-700 uppercase">GET STARTED</div><h2 className="text-3xl font-extrabold text-slate-900 mt-1">Bring a ChatGPT conversation into ChatGrab.</h2><p className="text-slate-600 mt-2 mb-5">You already made it to the conversation. These four visual reminders show exactly where the share link comes from.</p>
     <div className="space-y-3">
       <Step n={1} title="Open the conversation" visual={<div className="rounded-2xl border-4 border-slate-800 bg-white p-3"><div className="flex items-center justify-between text-xs font-semibold">ChatGPT conversation <MoreVertical className="w-6 h-6" /></div><div className="mt-4 p-3 rounded-xl bg-slate-100 text-xs">Your conversation is already open.</div></div>}>Stay on the ChatGPT conversation you want to preserve. Tap the three-dot menu in the upper-right.</Step>
