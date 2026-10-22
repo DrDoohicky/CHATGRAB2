@@ -74,6 +74,7 @@ export default function App() {
   const [navigationPage,setNavigationPage]=useState<CGPage>('capture');
   const [sidebarCollapsed,setSidebarCollapsed]=useState(()=>{try{return localStorage.getItem('chatgrab_sidebar_collapsed')==='true';}catch{return false;}});
   const [mobileNavigation,setMobileNavigation]=useState(false);
+  const closeCompanion=React.useCallback(()=>setIsChatbotOpen(false),[]);
   const closeNavigation=React.useCallback(()=>setMobileNavigation(false),[]);
   const toggleSidebar=()=>setSidebarCollapsed(previous=>{const next=!previous;try{localStorage.setItem('chatgrab_sidebar_collapsed',String(next));}catch{}return next;});
   const openPage = (next: CGPage) => {
@@ -689,8 +690,10 @@ export default function App() {
       {/* ChatGPT Multi-Turn Chatbot */}
       <ChatGPTCompanion
         isOpen={isChatbotOpen}
-        onClose={() => setIsChatbotOpen(false)}
+        onClose={closeCompanion}
         activeThread={activeThread}
+        threads={corpus}
+        page={navigationPage}
       />
     </div>
   );
