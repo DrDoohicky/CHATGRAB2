@@ -1,0 +1,1 @@
+export default function handler(_req:any,res:any){res.setHeader('Cache-Control','no-store');res.status(200).json({available:false,mode:'portable-only',workerRuntime:false,message:'Reviewed portable handoffs are available. Hosted durable synchronization and authenticated worker execution are not configured.'});}
