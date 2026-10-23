@@ -47,7 +47,8 @@ import { OnboardingGuideModal } from './components/OnboardingGuideModal';
 import './metallic-theme.css';
 import './components/workspace-navigation.css';
 const STORAGE_KEY = 'chatgrab_corpus_threads';
-const initialPage=():CGPage=>new URLSearchParams(window.location.search).get('page')==='bridge'?'bridge':'capture';
+const initialPage=():CGPage=>{const page=new URLSearchParams(window.location.search).get('page');return page==='bridge'?'bridge':['workspace','analyze'].includes(page||'')?'workspace':'capture';};
+const initialNavigationPage=():CGPage=>new URLSearchParams(window.location.search).get('page')==='analyze'?'analyze':initialPage();
 export default function App() {
   // Load corpus from LocalStorage (clearing any old simulated items)
   const [corpus, setCorpus] = useState<ConversationThread[]>(() => {
@@ -73,7 +74,8 @@ export default function App() {
   const requestedThreadTab = useRef<'transcript' | 'insights' | 'portions'>('transcript');
   // Modals state (Capture modal opens by default as in SS1.jpeg)
   const [page, setPage] = useState<CGPage>(initialPage);
-  const [navigationPage,setNavigationPage]=useState<CGPage>(initialPage);
+  const [navigationPage,setNavigationPage]=useState<CGPage>(initialNavigationPage);
+  useEffect(()=>{if(new URLSearchParams(window.location.search).get('page')==='analyze'){const frame=requestAnimationFrame(()=>document.getElementById('workspace-analytics')?.scrollIntoView({block:'start'}));return()=>cancelAnimationFrame(frame);}},[]);
   const [sidebarCollapsed,setSidebarCollapsed]=useState(()=>{try{return localStorage.getItem('chatgrab_sidebar_collapsed')==='true';}catch{return false;}});
   const [mobileNavigation,setMobileNavigation]=useState(false);
   const closeCompanion=React.useCallback(()=>setIsChatbotOpen(false),[]);
