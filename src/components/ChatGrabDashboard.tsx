@@ -3,7 +3,7 @@ import { ArrowRight, Database, MessageCircle, Download, FileArchive, HelpCircle,
 import { ReferenceArtwork } from './ReferenceArtwork';
 import './chatgrab-dashboard.css';
 
-export type CGPage = 'workspace' | 'capture' | 'preserve' | 'organize' | 'analyze' | 'reintegrate' | 'artifacts' | 'export' | 'library' | 'support' | 'guide' | 'settings';
+export type CGPage = 'workspace' | 'capture' | 'preserve' | 'organize' | 'analyze' | 'reintegrate' | 'artifacts' | 'export' | 'library' | 'support' | 'guide' | 'settings' | 'bridge';
 type Props = { page: CGPage; count: number; onNavigate: (p: CGPage) => void; onOpenLibrary: () => void; onOpenSupport: () => void; onOpenGuide: () => void; onExport: () => void; onAnalyze: () => void; onReintegrate: () => void; onAccount: () => void };
 const features = [
   { id: 'preserve', title: 'Preserve', desc: 'Keep the original conversation intact.', action: 'Capture & Preserve' },
@@ -24,6 +24,7 @@ const details = {
   support: ['Files around the conversation', 'Keep supporting files close to their sources.'],
   guide: ['Four-step visual guide', 'Open ChatGPT, choose Share, copy the link, then paste it into Capture.'],
   settings: ['Settings', 'Manage your account and back up your conversation library.'],
+  bridge: ['Crew bridge', 'Review selected context before transferring it to a worker lane.'],
 } as const;
 
 export function ChatGrabDashboard(props: Props) {
@@ -31,7 +32,7 @@ export function ChatGrabDashboard(props: Props) {
   const actions = {
     preserve: () => onNavigate('capture'), organize: onOpenLibrary, analyze: onAnalyze,
     reintegrate: onReintegrate, artifacts: onOpenSupport, export: onExport,
-    library: onOpenLibrary, support: onOpenSupport, guide: onOpenGuide, settings: onAccount,
+    library: onOpenLibrary, support: onOpenSupport, guide: onOpenGuide, settings: onAccount, bridge:()=>onNavigate('bridge'),
   };
   if (page !== 'workspace' && page !== 'capture') {
     const [title, description] = details[page];

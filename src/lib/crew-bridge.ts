@@ -1,0 +1,35 @@
+// Portable bridge contract. Review records are user assertions, never authentication.
+export const BRIDGE_VERSION='chatgrab-crew/1';
+export const SHARED_BRIDGE_KEY='chatgrab_crew_shared_handoffs_v1';
+export type Handoff={schema:typeof BRIDGE_VERSION;id:string;createdAt:string;source:{app:'ChatGrab';provider:'ChatGPT';captureId:string;capturedAt:string;title:string;reference:string;captureDigest:string};excerpts:{messageId:string;role:string;text:string}[];assignment:{title:string;instructions:string;workerId:string;laneId:string};consent:{scope:'selected-excerpts-only';reviewedBy:string;reviewedAt:string;confirmed:true};authority:'review-only';digest:string};
+export type Receipt={schema:'chatgrab-crew-receipt/1';handoffId:string;handoffDigest:string;receivedAt:string;operator:string;workerId:string;laneId:string;kind:'human-receipt';note:string};
+const object=(v:any,keys:string[])=>{if(!v||typeof v!=='object'||Array.isArray(v)||Object.keys(v).some(k=>!keys.includes(k)))throw Error('Unsupported bridge record or fields.');return v;};
+const text=(v:any,max=500,empty=false)=>{if(typeof v!=='string'||(!empty&&!v.trim())||v.length>max)throw Error('Missing or oversized bridge field.');return v;};
+const stamp=(v:any)=>{text(v,50);if(!/^\d{4}-\d\d-\d\dT/.test(v)||!Number.isFinite(Date.parse(v)))throw Error('Invalid bridge timestamp.');return v;};
+const id=(v:any)=>{text(v,160);if(!/^[a-zA-Z0-9_-]+$/.test(v))throw Error('Invalid bridge identifier.');return v;};
+const hash=(v:any)=>{if(typeof v!=='string'||!/^[a-f0-9]{64}$/.test(v))throw Error('Invalid evidence digest.');return v;};
+export function redactBridgeText(value:string){return value.replace(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi,'[email redacted]').replace(/\b(?:sk-[a-zA-Z0-9_-]{12,}|gh[pousr]_[a-zA-Z0-9_]{12,})\b/g,'[credential redacted]').replace(/\bBearer\s+[^\s]+/gi,'Bearer [redacted]');}
+function reference(v:any){text(v,600);if(/^chatgrab:conversation\/[a-zA-Z0-9_-]+$/.test(v))return v;let u:URL;try{u=new URL(v);}catch{throw Error('Invalid source reference.');}if(u.protocol!=='https:'||u.hostname!=='chatgpt.com'||!/^\/share\/[a-zA-Z0-9-]+\/?$/.test(u.pathname)||u.username||u.password||u.search||u.hash)throw Error('Use a clean public ChatGPT share reference or a local capture pointer.');return v;}
+export function validateHandoff(value:unknown):Handoff{
+ const p=object(value,['schema','id','createdAt','source','excerpts','assignment','consent','authority','digest']);
+ if(p.schema!==BRIDGE_VERSION||p.authority!=='review-only')throw Error('Unsupported schema or authority. Bridge assignments grant review only.');id(p.id);stamp(p.createdAt);hash(p.digest);
+ const s=object(p.source,['app','provider','captureId','capturedAt','title','reference','captureDigest']);if(s.app!=='ChatGrab'||s.provider!=='ChatGPT')throw Error('Unsupported source provider.');id(s.captureId);stamp(s.capturedAt);text(s.title,300);reference(s.reference);hash(s.captureDigest);
+ const a=object(p.assignment,['title','instructions','workerId','laneId']);text(a.title,160);text(a.instructions,4000);id(a.workerId);id(a.laneId);
+ const c=object(p.consent,['scope','reviewedBy','reviewedAt','confirmed']);if(c.scope!=='selected-excerpts-only'||c.confirmed!==true)throw Error('Explicit reviewed consent is required.');text(c.reviewedBy,100);stamp(c.reviewedAt);
+ if(!Array.isArray(p.excerpts)||!p.excerpts.length||p.excerpts.length>10)throw Error('Choose 1–10 source messages.');const ids=new Set();let size=0;
+ for(const e of p.excerpts){object(e,['messageId','role','text']);id(e.messageId);if(ids.has(e.messageId))throw Error('Duplicate source message.');ids.add(e.messageId);if(!['user','assistant','system'].includes(e.role))throw Error('Invalid source role.');text(e.text,6000);size+=e.text.length;}
+ if(size>24000)throw Error('Selected context exceeds 24,000 characters.');
+ if(redactBridgeText(JSON.stringify(p))!==JSON.stringify(p))throw Error('Potential email or credential remains. Redact it before transfer.');
+ return p as Handoff;
+}
+function canonical(value:any):string{if(Array.isArray(value))return '['+value.map(canonical).join(',')+']';if(value&&typeof value==='object')return '{'+Object.keys(value).sort().map(k=>JSON.stringify(k)+':'+canonical(value[k])).join(',')+'}';return JSON.stringify(value);}
+export async function digestBridge(value:unknown){const bytes=new TextEncoder().encode(canonical(value));return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');}
+export async function sealHandoff(value:Omit<Handoff,'digest'>):Promise<Handoff>{const digest=await digestBridge(value);return validateHandoff({...value,digest});}
+export async function verifyHandoff(value:unknown){const p=validateHandoff(value);const {digest,...body}=p;if(await digestBridge(body)!==digest)throw Error('Handoff changed after review; digest does not match.');return p;}
+export function parseBridgeJson(raw:string){if(new TextEncoder().encode(raw).length>150000)throw Error('Bridge file exceeds 150 KB.');try{return JSON.parse(raw);}catch{throw Error('Invalid bridge JSON.');}}
+export function validateReceipt(value:unknown):Receipt{const r=object(value,['schema','handoffId','handoffDigest','receivedAt','operator','workerId','laneId','kind','note']);if(r.schema!=='chatgrab-crew-receipt/1'||r.kind!=='human-receipt')throw Error('Only an explicit human receipt is supported; this is not a worker ACK.');id(r.handoffId);hash(r.handoffDigest);stamp(r.receivedAt);text(r.operator,100);id(r.workerId);id(r.laneId);text(r.note,1000,true);return r as Receipt;}
+export function matchReceipt(value:unknown,p:Handoff){const r=validateReceipt(value);if(r.handoffId!==p.id||r.handoffDigest!==p.digest||r.workerId!==p.assignment.workerId||r.laneId!==p.assignment.laneId)throw Error('Receipt does not match this reviewed assignment.');return r;}
+export function localReceipt(p:Handoff,operator:string,note=''):Receipt{return validateReceipt({schema:'chatgrab-crew-receipt/1',handoffId:p.id,handoffDigest:p.digest,receivedAt:new Date().toISOString(),operator,workerId:p.assignment.workerId,laneId:p.assignment.laneId,kind:'human-receipt',note});}
+export type BridgeRecord={packet:Handoff;receipt?:Receipt};
+export async function readBridgeRecords(key:string):Promise<BridgeRecord[]>{const raw=localStorage.getItem(key);if(!raw)return [];const values=parseBridgeJson(raw);if(!Array.isArray(values)||values.length>50)throw Error('Invalid bridge storage; export recovery data before changing it.');return Promise.all(values.map(async r=>{object(r,['packet','receipt']);const packet=await verifyHandoff(r.packet);return {packet,...(r.receipt?{receipt:matchReceipt(r.receipt,packet)}:{})};}));}
+export function saveBridgeRecords(key:string,values:BridgeRecord[]){if(values.length>50)throw Error('Bridge inbox is full. Export a backup before starting a new inbox.');const raw=JSON.stringify(values);if(new TextEncoder().encode(raw).length>150000)throw Error('Bridge storage is full. Export a backup first.');localStorage.setItem(key,raw);}

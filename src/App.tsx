@@ -1,4 +1,5 @@
 import {DownloadFile} from './components/DownloadFile';
+import {CrewBridge} from './components/CrewBridge';
 import {parseConversationFile} from './lib/importConversations';
 import {downloadText} from './lib/download';
 import './chatgrab-mockup.css';
@@ -46,6 +47,8 @@ import { OnboardingGuideModal } from './components/OnboardingGuideModal';
 import './metallic-theme.css';
 import './components/workspace-navigation.css';
 const STORAGE_KEY = 'chatgrab_corpus_threads';
+const initialPage=():CGPage=>{const page=new URLSearchParams(window.location.search).get('page');return ['guide','tutorial'].includes(page||'')?'guide':page==='bridge'?'bridge':['workspace','analyze'].includes(page||'')?'workspace':'capture';};
+const initialNavigationPage=():CGPage=>new URLSearchParams(window.location.search).get('page')==='analyze'?'analyze':initialPage();
 export default function App() {
   // Load corpus from LocalStorage (clearing any old simulated items)
   const [corpus, setCorpus] = useState<ConversationThread[]>(() => {
@@ -70,8 +73,9 @@ export default function App() {
   const [workspaceTab, setWorkspaceTab] = useState<'transcript' | 'insights' | 'portions'>('transcript');
   const requestedThreadTab = useRef<'transcript' | 'insights' | 'portions'>('transcript');
   // Modals state (Capture modal opens by default as in SS1.jpeg)
-  const [page, setPage] = useState<CGPage>('capture');
-  const [navigationPage,setNavigationPage]=useState<CGPage>('capture');
+  const [page, setPage] = useState<CGPage>(initialPage);
+  const [navigationPage,setNavigationPage]=useState<CGPage>(initialNavigationPage);
+  useEffect(()=>{if(new URLSearchParams(window.location.search).get('page')==='analyze'){const frame=requestAnimationFrame(()=>document.getElementById('workspace-analytics')?.scrollIntoView({block:'start'}));return()=>cancelAnimationFrame(frame);}},[]);
   const [sidebarCollapsed,setSidebarCollapsed]=useState(()=>{try{return localStorage.getItem('chatgrab_sidebar_collapsed')==='true';}catch{return false;}});
   const [mobileNavigation,setMobileNavigation]=useState(false);
   const closeCompanion=React.useCallback(()=>setIsChatbotOpen(false),[]);
@@ -430,6 +434,8 @@ export default function App() {
           <SupportMaterialModal inline isOpen onClose={()=>openPage('workspace')} threads={corpus} activeThread={activeThread} onAssetLinked={handleAssetLinked}/>
         ) : page === 'guide' ? (
           <OnboardingGuideModal inline isOpen onClose={()=>{}} onStartCapture={()=>openPage('capture')}/>
+        ) : page === 'bridge' ? (
+          <CrewBridge threads={corpus}/>
         ) : page === 'export' ? (
           <section className="cg-destination"><h1>Export your conversations</h1><p>Save a portable JSON backup, or choose a conversation for Markdown, JSON and print-to-PDF.</p><div className="cg-destination-panel"><h2>Library backup</h2><p>{corpus.length} saved conversations. Supporting file originals remain in this browser; download those separately from Artifacts.</p><DownloadFile text={JSON.stringify(corpus,null,2)} filename={`chatgrab-library-${new Date().toISOString().slice(0,10)}.json`} type="application/json" disabled={!corpus.length} className="inline-block border rounded-lg px-4 py-3 mt-3 text-blue-700 font-bold">Download library JSON</DownloadFile></div><div className="cg-destination-panel"><h2>Conversation exports</h2>{corpus.length?corpus.map(thread=><div className="cg-export-row" key={thread.id}><div><strong>{thread.title}</strong><small>{thread.messages.length} messages · {new Date(thread.capturedAt).toLocaleString()}</small></div><button onClick={()=>{setActiveThread(thread);setIsExportOpen(true);}}>Export {thread.title}</button></div>):<p>Capture a conversation to enable exports.</p>}</div></section>
         ) : page === 'settings' ? (
@@ -698,3 +704,4 @@ export default function App() {
     </div>
   );
 }
+

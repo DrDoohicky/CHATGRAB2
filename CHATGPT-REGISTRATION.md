@@ -1,10 +1,10 @@
 # ChatGrab hosted ChatGPT integration — registration brief
 
-Status: prepared for review; **not submitted or approved**. No API key is requested from users. Do not present native sign-in or inference as connected until registration and end-to-end tests succeed.
+Status: **submitted by the owner; approval pending**. The owner reported that OpenAI expects to respond next quarter if the application is a fit. No API key is requested from users. Do not present native sign-in or inference as connected until registration and end-to-end tests succeed.
 
 Official application form: https://openai.com/form/sign-in-with-chatgpt-interest/
 
-The form requires work email, first name, last name, company/organization name, website, requested capabilities and product description. Owner contact/organization details have been requested; the form has not been submitted. Choose **Sign in and ChatGPT plan use for AI requests**. The product description ready for the form is:
+The form requires work email, first name, last name, company/organization name, website, requested capabilities and product description. The owner has submitted the form; no further submission is needed at this stage. Choose **Sign in and ChatGPT plan use for AI requests**. The product description ready for the form is:
 
 > ChatGrab is a hosted companion for ChatGPT users that preserves explicitly shared/imported conversations, organizes source material and supporting files, and prepares source-linked analysis and reviewed continuity records. We want users to sign in with their ChatGPT account and authorize eligible ChatGPT-plan AI requests without entering API keys. We do not request automatic access to users' ChatGPT history. Source conversations remain preserved and users choose which context to send for analysis.
 
@@ -29,7 +29,7 @@ The form requires work email, first name, last name, company/organization name, 
 
 ## Approval and implementation gates
 
-1. The project owner reviews this brief and submits the official interest form or contacts their OpenAI representative. This requires the owner's contact, organization and applicable legal details; none have been invented or submitted.
+1. Owner submission is complete, as reported in this chat. Await OpenAI's response; do not resubmit or claim approval.
 2. Receive approved hosted-app client registration, exact callback URLs, token authentication method, identity scopes, and explicit plan-usage approval/contract. Client identity alone is not plan-usage approval.
 3. Configure durable transaction/session storage and server-side registration values. No end-user API key is involved.
 4. Implement OAuth callback/session exchange and authorized inference against the actual registration. Test granted/denied scope, cancellation, replay rejection, expiry, refresh, disconnect, account changes, eligibility and limits.
