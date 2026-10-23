@@ -1,8 +1,80 @@
 [
-  {"id":"rad","lines":["It's so rad…"],"duration":3600},
-  {"id":"fab","lines":["It's super fab…"],"duration":3600},
-  {"id":"brand","lines":["It's ChatGrab."],"duration":4000},
-  {"id":"catalog","lines":["All your conversations.","One connected", "contextual catalog."],"duration":6400},
-  {"id":"context","lines":["From scattered chats.","To connected context."],"duration":4800},
-  {"id":"carry","lines":["Keep the conversation.","Carry the context forward."],"duration":5200}
+  {
+    "id": "rad",
+    "lines": [
+      "It's so rad…"
+    ],
+    "duration": 3700
+  },
+  {
+    "id": "fab",
+    "lines": [
+      "It's super fab…"
+    ],
+    "duration": 3700
+  },
+  {
+    "id": "brand",
+    "lines": [
+      "It's ChatGrab."
+    ],
+    "duration": 4300
+  },
+  {
+    "id": "catalog",
+    "lines": [
+      "All your conversations.",
+      "One connected",
+      "contextual catalog."
+    ],
+    "duration": 6100
+  },
+  {
+    "id": "context",
+    "lines": [
+      "From scattered chats.",
+      "To connected context."
+    ],
+    "duration": 5300
+  },
+  {
+    "id": "continuity",
+    "lines": [
+      "Keep the original.",
+      "Understand the journey."
+    ],
+    "duration": 5600
+  },
+  {
+    "id": "evidence",
+    "lines": [
+      "Beyond the summary.",
+      "Back to the evidence."
+    ],
+    "duration": 5700
+  },
+  {
+    "id": "neighbors",
+    "lines": [
+      "Different conversations.",
+      "Unexpected connections."
+    ],
+    "duration": 5500
+  },
+  {
+    "id": "evolution",
+    "lines": [
+      "Ideas evolve.",
+      "Their history matters."
+    ],
+    "duration": 5200
+  },
+  {
+    "id": "carry",
+    "lines": [
+      "Unify. Analyze.",
+      "Preserve. Reintegrate."
+    ],
+    "duration": 5700
+  }
 ]
