@@ -15,3 +15,28 @@
 @media(prefers-reduced-motion:reduce){.cg-hero-slide,.cg-globe-visual:after{animation:none!important;transform:none!important;opacity:1}.cg-globe-visual:after{opacity:.4}}
 .cg-v2 .cg-capture-hero .cg-hero-brand{font-size:34px!important;letter-spacing:-.8px}.cg-v2 .cg-hero-content .cg-globe-image{mask-image:radial-gradient(ellipse 48% 48% at 52% 49%,#000 35%,#000d 55%,#0005 78%,transparent 100%)}
 @media(max-width:760px){.cg-v2 .cg-capture-hero .cg-hero-brand{font-size:28px!important}}
+
+
+/* Light-hero contrast and centered kinetic typography, Oct 23 */
+.cg-v2 .cg-hero-copy{display:flex;flex-direction:column;align-items:center;text-align:center;min-width:0}
+.cg-v2 .cg-hero-copy .cg-platform-note{text-align:center;width:100%;margin-left:0!important}
+.cg-v2 .cg-hero-stage{width:100%;max-width:740px;justify-content:center;align-items:center;overflow:hidden;isolation:isolate;min-height:220px;perspective:900px}
+.cg-v2 .cg-hero-stage .cg-hero-slide{width:100%;max-width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.05em;line-height:1.11;white-space:normal;overflow-wrap:normal;word-break:normal;padding:10px 12px;color:#fff!important;
+-webkit-text-stroke:1.35px #142b50;text-shadow:1px 2px 0 #142b50,-1px -1px 0 #142b50,0 3px 7px #112a5b54;
+animation:cg-headline-lift var(--cg-headline-time,4s) both cubic-bezier(.2,.7,.2,1);
+will-change:opacity,transform,filter}
+.cg-v2 .cg-hero-stage .cg-hero-slide>span{display:block;width:100%;max-width:100%;text-align:center}
+.cg-v2 .cg-hero-stage .cg-hero-slide .cg-hero-line-accent{color:#309dff!important;-webkit-text-stroke:1.15px #102949;text-shadow:1px 2px 0 #102949,-1px -1px 0 #102949,0 3px 10px #0b59af42}
+.cg-v2 .cg-hero-stage .cg-hero-slide .cg-brand-word>span:first-child{color:white!important;-webkit-text-stroke:1.25px #142b50;text-shadow:1px 2px 0 #142b50,-1px -1px 0 #142b50,0 3px 7px #142b5044}
+.cg-v2 .cg-hero-stage .cg-hero-slide .cg-brand-word>span:last-child{color:#309dff!important;-webkit-text-stroke:1.15px #102949;text-shadow:1px 2px 0 #102949,-1px -1px 0 #102949,0 3px 10px #0b59af42}
+.cg-v2 .cg-hero-stage .cg-hero-slide.cg-transition-1{animation-name:cg-headline-dissolve}
+.cg-v2 .cg-hero-stage .cg-hero-slide.cg-transition-2{animation-name:cg-headline-depth}
+.cg-v2 .cg-hero-motion-controls{justify-content:center;width:100%;margin-top:4px}
+.cg-v2 .cg-hero-motto,.cg-v2 .cg-hero-description{text-align:center;margin-left:auto!important;margin-right:auto!important}
+.cg-v2 .cg-hero-stage .cg-hero-slide.cg-slide-catalog,.cg-v2 .cg-hero-stage .cg-hero-slide.cg-slide-neighbors,.cg-v2 .cg-hero-stage .cg-hero-slide.cg-slide-continuity{font-size:clamp(30px,3vw,51px)!important}
+.cg-v2 .cg-hero-stage .cg-hero-slide[data-paused=true]{animation:none!important;opacity:1!important;transform:none!important;filter:none!important}
+@keyframes cg-headline-lift{0%{opacity:0;filter:blur(6px);transform:translate3d(0,25px,-40px)}17%{opacity:1;filter:blur(0);transform:translate3d(0,0,0)}76%{opacity:1;filter:blur(0);transform:translate3d(0,0,0)}100%{opacity:0;filter:blur(5px);transform:translate3d(0,-20px,0)}}
+@keyframes cg-headline-dissolve{0%{opacity:0;filter:blur(8px);transform:translateY(8px)}23%{opacity:1;filter:blur(0);transform:translateY(0)}74%{opacity:1;filter:blur(0);transform:translateY(0)}100%{opacity:0;filter:blur(10px);transform:translateY(-12px)}}
+@keyframes cg-headline-depth{0%{opacity:0;filter:blur(7px);transform:translate3d(0,4px,-125px) scale(.91)}22%{opacity:1;filter:blur(0);transform:translate3d(0,0,0) scale(1)}74%{opacity:1;filter:blur(0);transform:translate3d(0,0,0) scale(1)}100%{opacity:0;filter:blur(5px);transform:translate3d(0,-16px,18px) scale(1.018)}}
+@media(max-width:760px){.cg-v2 .cg-hero-stage{height:200px;min-height:200px}.cg-v2 .cg-hero-stage .cg-hero-slide{font-size:clamp(27px,7vw,41px)!important;letter-spacing:-.7px;padding:8px 2px;-webkit-text-stroke:1px #142b50}.cg-v2 .cg-hero-stage .cg-hero-slide.cg-slide-rad,.cg-v2 .cg-hero-stage .cg-hero-slide.cg-slide-fab,.cg-v2 .cg-hero-stage .cg-hero-slide.cg-slide-brand{font-size:clamp(36px,9vw,53px)!important}.cg-v2 .cg-hero-stage .cg-hero-slide .cg-hero-line-accent{-webkit-text-stroke:1px #102949}}
+@media(prefers-reduced-motion:reduce){.cg-v2 .cg-hero-stage .cg-hero-slide{animation:none!important;filter:none!important;opacity:1!important;transform:none!important;will-change:auto}}
