@@ -1,4 +1,6 @@
 import {DownloadFile} from './components/DownloadFile';
+import {BatchImporter} from './lib/batch-import';
+import {BatchImportProgress} from './components/BatchImportProgress';
 import {CrewBridge} from './components/CrewBridge';
 import {parseConversationFile} from './lib/importConversations';
 import {downloadText} from './lib/download';
@@ -12,7 +14,7 @@ import { LibraryExplorer } from './components/LibraryExplorer';
 import { ChatGrabDashboard } from './components/ChatGrabDashboard';
 import { ContinuityWorkspace } from './components/ContinuityWorkspace';
 import type { CGPage } from './components/ChatGrabDashboard';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useSyncExternalStore } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { cloud } from './lib/cloud';
 import { ChatGPTConnectionPanel } from './components/ChatGPTConnectionPanel';
@@ -115,6 +117,10 @@ export default function App() {
   const [libraryReady, setLibraryReady] = useState(!cloud);
   const activeOwnerRef = useRef<string | null>(null);
   const cloudQueue = useRef<Promise<void>>(Promise.resolve());
+  const [batchQueue]=useState(()=>new BatchImporter((thread,scope)=>{if(scope!==(activeOwnerRef.current||'guest'))throw Error('Account changed; resume imports in the matching account.');setCorpus(previous=>previous.some(existing=>existing.sourceUrl===thread.sourceUrl||existing.id===thread.id)?previous:[thread,...previous]);},fetch,(()=>{try{return localStorage;}catch{return undefined;}})()));
+  const batchState=useSyncExternalStore(batchQueue.subscribe,batchQueue.snapshot);
+  useEffect(()=>{if(!libraryReady)batchQueue.pause();batchQueue.setScope(accountUser?.id||'guest');},[batchQueue,accountUser?.id,libraryReady]);
+  useEffect(()=>()=>batchQueue.pause(),[batchQueue]);
   const readGuest = (): ConversationThread[] => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } };
   const refreshAccount = async () => {
     if (!cloud) return;
@@ -476,7 +482,7 @@ export default function App() {
                   <button type="button" onClick={() => setIsSupportOpen(true)} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import image / artifact</button>
                   <button type="button" onClick={() => setBatchMode(!batchMode)} className="ml-auto px-3 py-2 text-sm font-bold text-white bg-slate-800 rounded-lg">{batchMode ? 'Single' : 'Batch process'}</button>
                 </div>
-                {batchMode && <div className="lg:col-span-2 space-y-2"><p className="text-sm text-slate-600">Batch capture processes public /share/ links one at a time, preserving each successful capture in the local library. Enter one link per line.</p><textarea value={batchInput} onChange={e => setBatchInput(e.target.value)} rows={4} className="w-full border border-slate-300 rounded-xl p-3 text-sm" placeholder="One public share URL per line" /><button type="button" disabled={isQuickCapturing} className="bg-blue-700 text-white px-4 py-2 rounded-lg" onClick={async () => { const links=Array.from(new Set(batchInput.split(/\n/).map(x=>extractPublicShareUrl(x)).filter(Boolean) as string[])); if(!links.length){setQuickCaptureError('Add at least one valid /share/ URL.');return;} setIsQuickCapturing(true); let ok=0; for(const link of links){try{const res=await fetch('/api/fetch-share',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:link})});const json=await res.json();if(!res.ok||!json.success||!Array.isArray(json.data?.messages))continue;handleThreadCaptured({id:`batch-${Date.now()}-${ok}`,title:json.data.title||'Captured Conversation',sourceUrl:link,capturedAt:new Date().toISOString(),model:json.data.model||'ChatGPT',messages:json.data.messages});ok++;}catch{}}setIsQuickCapturing(false);setCaptureNotice(`Batch captured ${ok} of ${links.length} links.`); }}>Capture batch</button></div>}
+                {batchMode && <div className="lg:col-span-2 space-y-2"><p className="text-sm text-slate-600">Import up to 100 public /share/ links, one per line. The queue continues while you use other pages in this tab.</p><textarea aria-label="Batch share links" maxLength={65000} value={batchInput} onChange={e=>setBatchInput(e.target.value)} rows={4} className="w-full border border-slate-300 rounded-xl p-3 text-sm" placeholder="One public share URL per line"/><button type="button" disabled={!libraryReady||isQuickCapturing||batchState.running||batchState.items.some(item=>item.status==='queued')} className="bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg" onClick={()=>{try{batchQueue.start(batchInput);setQuickCaptureError(null);}catch(error){setQuickCaptureError(error instanceof Error?error.message:'Could not start imports.');}}}>Capture batch</button></div>}
                 <div className="lg:col-span-2 text-xs text-slate-500 px-1">Your library stays in this browser. Export a backup to preserve it on another device.</div>
               </form>
             </section>
@@ -685,8 +691,9 @@ export default function App() {
         onClose={() => setIsGuideOpen(false)}
         onStartCapture={() => setIsCaptureModalOpen(true)}
       />
+      <BatchImportProgress enabled={libraryReady} queue={batchQueue} state={batchState} onOpen={()=>openPage('capture')}/>
       {/* Floating Action Button for ChatGPT Chatbot */}
-      {!isChatbotOpen && (
+      {!isChatbotOpen && !batchState.items.length && (
         <button
           type="button"
           onClick={() => setIsChatbotOpen(true)}
@@ -710,4 +717,5 @@ export default function App() {
     </div>
   );
 }
+
 

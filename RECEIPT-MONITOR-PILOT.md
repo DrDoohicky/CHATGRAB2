@@ -2,7 +2,7 @@
 
 ACK: 2026-10-23 Beacon inbox request, issue 100. This bounded prototype reuses the existing TypeScript bridge stack; it adds no public endpoint or orchestrator.
 
-`lib/bridge/receipt-monitor.ts` demonstrates receiving-side, fail-closed admission using an externally pinned Ed25519 public key, runtime identity, approved policy digest, current grant, expiry, single-use nonce, input/output commitments and allow/block decision. All admission attempts append a receiving-side audit entry before success is returned. The test ledger is in-memory; the restart test reconstructs it from a copied journal and is not a process-crash/durable-storage certification.
+`lib/bridge/receipt-monitor.ts` demonstrates receiving-side, fail-closed admission using an externally pinned Ed25519 public key, runtime identity, approved policy digest, current grant, expiry, single-use nonce, input/output commitments and allow/block decision. All admission attempts append a receiving-side audit entry before success is returned. The original protocol fixture uses an in-memory ledger; the October 24 increment below adds an actual SQLite journal with reopening and abrupt child-exit tests.
 
 ## Actual trust boundary still required
 
@@ -16,4 +16,12 @@ Existing DELIVERED / RECEIVED / ACKNOWLEDGED / WITHDRAWN records remain unchange
 
 ## Tests and remaining work
 
-Tests cover modified signed fields, policy mismatch, missing receipt / removed-monitor symptom, stale grant, false runtime, blocked decision, changed output, replay after journal reconstruction, and failed audit writes. Deployment of a separately owned gate, credential isolation, network bypass prevention, durable atomic nonce reservation, actual monitor-removal and restart/crash tests are still required. Concurrent replay races are not solved by this prototype's `has`/`append` interface; production must atomically reserve a nonce and commit its audit decision.
+Tests cover modified signed fields, policy mismatch, missing receipt / removed-monitor symptom, stale grant, false runtime, blocked decision, changed output, replay after journal reconstruction, and failed audit writes. Deployment of a separately owned gate, credential isolation, network bypass prevention and actual monitor-removal tests remain required. The SQLite adapter now atomically reserves nonces and commits audit decisions; the in-memory fixture alone does not provide that guarantee.
+
+
+## October 24 durable admission increment
+
+`lib/bridge/admission-ledger.ts` now supplies a local SQLite WAL ledger with atomic unique-nonce reservation and audit insertion in one transaction. An independently opened connection cannot admit the same nonce after a stale precheck: insertion fails closed and records the rejected replay. Tests cover two connections, reopening, and a child process that exits after commit without closing the database. The earlier in-memory test remains a protocol fixture; the new journal addresses the local durability/replay gap described above.
+
+This ledger is not deployed on Vercel or wired to an authenticated worker runtime. A separate gate owner, isolated signing credentials and network bypass prevention are still required; a worker with access to this database can tamper with it. Worker execution/ACK is not inferred from admission. The production bridge remains portable review-only.
+

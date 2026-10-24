@@ -15,9 +15,10 @@ export function admitReceipt(envelope: ReturnType<typeof sealReceipt>|null, poli
   if(receipt) {
     let valid=false;
     try { valid=verify(null,Buffer.from(JSON.stringify(receipt)),policy.publicKey,Buffer.from(envelope.signature,'base64')); } catch { /* Fail closed. */ }
-    reason=!valid?'invalid-signature':receipt.version!==1?'unsupported-version':receipt.runtime!==policy.runtime?'runtime-mismatch':receipt.policyDigest!==policy.policyDigest?'policy-mismatch':receipt.grant!==policy.grant||receipt.expiresAt<=policy.now?'stale-grant':!receipt.nonce||ledger.has(receipt.nonce)?'replay':receipt.inputDigest!==commitment(input)||receipt.outputDigest!==commitment(output)?'commitment-mismatch':receipt.decision!=='allow'?'blocked-by-monitor':'admitted';
+    reason=!valid?'invalid-signature':!Number.isFinite(receipt.expiresAt)||typeof receipt.nonce!=='string'||!receipt.nonce||receipt.nonce.length>160?'invalid-receipt':receipt.version!==1?'unsupported-version':receipt.runtime!==policy.runtime?'runtime-mismatch':receipt.policyDigest!==policy.policyDigest?'policy-mismatch':receipt.grant!==policy.grant||receipt.expiresAt<=policy.now?'stale-grant':!receipt.nonce||ledger.has(receipt.nonce)?'replay':receipt.inputDigest!==commitment(input)||receipt.outputDigest!==commitment(output)?'commitment-mismatch':receipt.decision!=='allow'?'blocked-by-monitor':'admitted';
   }
   // A receiver-controlled durable append must succeed before an admission is returned.
   ledger.append({nonce:receipt?.nonce||'',admitted:reason==='admitted',reason});
   return {admitted:reason==='admitted',reason};
 }
+
