@@ -1,6 +1,7 @@
 import React,{useEffect,useMemo,useState} from 'react';
 import {ArrowRight,ClipboardCopy,Download,ExternalLink,RotateCcw} from 'lucide-react';
 import './manual-analysis-page.css';
+import {buildAnalysisBatches} from '../lib/analysis-batches';
 import type {ConversationThread} from '../types';
 
 type ReviewSnapshot={source:string;categories:string[];chatgptAnswer:string;geminiAnswer:string;prompt:string;secondPrompt:string;createdAt:string};
@@ -17,23 +18,7 @@ export function ManualAnalysisPage({threads,onOpenAdvanced}:{threads:Conversatio
  const [batchIndex,setBatchIndex]=useState(0);
  const [messageSearch,setMessageSearch]=useState('');
  const [recentOnly,setRecentOnly]=useState(false);
- const BATCH_LIMIT=54000;
- const batches=useMemo(()=>{
-  const sections:string[]=[];let chunk='';
-  const push=()=>{if(chunk){sections.push(chunk);chunk='';}};
-  for(const t of selectedThreads){
-   const heading='CONVERSATION: '+t.title+'\nSOURCE ID: '+t.id+'\nCAPTURED: '+t.capturedAt+'\n';
-   const matches=t.messages.filter(m=>(!messageSearch||m.content.toLowerCase().includes(messageSearch.toLowerCase()))).slice(recentOnly?-100:0);
-   for(const m of matches){
-    const row=heading+'MESSAGE ID: '+m.id+'\nROLE: '+m.role+'\n'+m.content+'\n';
-    if(row.length>BATCH_LIMIT){push();sections.push(row);continue;}
-    if(chunk.length+row.length+2>BATCH_LIMIT)push();
-    chunk+=(chunk?'\n\n':'')+row;
-   }
-  }
-  push();
-  return sections;
- },[selectedThreads,messageSearch,recentOnly]);
+ const batches=useMemo(()=>buildAnalysisBatches(selectedThreads,messageSearch,recentOnly),[selectedThreads,messageSearch,recentOnly]);
  const selectedSource=batches[Math.min(batchIndex,Math.max(0,batches.length-1))]||'';
  const combinedSource=[selectedSource,draft.source.trim()].filter(Boolean).join('\n\n--- ADDITIONAL PASTED MATERIAL ---\n\n');
  const overLimit=combinedSource.length>60000;
@@ -75,8 +60,8 @@ export function ManualAnalysisPage({threads,onOpenAdvanced}:{threads:Conversatio
        <input type="search" className="cg-manual-library-search" aria-label="Find saved conversations" value={filter} onChange={e=>setFilter(e.target.value)} placeholder="Search your saved grabs…"/>
        <div className="cg-manual-library-list">{visibleThreads.map(t=><label className="cg-manual-library-row" key={t.id}><input type="checkbox" checked={checkedIds.includes(t.id)} onChange={()=>changeSelection(checkedIds.includes(t.id)?checkedIds.filter(x=>x!==t.id):[...checkedIds,t.id])}/><span><strong>{t.title}</strong><small>{t.messages.length} messages · {t.capturedAt?.slice(0,10)||'undated'}</small></span></label>)}{!threads.length&&<p>Your saved library is empty in this browser/account. Library and Analysis use the same saved conversations. Check that you are using the same browser, site address, and account where you saved them, or add pasted material below.</p>}{!!threads.length&&!visibleThreads.length&&<p>No matching conversations.</p>}</div>
        <p className="cg-manual-selection-note">{selectedThreads.length} conversation(s) selected · {batches.length} batch(es) · current batch {combinedSource.length.toLocaleString()} / 60,000 characters.</p>
-       {batches.length>1&&<div className="cg-manual-batches"><strong>Review in parts — no messages silently omitted</strong><p>Large conversations are divided into source-attributed batches of approximately 54,000 characters. Each request analyzes only the currently selected batch; repeat for other batches or combine exported reviews afterward.</p><div className="cg-manual-batch-actions"><button type="button" disabled={activeBatch===0} onClick={()=>chooseBatch(activeBatch-1)}>Previous batch</button><span>Batch {activeBatch+1} of {batches.length}</span><button type="button" disabled={activeBatch>=batches.length-1} onClick={()=>chooseBatch(activeBatch+1)}>Next batch</button></div></div>}
-       {overLimit&&<p role="alert" className="cg-manual-limit-error">This batch contains an individual oversized message or too much optional text. Filter the conversation, or shorten the optional text. Individual messages are not truncated.</p>}
+       {batches.length>1&&<div className="cg-manual-batches"><strong>Review in parts — no messages silently omitted</strong><p>Large conversations are divided into source-attributed batches of approximately 54,000 characters. Oversized messages are split into numbered parts retaining their source and message IDs. Each request analyzes only the currently selected batch; repeat for other batches or combine exported reviews afterward.</p><div className="cg-manual-batch-actions"><button type="button" disabled={activeBatch===0} onClick={()=>chooseBatch(activeBatch-1)}>Previous batch</button><span>Batch {activeBatch+1} of {batches.length}</span><button type="button" disabled={activeBatch>=batches.length-1} onClick={()=>chooseBatch(activeBatch+1)}>Next batch</button></div></div>}
+       {overLimit&&<p role="alert" className="cg-manual-limit-error">This batch contains oversized source metadata or too much optional text. Shorten the optional text or choose a smaller source. Source messages are never silently truncated.</p>}
        {selectedThreads.length>0&&<div className="cg-manual-filter-options"><label><input type="checkbox" checked={recentOnly} onChange={e=>{setRecentOnly(e.target.checked);chooseBatch(0);}}/> Limit to last 100 messages per conversation</label><input type="search" aria-label="Filter messages by content" placeholder="Optional: search text within selected messages" value={messageSearch} onChange={e=>{setMessageSearch(e.target.value);chooseBatch(0);}}/></div>}
      </div>
      <details className="cg-manual-optional"><summary>Add pasted material (optional)</summary><label htmlFor="cg-manual-source">Additional text</label><textarea id="cg-manual-source" rows={8} maxLength={60000} value={draft.source} onChange={e=>update('source',e.target.value)} placeholder="Optional notes or excerpts. They will be labeled separately from saved sources."/></details>
