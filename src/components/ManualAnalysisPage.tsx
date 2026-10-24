@@ -14,13 +14,32 @@ export function ManualAnalysisPage({threads,onOpenAdvanced}:{threads:Conversatio
  const [checkedIds,setCheckedIds]=useState<string[]>([]);
  const [filter,setFilter]=useState('');
  const selectedThreads=useMemo(()=>threads.filter(t=>checkedIds.includes(t.id)),[threads,checkedIds]);
- const selectedSource=useMemo(()=>selectedThreads.map(t=>[
-  'CONVERSATION: '+t.title,'SOURCE ID: '+t.id,'CAPTURED: '+t.capturedAt,
-  ...t.messages.map(m=>'['+t.id+' / '+m.id+' / '+m.role+'] '+m.content)
- ].join('\n')).join('\n\n--- NEXT CONVERSATION ---\n\n'),[selectedThreads]);
+ const [batchIndex,setBatchIndex]=useState(0);
+ const [messageSearch,setMessageSearch]=useState('');
+ const [recentOnly,setRecentOnly]=useState(false);
+ const BATCH_LIMIT=54000;
+ const batches=useMemo(()=>{
+  const sections:string[]=[];let chunk='';
+  const push=()=>{if(chunk){sections.push(chunk);chunk='';}};
+  for(const t of selectedThreads){
+   const heading='CONVERSATION: '+t.title+'\nSOURCE ID: '+t.id+'\nCAPTURED: '+t.capturedAt+'\n';
+   const matches=t.messages.filter(m=>(!messageSearch||m.content.toLowerCase().includes(messageSearch.toLowerCase()))).slice(recentOnly?-100:0);
+   for(const m of matches){
+    const row=heading+'MESSAGE ID: '+m.id+'\nROLE: '+m.role+'\n'+m.content+'\n';
+    if(row.length>BATCH_LIMIT){push();sections.push(row);continue;}
+    if(chunk.length+row.length+2>BATCH_LIMIT)push();
+    chunk+=(chunk?'\n\n':'')+row;
+   }
+  }
+  push();
+  return sections;
+ },[selectedThreads,messageSearch,recentOnly]);
+ const selectedSource=batches[Math.min(batchIndex,Math.max(0,batches.length-1))]||'';
  const combinedSource=[selectedSource,draft.source.trim()].filter(Boolean).join('\n\n--- ADDITIONAL PASTED MATERIAL ---\n\n');
  const overLimit=combinedSource.length>60000;
- const changeSelection=(ids:string[])=>{setCheckedIds(ids);setAllowed(false);setAllowGemini(false);setCopyMessage('');};
+ const activeBatch=Math.min(batchIndex,Math.max(0,batches.length-1));
+ const chooseBatch=(index:number)=>{setBatchIndex(index);setAllowed(false);setAllowGemini(false);setCopyMessage('');};
+ const changeSelection=(ids:string[])=>{setBatchIndex(0);setCheckedIds(ids);setAllowed(false);setAllowGemini(false);setCopyMessage('');};
  const visibleThreads=threads.filter(t=>t.title.toLowerCase().includes(filter.toLowerCase()));
 
  const [allowed,setAllowed]=useState(false);
@@ -46,7 +65,7 @@ export function ManualAnalysisPage({threads,onOpenAdvanced}:{threads:Conversatio
  'FIRST ANALYSIS:\n<<<ANALYSIS>>>\n'+draft.chatgptAnswer+'\n<<<END_ANALYSIS>>>'
  ].join('\n\n'):'' ,[draft.chatgptAnswer,prompt,combinedSource]);
  const copy=async(t:string)=>{try{await navigator.clipboard.writeText(t);setCopyMessage('Copied to clipboard. Review before pasting into an AI account.');}catch{setCopyMessage('Clipboard is unavailable; select the text in the box and copy it manually.');}};
- const exportNow=()=>downloadJSON({schema:'chatgrab-no-api-manual-review/1',createdAt:draft.createdAt,exportedAt:new Date().toISOString(),source:combinedSource,selectedConversationIds:checkedIds,selectedConversationTitles:selectedThreads.map(t=>t.title),additionalPastedText:draft.source,selectedCategories:draft.categories,chatgptPrompt:prompt,chatgptAnswer:draft.chatgptAnswer,geminiPrompt:secondPrompt,geminiAnswer:draft.geminiAnswer,verification:'User-pasted outputs. Provider origin and interpretation are not authenticated; original conversation records have not been altered.'});
+ const exportNow=()=>downloadJSON({schema:'chatgrab-no-api-manual-review/1',createdAt:draft.createdAt,exportedAt:new Date().toISOString(),source:combinedSource,batchNumber:activeBatch+1,totalBatches:batches.length,messageFilter:messageSearch,recentOnly,selectedConversationIds:checkedIds,selectedConversationTitles:selectedThreads.map(t=>t.title),additionalPastedText:draft.source,selectedCategories:draft.categories,chatgptPrompt:prompt,chatgptAnswer:draft.chatgptAnswer,geminiPrompt:secondPrompt,geminiAnswer:draft.geminiAnswer,verification:'User-pasted outputs. Provider origin and interpretation are not authenticated; original conversation records have not been altered.'});
  return <main className="cg-manual" aria-label="Manual ChatGPT and Gemini analysis">
    <header className="cg-manual-intro"><div className="cg-manual-kicker">WORKING ANALYSIS · NO API KEY</div><h1>Analyze a conversation now.</h1><p>Use ChatGPT and optionally Gemini through your own accounts. ChatGrab prepares requests and lets you keep the responses together. It cannot silently read your ChatGPT chats, operate your account, or certify that an AI answer is correct.</p><button type="button" onClick={onOpenAdvanced}>Use saved conversations & source-linked review <ArrowRight size={17}/></button></header>
    {copyMessage&&<p className="cg-manual-info" role="status">{copyMessage}</p>}
@@ -55,8 +74,10 @@ export function ManualAnalysisPage({threads,onOpenAdvanced}:{threads:Conversatio
        <div className="cg-manual-library-head"><strong>Your ChatGrab library · {threads.length} conversations</strong><div className="cg-manual-library-actions"><button type="button" disabled={!threads.length} onClick={()=>changeSelection(threads.map(t=>t.id))}>Select all</button><button type="button" disabled={!checkedIds.length} onClick={()=>changeSelection([])}>Clear</button></div></div>
        <input type="search" className="cg-manual-library-search" aria-label="Find saved conversations" value={filter} onChange={e=>setFilter(e.target.value)} placeholder="Search your saved grabs…"/>
        <div className="cg-manual-library-list">{visibleThreads.map(t=><label className="cg-manual-library-row" key={t.id}><input type="checkbox" checked={checkedIds.includes(t.id)} onChange={()=>changeSelection(checkedIds.includes(t.id)?checkedIds.filter(x=>x!==t.id):[...checkedIds,t.id])}/><span><strong>{t.title}</strong><small>{t.messages.length} messages · {t.capturedAt?.slice(0,10)||'undated'}</small></span></label>)}{!threads.length&&<p>Your saved library is empty in this browser/account. Library and Analysis use the same saved conversations. Check that you are using the same browser, site address, and account where you saved them, or add pasted material below.</p>}{!!threads.length&&!visibleThreads.length&&<p>No matching conversations.</p>}</div>
-       <p className="cg-manual-selection-note">{selectedThreads.length} conversation(s) selected · {combinedSource.length.toLocaleString()} / 60,000 characters.</p>
-       {overLimit&&<p role="alert" className="cg-manual-limit-error">Selection is too large. Uncheck some conversations or shorten optional text. Nothing is silently truncated.</p>}
+       <p className="cg-manual-selection-note">{selectedThreads.length} conversation(s) selected · {batches.length} batch(es) · current batch {combinedSource.length.toLocaleString()} / 60,000 characters.</p>
+       {batches.length>1&&<div className="cg-manual-batches"><strong>Review in parts — no messages silently omitted</strong><p>Large conversations are divided into source-attributed batches of approximately 54,000 characters. Each request analyzes only the currently selected batch; repeat for other batches or combine exported reviews afterward.</p><div className="cg-manual-batch-actions"><button type="button" disabled={activeBatch===0} onClick={()=>chooseBatch(activeBatch-1)}>Previous batch</button><span>Batch {activeBatch+1} of {batches.length}</span><button type="button" disabled={activeBatch>=batches.length-1} onClick={()=>chooseBatch(activeBatch+1)}>Next batch</button></div></div>}
+       {overLimit&&<p role="alert" className="cg-manual-limit-error">This batch contains an individual oversized message or too much optional text. Filter the conversation, or shorten the optional text. Individual messages are not truncated.</p>}
+       {selectedThreads.length>0&&<div className="cg-manual-filter-options"><label><input type="checkbox" checked={recentOnly} onChange={e=>{setRecentOnly(e.target.checked);chooseBatch(0);}}/> Limit to last 100 messages per conversation</label><input type="search" aria-label="Filter messages by content" placeholder="Optional: search text within selected messages" value={messageSearch} onChange={e=>{setMessageSearch(e.target.value);chooseBatch(0);}}/></div>}
      </div>
      <details className="cg-manual-optional"><summary>Add pasted material (optional)</summary><label htmlFor="cg-manual-source">Additional text</label><textarea id="cg-manual-source" rows={8} maxLength={60000} value={draft.source} onChange={e=>update('source',e.target.value)} placeholder="Optional notes or excerpts. They will be labeled separately from saved sources."/></details>
      <details className="cg-manual-optional"><summary>Inspect exactly what the prompt will include</summary><textarea readOnly rows={8} aria-label="Selected source material" value={combinedSource}/></details>
@@ -74,7 +95,7 @@ export function ManualAnalysisPage({threads,onOpenAdvanced}:{threads:Conversatio
      <div className="cg-manual-actions"><button disabled={!allowGemini||!secondPrompt} onClick={()=>void copy(secondPrompt)}><ClipboardCopy size={17}/> Copy Gemini request</button><a href="https://gemini.google.com/app" target="_blank" rel="noreferrer">Open Gemini <ExternalLink size={16}/></a></div>
      <label htmlFor="cg-manual-gemini">Paste the Gemini review here</label><textarea id="cg-manual-gemini" rows={7} maxLength={250000} value={draft.geminiAnswer} onChange={e=>update('geminiAnswer',e.target.value)} placeholder="Optional Gemini assessment. Agreement between models does not establish truth."/>
    </section>
-   <section className="cg-manual-last"><div className="cg-manual-heading"><span>04</span><div><h2>Keep the review</h2><p>Export a JSON record of the source, prompts and responses. A local draft is saved in this browser when storage is available; it is not synchronized across devices. Source edits do not update pasted AI responses: check that each answer still matches the current source before exporting.</p></div></div>
+   <section className="cg-manual-last"><div className="cg-manual-heading"><span>04</span><div><h2>Keep the review</h2><p>Export a JSON record of the source, prompts and responses. A local draft is saved in this browser when storage is available; it is not synchronized across devices. Each export covers the currently selected batch; preserve separate review bundles for other batches. Source edits do not update pasted AI responses: check that each answer still matches the current source before exporting.</p></div></div>
      <div className="cg-manual-actions"><button onClick={exportNow} disabled={!combinedSource.trim()||overLimit}><Download size={17}/> Download review bundle</button><button type="button" className="cg-manual-reset" onClick={()=>{if(window.confirm('Clear this manual analysis draft from this browser?')){changeSelection([]);setDraft({source:'',categories:['contradictions','decisions'],chatgptAnswer:'',geminiAnswer:'',prompt:'',secondPrompt:'',createdAt:new Date().toISOString()});setAllowed(false);setAllowGemini(false);}}}><RotateCcw size={16}/> Clear draft</button></div>
    </section>
  </main>;
