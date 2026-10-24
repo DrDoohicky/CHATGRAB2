@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageCircle, LayoutGrid, Database, Images, Download, HelpCircle, Settings, UserRound, MoreHorizontal, Sparkles, Trash2, Menu } from 'lucide-react';
+import { MessageCircle, LayoutGrid, Database, Images, Download, Film, HelpCircle, Settings, UserRound, MoreHorizontal, Sparkles, Trash2, Menu } from 'lucide-react';
 import type { CGPage } from './ChatGrabDashboard';
 import { BrandMark, BrandWord } from './BrandMark';
 interface HeaderProps {
@@ -17,6 +17,7 @@ export function Header({ onOpenNavigation, page, onNavigate, corpusCount, onOpen
     { id: 'library', label: 'Library', icon: Database, action: onOpenCorpus },
     { id: 'artifacts', label: 'Artifacts', icon: Images, action: () => onNavigate('artifacts') },
     { id: 'export', label: 'Export', icon: Download, action: () => onNavigate('export') },
+    { id: 'media', label: 'Media', icon: Film, action: () => onNavigate('media') },
   ];
   return <header className="cg-topbar">
     <button type="button" className="cg-mobile-menu" onClick={onOpenNavigation} aria-label="Open navigation" aria-controls="workspace-navigation"><Menu size={23}/></button>
