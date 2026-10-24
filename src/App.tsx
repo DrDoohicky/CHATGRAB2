@@ -436,7 +436,7 @@ export default function App() {
         ) : (page === 'artifacts' || page === 'support') ? (
           <SupportMaterialModal inline isOpen onClose={()=>openPage('workspace')} threads={corpus} activeThread={activeThread} onAssetLinked={handleAssetLinked}/>
         ) : page === 'analyze' ? (
-          <ManualAnalysisPage onOpenAdvanced={()=>openPage('workspace')}/>
+          <ManualAnalysisPage threads={corpus} onOpenAdvanced={()=>openPage('workspace')}/>
         ) : page === 'media' ? (
           <MediaLibrary onTutorial={()=>openPage('guide')} onCapture={()=>openPage('capture')}/>
         ) : page === 'guide' ? (
