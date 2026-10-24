@@ -435,7 +435,7 @@ export default function App() {
         ) : (page === 'artifacts' || page === 'support') ? (
           <SupportMaterialModal inline isOpen onClose={()=>openPage('workspace')} threads={corpus} activeThread={activeThread} onAssetLinked={handleAssetLinked}/>
         ) : page === 'analyze' ? (
-          <ManualAnalysisPage onOpenAdvanced={()=>{openPage('workspace');setTimeout(()=>document.getElementById('workspace-analytics')?.scrollIntoView({block:'start'}),75);}}/>
+          <ManualAnalysisPage threads={corpus} onOpenAdvanced={()=>{openPage('workspace');setTimeout(()=>document.getElementById('workspace-analytics')?.scrollIntoView({block:'start'}),75);}}/>
         ) : page === 'media' ? (
           <MediaLibrary onTutorial={()=>openPage('guide')} onCapture={()=>openPage('capture')}/>
         ) : page === 'guide' ? (
