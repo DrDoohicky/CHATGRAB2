@@ -3,6 +3,8 @@ import {parseConversationFile} from './lib/importConversations';
 import {downloadText} from './lib/download';
 import './chatgrab-mockup.css';
 import { WorkspaceNavigation } from './components/WorkspaceNavigation';
+import { MediaLibrary } from './components/MediaLibrary';
+import './components/media-library.css';
 import { HeroIntro } from './components/HeroIntro';
 import { LibraryExplorer } from './components/LibraryExplorer';
 import { ChatGrabDashboard } from './components/ChatGrabDashboard';
@@ -428,6 +430,8 @@ export default function App() {
             onImport={()=>setIsSupportOpen(true)} onOpenLegacy={()=>setIsCorpusOpen(true)} />
         ) : (page === 'artifacts' || page === 'support') ? (
           <SupportMaterialModal inline isOpen onClose={()=>openPage('workspace')} threads={corpus} activeThread={activeThread} onAssetLinked={handleAssetLinked}/>
+        ) : page === 'media' ? (
+          <MediaLibrary onTutorial={()=>openPage('guide')} onCapture={()=>openPage('capture')}/>
         ) : page === 'guide' ? (
           <OnboardingGuideModal inline isOpen onClose={()=>{}} onStartCapture={()=>openPage('capture')}/>
         ) : page === 'export' ? (
