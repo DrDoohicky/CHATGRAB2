@@ -1,0 +1,30 @@
+name: ChatGrab no-credit integration check
+on:
+  push:
+    branches: [chatgrab-no-credit-integration-20261024]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: TypeScript validation
+        run: npm run lint
+      - name: Build existing application
+        run: npm run build
+      - name: Verify expected source assets
+        shell: bash
+        run: |
+          test -f src/components/ManualAnalysisPage.tsx
+          test -f src/components/MediaLibrary.tsx
+          test -f public/images/tutorial-cards/tutorial--open-chat.webp
+          test -f public/video/ChatGrab_Power_Companion.mp4
+          echo "Code and original tutorial assets present."
