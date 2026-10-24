@@ -482,7 +482,7 @@ export default function App() {
                   <button type="button" onClick={() => setIsSupportOpen(true)} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import image / artifact</button>
                   <button type="button" onClick={() => setBatchMode(!batchMode)} className="ml-auto px-3 py-2 text-sm font-bold text-white bg-slate-800 rounded-lg">{batchMode ? 'Single' : 'Batch process'}</button>
                 </div>
-                {batchMode && <div className="lg:col-span-2 space-y-2"><p className="text-sm text-slate-600">Import up to 100 public /share/ links, one per line. The queue continues while you use other pages in this tab.</p><textarea aria-label="Batch share links" maxLength={65000} value={batchInput} onChange={e=>setBatchInput(e.target.value)} rows={4} className="w-full border border-slate-300 rounded-xl p-3 text-sm" placeholder="One public share URL per line"/><button type="button" disabled={!libraryReady||isQuickCapturing||batchState.running||batchState.items.some(item=>item.status==='queued')} className="bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg" onClick={()=>{try{batchQueue.start(batchInput);setQuickCaptureError(null);}catch(error){setQuickCaptureError(error instanceof Error?error.message:'Could not start imports.');}}}>Capture batch</button></div>}
+                {batchMode && <div className="cg-batch-form lg:col-span-2 space-y-2"><p className="text-sm text-slate-600">Import up to 100 public /share/ links, one per line. The queue continues while you use other pages in this tab.</p><textarea aria-label="Batch share links" maxLength={65000} value={batchInput} onChange={e=>setBatchInput(e.target.value)} rows={4} className="w-full border border-slate-300 rounded-xl p-3 text-sm" placeholder="One public share URL per line"/><button type="button" disabled={!batchInput.trim()||!libraryReady||isQuickCapturing||batchState.running||batchState.items.some(item=>item.status==='queued')} className="cg-batch-start bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg" onClick={()=>{try{batchQueue.start(batchInput);setQuickCaptureError(null);}catch(error){setQuickCaptureError(error instanceof Error?error.message:'Could not start imports.');}}}>Capture batch</button></div>}
                 <div className="lg:col-span-2 text-xs text-slate-500 px-1">Your library stays in this browser. Export a backup to preserve it on another device.</div>
               </form>
             </section>
@@ -717,5 +717,6 @@ export default function App() {
     </div>
   );
 }
+
 
 
