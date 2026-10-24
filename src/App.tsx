@@ -4,6 +4,9 @@ import {parseConversationFile} from './lib/importConversations';
 import {downloadText} from './lib/download';
 import './chatgrab-mockup.css';
 import { WorkspaceNavigation } from './components/WorkspaceNavigation';
+import { MediaLibrary } from './components/MediaLibrary';
+import { ManualAnalysisPage } from './components/ManualAnalysisPage';
+import './components/media-library.css';
 import { HeroIntro } from './components/HeroIntro';
 import { LibraryExplorer } from './components/LibraryExplorer';
 import { ChatGrabDashboard } from './components/ChatGrabDashboard';
@@ -47,7 +50,7 @@ import { OnboardingGuideModal } from './components/OnboardingGuideModal';
 import './metallic-theme.css';
 import './components/workspace-navigation.css';
 const STORAGE_KEY = 'chatgrab_corpus_threads';
-const initialPage=():CGPage=>{const page=new URLSearchParams(window.location.search).get('page');return ['guide','tutorial'].includes(page||'')?'guide':page==='bridge'?'bridge':['workspace','analyze'].includes(page||'')?'workspace':'capture';};
+const initialPage=():CGPage=>{const page=new URLSearchParams(window.location.search).get('page');return ['guide','tutorial'].includes(page||'')?'guide':page==='bridge'?'bridge':page==='media'?'media':page==='analyze'?'analyze':page==='workspace'?'workspace':'capture';};
 const initialNavigationPage=():CGPage=>new URLSearchParams(window.location.search).get('page')==='analyze'?'analyze':initialPage();
 export default function App() {
   // Load corpus from LocalStorage (clearing any old simulated items)
@@ -75,7 +78,7 @@ export default function App() {
   // Modals state (Capture modal opens by default as in SS1.jpeg)
   const [page, setPage] = useState<CGPage>(initialPage);
   const [navigationPage,setNavigationPage]=useState<CGPage>(initialNavigationPage);
-  useEffect(()=>{if(new URLSearchParams(window.location.search).get('page')==='analyze'){const frame=requestAnimationFrame(()=>document.getElementById('workspace-analytics')?.scrollIntoView({block:'start'}));return()=>cancelAnimationFrame(frame);}},[]);
+  useEffect(()=>{},[]);
   const [sidebarCollapsed,setSidebarCollapsed]=useState(()=>{try{return localStorage.getItem('chatgrab_sidebar_collapsed')==='true';}catch{return false;}});
   const [mobileNavigation,setMobileNavigation]=useState(false);
   const closeCompanion=React.useCallback(()=>setIsChatbotOpen(false),[]);
@@ -83,7 +86,7 @@ export default function App() {
   const toggleSidebar=()=>setSidebarCollapsed(previous=>{const next=!previous;try{localStorage.setItem('chatgrab_sidebar_collapsed',String(next));}catch{}return next;});
   const openPage = (next: CGPage) => {
     const destination=next==='preserve'?'capture':next;
-    const anchor=next==='analyze'?'workspace-analytics':next==='reintegrate'?'workspace-reintegration':null;
+    const anchor=next==='reintegrate'?'workspace-reintegration':null;
     setNavigationPage(destination);setPage(anchor?'workspace':destination);
     if(anchor)setTimeout(()=>document.getElementById(anchor)?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'}),75);
     else window.scrollTo({top:0,behavior:'instant'});
@@ -432,6 +435,10 @@ export default function App() {
             onImport={()=>setIsSupportOpen(true)} onOpenLegacy={()=>setIsCorpusOpen(true)} />
         ) : (page === 'artifacts' || page === 'support') ? (
           <SupportMaterialModal inline isOpen onClose={()=>openPage('workspace')} threads={corpus} activeThread={activeThread} onAssetLinked={handleAssetLinked}/>
+        ) : page === 'analyze' ? (
+          <ManualAnalysisPage onOpenAdvanced={()=>openPage('workspace')}/>
+        ) : page === 'media' ? (
+          <MediaLibrary onTutorial={()=>openPage('guide')} onCapture={()=>openPage('capture')}/>
         ) : page === 'guide' ? (
           <OnboardingGuideModal inline isOpen onClose={()=>{}} onStartCapture={()=>openPage('capture')}/>
         ) : page === 'bridge' ? (
@@ -499,7 +506,7 @@ export default function App() {
             <ChatGrabDashboard page="workspace" count={corpus.length} onNavigate={openPage}
               onOpenLibrary={()=>openPage('library')} onOpenSupport={()=>openPage('support')}
               onOpenGuide={()=>openPage('guide')} onExport={()=>{if(activeThread)setIsExportOpen(true);else handleExportCorpusBackup();}}
-              onAnalyze={()=>{if(activeThread){setWorkspaceTab('insights');openPage('capture');}else{requestedThreadTab.current='insights';setIsCorpusOpen(true);}}}
+              onAnalyze={()=>openPage('analyze')}
               onReintegrate={()=>{if(activeThread){setWorkspaceTab('portions');openPage('capture');}else{requestedThreadTab.current='portions';setIsCorpusOpen(true);}}}
               onAccount={()=>setAccountOpen(true)} />
           </div>
@@ -606,7 +613,7 @@ export default function App() {
           <>
           <ChatGrabDashboard
             page={page}
-            onAnalyze={()=>{if(activeThread){setWorkspaceTab('insights');openPage('capture');}else{requestedThreadTab.current='insights';setIsCorpusOpen(true);}}}
+            onAnalyze={()=>openPage('analyze')}
             onReintegrate={()=>{if(activeThread){setWorkspaceTab('portions');openPage('capture');}else{requestedThreadTab.current='portions';setIsCorpusOpen(true);}}}
             onAccount={()=>setAccountOpen(true)}
             count={corpus.length}
