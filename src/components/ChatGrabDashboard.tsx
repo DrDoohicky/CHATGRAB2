@@ -1,9 +1,9 @@
 import React from 'react';
-import { ArrowRight, Database, MessageCircle, Download, FileArchive, HelpCircle, Search, RefreshCw, Settings } from 'lucide-react';
+import { ArrowRight, Database, MessageCircle, Download, FileArchive, Film, HelpCircle, Search, RefreshCw, Settings } from 'lucide-react';
 import { ReferenceArtwork } from './ReferenceArtwork';
 import './chatgrab-dashboard.css';
 
-export type CGPage = 'workspace' | 'capture' | 'preserve' | 'organize' | 'analyze' | 'reintegrate' | 'artifacts' | 'export' | 'library' | 'support' | 'guide' | 'settings' | 'bridge';
+export type CGPage = 'workspace' | 'capture' | 'preserve' | 'organize' | 'analyze' | 'reintegrate' | 'artifacts' | 'export' | 'library' | 'support' | 'guide' | 'settings' | 'bridge' | 'media';
 type Props = { page: CGPage; count: number; onNavigate: (p: CGPage) => void; onOpenLibrary: () => void; onOpenSupport: () => void; onOpenGuide: () => void; onExport: () => void; onAnalyze: () => void; onReintegrate: () => void; onAccount: () => void };
 const features = [
   { id: 'preserve', title: 'Preserve', desc: 'Keep the original conversation intact.', action: 'Capture & Preserve' },
@@ -24,6 +24,7 @@ const details = {
   support: ['Files around the conversation', 'Keep supporting files close to their sources.'],
   guide: ['Four-step visual guide', 'Open ChatGPT, choose Share, copy the link, then paste it into Capture.'],
   settings: ['Settings', 'Manage your account and back up your conversation library.'],
+  media: ['Media', 'Video, PDF and illustrated tutorial materials.'],
   bridge: ['Crew bridge', 'Review selected context before transferring it to a worker lane.'],
 } as const;
 
@@ -32,7 +33,7 @@ export function ChatGrabDashboard(props: Props) {
   const actions = {
     preserve: () => onNavigate('capture'), organize: onOpenLibrary, analyze: onAnalyze,
     reintegrate: onReintegrate, artifacts: onOpenSupport, export: onExport,
-    library: onOpenLibrary, support: onOpenSupport, guide: onOpenGuide, settings: onAccount, bridge:()=>onNavigate('bridge'),
+    library: onOpenLibrary, support: onOpenSupport, guide: onOpenGuide, media: () => onNavigate('media'), settings: onAccount, bridge:()=>onNavigate('bridge'),
   };
   if (page !== 'workspace' && page !== 'capture') {
     const [title, description] = details[page];
@@ -57,6 +58,7 @@ export function ChatGrabDashboard(props: Props) {
       <div className="cg-feature-body"><h2>{item.title}</h2><p>{item.desc}</p><span className="cg-feature-action">{item.action} <ArrowRight size={17}/></span></div>
     </button>)}</div>
     <div className="cg-resource-grid">
+      <button className="cg-resource cg-media-card" onClick={()=>onNavigate('media')}><div><Film className="cg-resource-icon"/><h2>Media library</h2><p>Watch our explainer, explore the Continuity Framework and browse illustrated tutorials.</p><span>Open Media <ArrowRight size={17}/></span></div></button>
       <button className="cg-resource cg-library-card" onClick={onOpenLibrary}><div><Database className="cg-resource-icon"/><h2>Your conversation library</h2><p>Rename, compare, merge, and reopen preserved conversations.</p><span>Open Library <ArrowRight size={17}/></span></div><ReferenceArtwork name="library"/></button>
       <button className="cg-resource cg-files-card" onClick={onOpenSupport}><div><FileArchive className="cg-resource-icon"/><h2>Files around the conversation</h2><p>Attach PDFs, screenshots, generated media, JSON, audio, video and evidence.</p><span>Open Support Library <ArrowRight size={17}/></span></div><ReferenceArtwork name="support"/></button>
       <button className="cg-resource cg-guide-card" onClick={onOpenGuide}><div><HelpCircle className="cg-resource-icon"/><h2>Four-step visual guide</h2><p>Find Share, Copy link, and the ChatGrab capture controls.</p><span>Show the Guide <ArrowRight size={17}/></span></div><ReferenceArtwork name="guide"/></button>
