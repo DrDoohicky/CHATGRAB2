@@ -18,3 +18,10 @@
 
 /* Keep introductory copy readable with the site's dark metallic heading treatment. */
 .cg-manual .cg-manual-intro{background:#071d38;color:#fff}.cg-manual .cg-manual-intro p{color:#d5e3f3}.cg-manual .cg-manual-kicker{color:#a9d0ff}
+
+.cg-manual-batches{margin:12px 0;background:#eaf5ff;border:1px solid #afccec;border-radius:12px;padding:12px}
+.cg-manual-batches p{font-size:13px}
+.cg-manual-batch-actions{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin:10px 0}
+.cg-manual .cg-manual-batch-actions button{padding:8px 13px;font-size:13px}
+.cg-manual-filter-options{margin-top:12px;display:flex;flex-direction:column;gap:9px}
+.cg-manual-filter-options input[type=search]{width:100%;background:#fff;border:1px solid #bacfe6;border-radius:9px;padding:10px}
