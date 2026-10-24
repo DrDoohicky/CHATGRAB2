@@ -15,3 +15,6 @@
 .cg-manual .cg-manual-limit-error{color:#9e2525;background:#fff2f2;padding:10px;border-radius:8px}
 .cg-manual-optional{margin:12px 0}
 .cg-manual-optional summary{font-weight:750;color:#185dac;cursor:pointer;padding:10px;background:#eef5ff;border-radius:9px}
+
+/* Keep introductory copy readable with the site's dark metallic heading treatment. */
+.cg-manual .cg-manual-intro{background:#071d38;color:#fff}.cg-manual .cg-manual-intro p{color:#d5e3f3}.cg-manual .cg-manual-kicker{color:#a9d0ff}
