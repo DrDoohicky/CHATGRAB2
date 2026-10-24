@@ -1,11 +1,11 @@
 import React, {useEffect,useRef} from 'react';
-import {MessageCircle,LayoutGrid,Database,Search,RefreshCw,Images,Download,HelpCircle,Settings,PanelLeftClose,PanelLeftOpen,X,ArrowLeftRight} from 'lucide-react';
+import {MessageCircle,LayoutGrid,Database,Search,RefreshCw,Images,Download,Film,HelpCircle,Settings,PanelLeftClose,PanelLeftOpen,X,ArrowLeftRight} from 'lucide-react';
 import type {CGPage} from './ChatGrabDashboard';
 
 const links = [
  ['capture','Capture',MessageCircle],['workspace','Workspace',LayoutGrid],['library','Library',Database],
  ['analyze','Chat Analysis',Search],['reintegrate','Reintegrate',RefreshCw],['artifacts','Artifacts',Images],
- ['export','Export',Download],['bridge','Crew bridge',ArrowLeftRight],['guide','Visual guide',HelpCircle],['settings','Settings',Settings],
+ ['export','Export',Download],['media','Media',Film],['bridge','Crew bridge',ArrowLeftRight],['guide','Visual guide',HelpCircle],['settings','Settings',Settings],
 ] as const;
 export function WorkspaceNavigation({page,onNavigate,collapsed,onCollapse,mobileOpen,onClose}:{page:CGPage;onNavigate:(page:CGPage)=>void;collapsed:boolean;onCollapse:()=>void;mobileOpen:boolean;onClose:()=>void}){
  const drawer=useRef<HTMLElement>(null);
