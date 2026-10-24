@@ -4,6 +4,8 @@ import {parseConversationFile} from './lib/importConversations';
 import {downloadText} from './lib/download';
 import './chatgrab-mockup.css';
 import { WorkspaceNavigation } from './components/WorkspaceNavigation';
+import { MediaLibrary } from './components/MediaLibrary';
+import './components/media-library.css';
 import { HeroIntro } from './components/HeroIntro';
 import { LibraryExplorer } from './components/LibraryExplorer';
 import { ChatGrabDashboard } from './components/ChatGrabDashboard';
@@ -47,7 +49,7 @@ import { OnboardingGuideModal } from './components/OnboardingGuideModal';
 import './metallic-theme.css';
 import './components/workspace-navigation.css';
 const STORAGE_KEY = 'chatgrab_corpus_threads';
-const initialPage=():CGPage=>{const page=new URLSearchParams(window.location.search).get('page');return ['guide','tutorial'].includes(page||'')?'guide':page==='bridge'?'bridge':['workspace','analyze'].includes(page||'')?'workspace':'capture';};
+const initialPage=():CGPage=>{const page=new URLSearchParams(window.location.search).get('page');return ['guide','tutorial'].includes(page||'')?'guide':page==='media'?'media':page==='bridge'?'bridge':['workspace','analyze'].includes(page||'')?'workspace':'capture';};
 const initialNavigationPage=():CGPage=>new URLSearchParams(window.location.search).get('page')==='analyze'?'analyze':initialPage();
 export default function App() {
   // Load corpus from LocalStorage (clearing any old simulated items)
@@ -432,6 +434,8 @@ export default function App() {
             onImport={()=>setIsSupportOpen(true)} onOpenLegacy={()=>setIsCorpusOpen(true)} />
         ) : (page === 'artifacts' || page === 'support') ? (
           <SupportMaterialModal inline isOpen onClose={()=>openPage('workspace')} threads={corpus} activeThread={activeThread} onAssetLinked={handleAssetLinked}/>
+        ) : page === 'media' ? (
+          <MediaLibrary onTutorial={()=>openPage('guide')} onCapture={()=>openPage('capture')}/>
         ) : page === 'guide' ? (
           <OnboardingGuideModal inline isOpen onClose={()=>{}} onStartCapture={()=>openPage('capture')}/>
         ) : page === 'bridge' ? (
