@@ -41,3 +41,12 @@
 .cg-v2 .cg-topbar .cg-brand-subtitle>span{font-size:10px;line-height:1.2;text-align:center;color:#d5e4fa}
 .cg-v2 .cg-topbar .cg-brand-subtitle>strong{font-size:14px;line-height:1.1;text-align:right;color:#fff;font-weight:780;letter-spacing:-.3px}
 @media(max-width:760px){.cg-v2 .cg-topbar .cg-brand{padding:6px 10px}.cg-v2 .cg-topbar .cg-brand-lockup{min-width:125px}.cg-v2 .cg-topbar .cg-brand-word{font-size:19px}.cg-v2 .cg-topbar .cg-brand-subtitle>span{font-size:9px}.cg-v2 .cg-topbar .cg-brand-subtitle>strong{font-size:12px}}
+
+/* Oct 2026 approved compact brand treatment — header only. */
+.cg-v2 .cg-topbar .cg-brand-word>span:last-child{color:#164ce0!important;text-shadow:0 1px 1px #030d29,0 0 5px #1b4cde55}
+.cg-v2 .cg-topbar .cg-brand-subtitle{flex-direction:row!important;justify-content:flex-end;align-items:baseline;gap:3px;padding-top:4px}
+.cg-v2 .cg-topbar .cg-brand-subtitle>span{font-size:11px;line-height:1.1;color:#fff;text-align:right}
+.cg-v2 .cg-topbar .cg-brand-subtitle>strong{display:inline-flex;gap:0;font-size:12px;line-height:1.1;text-align:right}
+.cg-v2 .cg-topbar .cg-brand-subtitle>strong>span:first-child{color:#fff}
+.cg-v2 .cg-topbar .cg-brand-subtitle>strong>span:last-child{color:#164ce0;text-shadow:0 0 3px #87aaff}
+@media(max-width:760px){.cg-v2 .cg-topbar .cg-brand-subtitle>span{font-size:9px}.cg-v2 .cg-topbar .cg-brand-subtitle>strong{font-size:10px}}
