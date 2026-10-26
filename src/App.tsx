@@ -13,6 +13,7 @@ import './components/media-library.css';
 import { HeroIntro } from './components/HeroIntro';
 import { ProjectWorkspace } from './components/ProjectWorkspace';
 import { BuildHistory } from './components/BuildHistory';
+import { BuildHistory } from './components/BuildHistory';
 import { LibraryExplorer } from './components/LibraryExplorer';
 import { ChatGrabDashboard } from './components/ChatGrabDashboard';
 import { ContinuityWorkspace } from './components/ContinuityWorkspace';
@@ -443,6 +444,8 @@ export default function App() {
             onImport={()=>setIsSupportOpen(true)} onOpenLegacy={()=>setIsCorpusOpen(true)} />
         ) : (page === 'artifacts' || page === 'support') ? (
           <SupportMaterialModal inline isOpen onClose={()=>openPage('workspace')} threads={corpus} activeThread={activeThread} onAssetLinked={handleAssetLinked}/>
+        ) : page === 'history' ? (
+          <BuildHistory />
         ) : page === 'history' ? (
           <BuildHistory />
         ) : page === 'projects' ? (
