@@ -1,9 +1,9 @@
 import React, {useEffect,useRef} from 'react';
-import {MessageCircle,LayoutGrid,Database,Search,RefreshCw,Images,Film,Download,HelpCircle,Settings,FolderPlus,PanelLeftClose,PanelLeftOpen,X,ArrowLeftRight} from 'lucide-react';
+import {MessageCircle,LayoutGrid,Database,Search,RefreshCw,Images,Film,Download,HelpCircle,Settings,History,FolderPlus,PanelLeftClose,PanelLeftOpen,X,ArrowLeftRight} from 'lucide-react';
 import type {CGPage} from './ChatGrabDashboard';
 
 const links = [
- ['capture','Capture',MessageCircle],['projects','Projects',FolderPlus],['workspace','Workspace',LayoutGrid],['library','Library',Database],
+ ['capture','Capture',MessageCircle],['projects','Projects',FolderPlus],['history','Build history',History],['workspace','Workspace',LayoutGrid],['library','Library',Database],
  ['analyze','Chat Analysis',Search],['reintegrate','Reintegrate',RefreshCw],['artifacts','Artifacts',Images],
  ['export','Export',Download],['media','Media',Film],['bridge','Crew bridge',ArrowLeftRight],['guide','Visual guide',HelpCircle],['settings','Settings',Settings],
 ] as const;
