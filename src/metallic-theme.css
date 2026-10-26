@@ -67,3 +67,21 @@
 .cg-v2 .cg-globe-visual:before{border-bottom-color:#3477ca44;top:57%;width:145%;left:-40%}
 @media(max-width:1050px) and (min-width:761px){.cg-v2 .cg-hero-content .cg-globe-image{height:330px}}
 @media(max-width:760px){.cg-v2 .cg-hero-content .cg-globe-visual{width:100%;min-height:235px;margin:0}.cg-v2 .cg-hero-content .cg-globe-image{width:108%;height:260px;margin:0}}
+
+/* Atlas 2026-10-26 review branch: solid hero and consistent, restrained rounded embossing. */
+.cg-v2 .cg-globe-visual::before,.cg-v2 .cg-globe-visual::after{content:none!important;display:none!important}
+.cg-v2 .cg-capture-hero .cg-hero-content{background:linear-gradient(112deg,#eaf3ff,#fff 62%,#d7e9ff)!important}
+.cg-v2 .cg-hero-stage .cg-hero-slide{font-weight:950!important;letter-spacing:-.045em!important;-webkit-text-stroke:.7px #133b77!important;text-shadow:0 1px 0 #fff,0 3px 1px #1027463b,0 5px 12px #254a8038!important;color:#0a1f45!important}
+.cg-v2 .cg-hero-stage .cg-hero-slide .cg-hero-line-accent{color:#1458e6!important;-webkit-text-stroke:.6px #17469f!important;text-shadow:0 2px 0 #dceaff,0 5px 9px #1854a830!important}
+.cg-v2 .cg-topnav button{font-weight:850;letter-spacing:-.025em;text-shadow:0 1px 0 #fff;box-shadow:inset 0 1px 0 #fff,0 2px 4px #17488414}
+.cg-v2 .cg-topbar .cg-topnav button[aria-current=page]{text-shadow:0 1px 2px #123d802a;box-shadow:inset 0 1px 1px #ffffff6b,0 3px 7px #174fae29}
+.cg-v2 .cg-sidebar nav button span{font-weight:800;letter-spacing:-.02em}
+.cg-v2 .cg-dash-intro h1,.cg-v2 .cg-page-heading h1,.cg-v2 .cg-destination h1,.cg-v2 .cg-analysis-hero h1,.cg-v2 .cg-workspace h1,.cg-v2 .cg-workspace h2{font-weight:950!important;letter-spacing:-.048em!important;text-shadow:0 1px 0 #fff,0 3px 4px #15386124}
+@media(max-width:760px){
+.cg-v2 .cg-capture-hero .cg-hero-content{display:flex!important;flex-direction:column!important;padding:22px 18px 5px!important}
+.cg-v2 .cg-hero-content .cg-globe-visual{max-width:100%;min-height:185px!important;overflow:hidden}
+.cg-v2 .cg-hero-content .cg-globe-image{width:100%!important;height:200px!important;margin:0!important;object-fit:contain!important}
+.cg-v2 .cg-capture-hero .cg-hero-stage{height:145px!important;min-height:145px!important}
+.cg-v2 .cg-hero-stage .cg-hero-slide{font-size:clamp(27px,7vw,42px)!important}
+.cg-v2 .cg-topnav button{box-shadow:none}
+}
