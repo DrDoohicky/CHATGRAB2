@@ -1,80 +1,34 @@
 [
   {
-    "id": "rad",
+    "id": "meaning",
     "lines": [
-      "It's so rad…"
-    ],
-    "duration": 3700
-  },
-  {
-    "id": "fab",
-    "lines": [
-      "It's super fab…"
-    ],
-    "duration": 3700
-  },
-  {
-    "id": "brand",
-    "lines": [
-      "It's ChatGrab."
-    ],
-    "duration": 4300
-  },
-  {
-    "id": "catalog",
-    "lines": [
-      "All your conversations.",
-      "One connected",
-      "contextual catalog."
-    ],
-    "duration": 6100
-  },
-  {
-    "id": "context",
-    "lines": [
-      "From scattered chats.",
-      "To connected context."
-    ],
-    "duration": 5300
-  },
-  {
-    "id": "continuity",
-    "lines": [
-      "Keep the original.",
-      "Understand the journey."
-    ],
-    "duration": 5600
-  },
-  {
-    "id": "evidence",
-    "lines": [
-      "Beyond the summary.",
-      "Back to the evidence."
-    ],
-    "duration": 5700
-  },
-  {
-    "id": "neighbors",
-    "lines": [
-      "Different conversations.",
-      "Unexpected connections."
-    ],
-    "duration": 5500
-  },
-  {
-    "id": "evolution",
-    "lines": [
-      "Ideas evolve.",
-      "Their history matters."
+      "Keep the knowledge.",
+      "Capture the meaning."
     ],
     "duration": 5200
   },
   {
+    "id": "context",
+    "lines": [
+      "Keep the context.",
+      "Find what matters."
+    ],
+    "duration": 5000
+  },
+  {
+    "id": "source",
+    "lines": [
+      "Preserve the source.",
+      "Build on what you know."
+    ],
+    "duration": 5000
+  },
+  {
     "id": "carry",
     "lines": [
-      "Unify. Analyze.",
-      "Preserve. Reintegrate."
+      "Capture. Organize.",
+      "Analyze. Reuse."
     ],
-    "duration": 5700
+    "duration": 5200
   }
 ]
