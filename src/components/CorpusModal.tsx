@@ -1,3 +1,4 @@
+import { GrabMetadata } from './GrabMetadata';
 import React, { useState } from 'react';
 import {
   X,
@@ -370,12 +371,7 @@ export const CorpusModal: React.FC<CorpusModalProps> = ({
                         </div>
                       </div>
 
-                      {/* Summary Snippet */}
-                      {thread.insights?.summary && (
-                        <p className="text-xs text-slate-600 leading-relaxed line-clamp-2 mb-3">
-                          {thread.insights.summary}
-                        </p>
-                      )}
+                      <GrabMetadata thread={thread}/>
 
                       {/* Footer: Tags and Open Button */}
                       <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">

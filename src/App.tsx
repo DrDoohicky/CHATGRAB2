@@ -1,3 +1,4 @@
+import { GrabMetadata } from './components/GrabMetadata';
 import {DownloadFile} from './components/DownloadFile';
 import {BatchImporter} from './lib/batch-import';
 import {BatchImportProgress} from './components/BatchImportProgress';
@@ -497,7 +498,7 @@ export default function App() {
                     <button key={thread.id} type="button" onClick={() => { setActiveThread(thread); setWorkspaceTab('transcript'); }} className="text-left rounded-2xl p-4 bg-gradient-to-br from-[#10264e] to-[#184c89] text-white shadow-lg hover:shadow-xl transition">
                       <MessageSquare className="w-6 h-6 mb-4 text-sky-300" />
                       <div className="font-bold text-base line-clamp-2">{thread.title}</div>
-                      <div className="text-xs text-blue-200 mt-3">{thread.messages.length} messages · {new Date(thread.capturedAt).toLocaleDateString()}</div>
+                      <GrabMetadata thread={thread}/><div className="text-xs text-blue-200 mt-3">{thread.messages.length} messages</div>
                     </button>
                   ))}
                 </div>
