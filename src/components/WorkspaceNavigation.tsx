@@ -3,7 +3,7 @@ import {MessageCircle,LayoutGrid,Database,Search,RefreshCw,Images,Film,Download,
 import type {CGPage} from './ChatGrabDashboard';
 
 const links = [
- ['capture','Capture',MessageCircle],['projects','Projects',FolderPlus],['history','Build history',History],['workspace','Workspace',LayoutGrid],['library','Library',Database],
+ ['capture','Capture',MessageCircle],['projects','Projects',FolderPlus],['history','Build history',Clock3],['history','Build history',History],['workspace','Workspace',LayoutGrid],['library','Library',Database],
  ['analyze','Chat Analysis',Search],['reintegrate','Reintegrate',RefreshCw],['artifacts','Artifacts',Images],
  ['export','Export',Download],['media','Media',Film],['bridge','Crew bridge',ArrowLeftRight],['guide','Visual guide',HelpCircle],['settings','Settings',Settings],
 ] as const;
