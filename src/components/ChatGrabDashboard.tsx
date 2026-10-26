@@ -14,6 +14,7 @@ const features = [
   { id: 'export', title: 'Export', desc: 'Create useful reports and backups.', action: 'Export' },
 ] as const;
 const details = {
+  history: ['Build history', 'Inspect design decisions, artifacts and release evidence.'],
   history: ['Build History', 'Track design decisions and the evidence behind each implementation.'],
   projects: ['Projects', 'Organize notes, images and conversations on movable boards.'],
   preserve: ['Preserve', 'Capture an original conversation before interpreting it.'],
