@@ -3,7 +3,7 @@ import { ArrowRight, Database, MessageCircle, Download, FileArchive, HelpCircle,
 import { ReferenceArtwork } from './ReferenceArtwork';
 import './chatgrab-dashboard.css';
 
-export type CGPage = 'workspace' | 'capture' | 'preserve' | 'organize' | 'analyze' | 'reintegrate' | 'artifacts' | 'export' | 'library' | 'support' | 'guide' | 'media' | 'settings' | 'bridge';
+export type CGPage = 'projects' | 'workspace' | 'capture' | 'preserve' | 'organize' | 'analyze' | 'reintegrate' | 'artifacts' | 'export' | 'library' | 'support' | 'guide' | 'media' | 'settings' | 'bridge';
 type Props = { page: CGPage; count: number; onNavigate: (p: CGPage) => void; onOpenLibrary: () => void; onOpenSupport: () => void; onOpenGuide: () => void; onExport: () => void; onAnalyze: () => void; onReintegrate: () => void; onAccount: () => void };
 const features = [
   { id: 'preserve', title: 'Preserve', desc: 'Keep the original conversation intact.', action: 'Capture & Preserve' },
@@ -14,6 +14,7 @@ const features = [
   { id: 'export', title: 'Export', desc: 'Create useful reports and backups.', action: 'Export' },
 ] as const;
 const details = {
+  projects: ['Projects', 'Organize notes, images and conversations on movable boards.'],
   preserve: ['Preserve', 'Capture an original conversation before interpreting it.'],
   organize: ['Organize', 'Search, rename and group your saved conversations in the library.'],
   analyze: ['Chat Analysis', 'Inspect insights and check them against the original conversation.'],
