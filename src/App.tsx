@@ -463,7 +463,7 @@ export default function App() {
               <div className="cg-hero-content relative grid lg:grid-cols-[1.05fr_.95fr] gap-6 items-center p-6 sm:p-9 lg:p-12">
                 <HeroIntro/>
                 <div className="cg-globe-visual">
-                  <img src="/images/capture-globe-metal.png" alt="A connected globe with conversation panels, images, documents and audio" className="cg-globe-image" fetchPriority="high" />
+                  <img src="/images/capture-connected-record-v2.png" alt="Connected glass conversation panels orbiting a luminous blue record, with images, documents and audio" className="cg-globe-image" fetchPriority="high" />
                 </div>
               </div>
               <form id="cg-capture" onSubmit={handleQuickCaptureSubmit} className="cg-capture relative mx-5 sm:mx-9 lg:mx-12 mb-7 sm:mb-9 p-3 sm:p-4 rounded-2xl bg-white/95 border border-blue-100 shadow-[0_12px_35px_rgba(29,78,216,.10)] grid lg:grid-cols-[1fr_auto] gap-2">
