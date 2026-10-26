@@ -12,6 +12,7 @@ import { ManualAnalysisPage } from './components/ManualAnalysisPage';
 import './components/media-library.css';
 import { HeroIntro } from './components/HeroIntro';
 import { ProjectWorkspace } from './components/ProjectWorkspace';
+import { BuildHistory } from './components/BuildHistory';
 import { LibraryExplorer } from './components/LibraryExplorer';
 import { ChatGrabDashboard } from './components/ChatGrabDashboard';
 import { ContinuityWorkspace } from './components/ContinuityWorkspace';
@@ -54,7 +55,7 @@ import { OnboardingGuideModal } from './components/OnboardingGuideModal';
 import './metallic-theme.css';
 import './components/workspace-navigation.css';
 const STORAGE_KEY = 'chatgrab_corpus_threads';
-const initialPage=():CGPage=>{const page=new URLSearchParams(window.location.search).get('page');return ['guide','tutorial'].includes(page||'')?'guide':page==='media'?'media':page==='bridge'?'bridge':page==='analyze'?'analyze':page==='workspace'?'workspace':page==='projects'?'projects':'capture';};
+const initialPage=():CGPage=>{const page=new URLSearchParams(window.location.search).get('page');return ['guide','tutorial'].includes(page||'')?'guide':page==='media'?'media':page==='bridge'?'bridge':page==='analyze'?'analyze':page==='workspace'?'workspace':page==='projects'?'projects':page==='history'?'history':'capture';};
 const initialNavigationPage=():CGPage=>new URLSearchParams(window.location.search).get('page')==='analyze'?'analyze':initialPage();
 export default function App() {
   // Load corpus from LocalStorage (clearing any old simulated items)
@@ -442,6 +443,8 @@ export default function App() {
             onImport={()=>setIsSupportOpen(true)} onOpenLegacy={()=>setIsCorpusOpen(true)} />
         ) : (page === 'artifacts' || page === 'support') ? (
           <SupportMaterialModal inline isOpen onClose={()=>openPage('workspace')} threads={corpus} activeThread={activeThread} onAssetLinked={handleAssetLinked}/>
+        ) : page === 'history' ? (
+          <BuildHistory />
         ) : page === 'projects' ? (
           <ProjectWorkspace threads={corpus} scope={accountUser?.id||'guest'} />
         ) : page === 'analyze' ? (
