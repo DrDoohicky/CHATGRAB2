@@ -50,3 +50,7 @@
 .cg-v2 .cg-topbar .cg-brand-subtitle>strong>span:first-child{color:#fff}
 .cg-v2 .cg-topbar .cg-brand-subtitle>strong>span:last-child{color:#164ce0;text-shadow:0 0 3px #87aaff}
 @media(max-width:760px){.cg-v2 .cg-topbar .cg-brand-subtitle>span{font-size:9px}.cg-v2 .cg-topbar .cg-brand-subtitle>strong{font-size:10px}}
+/* Exact packaged ChatGrab artwork, explicitly selected by David October 26. */
+.cg-v2 .cg-topbar .cg-brand{flex:0 0 auto;justify-content:center;gap:0;padding:3px 8px;min-width:0;line-height:0}
+.cg-v2 .cg-topbar .cg-approved-header-logo{display:block;width:148px;height:auto;max-width:100%;object-fit:contain}
+@media(max-width:760px){.cg-v2 .cg-topbar .cg-brand{padding:3px 5px}.cg-v2 .cg-topbar .cg-approved-header-logo{width:116px}}
