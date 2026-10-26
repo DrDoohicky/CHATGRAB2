@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageCircle, LayoutGrid, Database, Images, Film, Download, HelpCircle, Settings, UserRound, MoreHorizontal, Sparkles, Trash2, Menu } from 'lucide-react';
+import { MessageCircle, FolderPlus, LayoutGrid, Database, Images, Film, Download, HelpCircle, Settings, UserRound, MoreHorizontal, Sparkles, Trash2, Menu } from 'lucide-react';
 import type { CGPage } from './ChatGrabDashboard';
 
 interface HeaderProps {
@@ -13,6 +13,7 @@ export function Header({ onOpenNavigation, page, onNavigate, corpusCount, onOpen
   const [showMenu, setShowMenu] = useState(false);
   const links = [
     { id: 'capture', label: 'Capture', icon: MessageCircle, action: onOpenCapture },
+    { id: 'projects', label: 'Projects', icon: FolderPlus, action: () => onNavigate('projects') },
     { id: 'workspace', label: 'Workspace', icon: LayoutGrid, action: () => onNavigate('workspace') },
     { id: 'library', label: 'Library', icon: Database, action: onOpenCorpus },
     { id: 'artifacts', label: 'Artifacts', icon: Images, action: () => onNavigate('artifacts') },
