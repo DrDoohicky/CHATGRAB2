@@ -11,6 +11,7 @@ import { MediaLibrary } from './components/MediaLibrary';
 import { ManualAnalysisPage } from './components/ManualAnalysisPage';
 import './components/media-library.css';
 import { HeroIntro } from './components/HeroIntro';
+import { ProjectWorkspace } from './components/ProjectWorkspace';
 import { LibraryExplorer } from './components/LibraryExplorer';
 import { ChatGrabDashboard } from './components/ChatGrabDashboard';
 import { ContinuityWorkspace } from './components/ContinuityWorkspace';
@@ -53,7 +54,7 @@ import { OnboardingGuideModal } from './components/OnboardingGuideModal';
 import './metallic-theme.css';
 import './components/workspace-navigation.css';
 const STORAGE_KEY = 'chatgrab_corpus_threads';
-const initialPage=():CGPage=>{const page=new URLSearchParams(window.location.search).get('page');return ['guide','tutorial'].includes(page||'')?'guide':page==='media'?'media':page==='bridge'?'bridge':page==='analyze'?'analyze':page==='workspace'?'workspace':'capture';};
+const initialPage=():CGPage=>{const page=new URLSearchParams(window.location.search).get('page');return ['guide','tutorial'].includes(page||'')?'guide':page==='media'?'media':page==='bridge'?'bridge':page==='analyze'?'analyze':page==='workspace'?'workspace':page==='projects'?'projects':'capture';};
 const initialNavigationPage=():CGPage=>new URLSearchParams(window.location.search).get('page')==='analyze'?'analyze':initialPage();
 export default function App() {
   // Load corpus from LocalStorage (clearing any old simulated items)
@@ -441,6 +442,8 @@ export default function App() {
             onImport={()=>setIsSupportOpen(true)} onOpenLegacy={()=>setIsCorpusOpen(true)} />
         ) : (page === 'artifacts' || page === 'support') ? (
           <SupportMaterialModal inline isOpen onClose={()=>openPage('workspace')} threads={corpus} activeThread={activeThread} onAssetLinked={handleAssetLinked}/>
+        ) : page === 'projects' ? (
+          <ProjectWorkspace threads={corpus} scope={accountUser?.id||'guest'} />
         ) : page === 'analyze' ? (
           <ManualAnalysisPage threads={corpus} onOpenAdvanced={()=>{openPage('workspace');setTimeout(()=>document.getElementById('workspace-analytics')?.scrollIntoView({block:'start'}),75);}}/>
         ) : page === 'media' ? (
@@ -458,13 +461,13 @@ export default function App() {
         <>
           <div className="space-y-5 my-1">
             <section className="cg-hero cg-capture-hero relative overflow-hidden rounded-[2rem] shadow-sm">
-              <div className="cg-hero-glow" aria-hidden="true"/>
-              <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-28 left-1/3 w-96 h-96 bg-indigo-200/25 rounded-full blur-3xl pointer-events-none" />
+
+
+
               <div className="cg-hero-content relative grid lg:grid-cols-[1.05fr_.95fr] gap-6 items-center p-6 sm:p-9 lg:p-12">
                 <HeroIntro/>
                 <div className="cg-globe-visual">
-                  <img src="/images/capture-connected-record-v2.png" alt="Connected glass conversation panels orbiting a luminous blue record, with images, documents and audio" className="cg-globe-image" fetchPriority="high" />
+                  <img src="/images/capture-connected-record-v2.png" alt="Saved conversation and document cards" className="cg-globe-image" fetchPriority="high" />
                 </div>
               </div>
               <form id="cg-capture" onSubmit={handleQuickCaptureSubmit} className="cg-capture relative mx-5 sm:mx-9 lg:mx-12 mb-7 sm:mb-9 p-3 sm:p-4 rounded-2xl bg-white/95 border border-blue-100 shadow-[0_12px_35px_rgba(29,78,216,.10)] grid lg:grid-cols-[1fr_auto] gap-2">
