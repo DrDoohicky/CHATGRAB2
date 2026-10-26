@@ -34,7 +34,7 @@ export function ChatGrabDashboard(props: Props) {
   const actions = {
     preserve: () => onNavigate('capture'), organize: onOpenLibrary, analyze: onAnalyze,
     reintegrate: onReintegrate, artifacts: onOpenSupport, export: onExport,
-    library: onOpenLibrary, support: onOpenSupport, guide: onOpenGuide, media:()=>onNavigate('media'), settings: onAccount, bridge:()=>onNavigate('bridge'),
+    projects:()=>onNavigate('projects'), library: onOpenLibrary, support: onOpenSupport, guide: onOpenGuide, media:()=>onNavigate('media'), settings: onAccount, bridge:()=>onNavigate('bridge'),
   };
   if (page !== 'workspace' && page !== 'capture') {
     const [title, description] = details[page];
