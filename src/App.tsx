@@ -28,6 +28,7 @@ import { ExportModal } from './components/ExportModal';
 import { ThreadViewer } from './components/ThreadViewer';
 import { InsightsView } from './components/InsightsView';
 import { GeminiChatbot } from './components/GeminiChatbot';
+import { CrewHandoff } from './components/CrewHandoff';
 
 const STORAGE_KEY = 'chatgrab_corpus_threads';
 
@@ -393,6 +394,8 @@ export default function App() {
                 </button>
               </div>
             </div>
+
+            <CrewHandoff key={activeThread.id} thread={activeThread} />
 
             {/* Tab 1: Transcript */}
             {workspaceTab === 'transcript' && (
