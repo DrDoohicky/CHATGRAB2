@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { MessageCircle, LayoutGrid, Database, Images, Film, Download, HelpCircle, Settings, UserRound, MoreHorizontal, Sparkles, Trash2, Menu } from 'lucide-react';
+import { MessageCircle, LayoutGrid, Database, Images, Film, Download, HelpCircle, Settings, UserRound, MoreHorizontal, Sparkles, Trash2, Menu, History } from 'lucide-react';
 import type { CGPage } from './ChatGrabDashboard';
 
 interface HeaderProps {
@@ -23,6 +23,7 @@ export function Header({ onOpenNavigation, page, onNavigate, corpusCount, onOpen
     <button type="button" className="cg-mobile-menu" onClick={onOpenNavigation} aria-label="Open navigation" aria-controls="workspace-navigation"><Menu size={23}/></button>
     <button type="button" className="cg-brand" onClick={() => onNavigate('capture')} aria-label="ChatGrab home"><img className="cg-approved-header-logo" src="/images/chatgrab-header-approved.png?v=20261026" width="1120" height="546" alt="ChatGrab for ChatGPT"/></button>
     <nav className="cg-topnav" aria-label="Main navigation">{links.map(({ id, label, icon: Icon, action }) => <button key={id} type="button" onClick={action} aria-current={page === id ? 'page' : undefined}><Icon size={21}/><span>{label}</span>{id === 'library' && corpusCount > 0 && <small>{corpusCount}</small>}</button>)}</nav>
+    <a href="/history/" title="ChatGrab version history" style={{display:"inline-flex",alignItems:"center",gap:6,padding:"8px 12px",borderRadius:10,fontSize:13,fontWeight:800,color:"#183f8b",background:"#eaf0ff",textDecoration:"none",whiteSpace:"nowrap"}}><History size={18}/><span>History</span></a>
     <div className="cg-header-tools">
       <button type="button" onClick={() => onNavigate('guide')} aria-label="Help"><HelpCircle size={20}/><span>Help</span></button>
       <button type="button" onClick={() => onNavigate('settings')} aria-label="Settings" aria-current={page === 'settings' ? 'page' : undefined}><Settings size={20}/><span>Settings</span></button>
