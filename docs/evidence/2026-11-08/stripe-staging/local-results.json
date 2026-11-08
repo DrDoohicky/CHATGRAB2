@@ -1,0 +1,8 @@
+{
+  "hostedStripePayment": "PASS",
+  "serverVerifiedAmount1900USD": "PASS",
+  "repeatVerification": "PASS",
+  "crossBrowserReceiptDenied": "PASS",
+  "membershipActivated": false,
+  "realMoney": false
+}

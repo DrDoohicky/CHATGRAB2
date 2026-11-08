@@ -3,8 +3,11 @@ import express from 'express';
 import path from 'node:path';
 import fetchShare from './api/fetch-share.js';
 import corpusQuery from './api/corpus/query.js';
+import {createFoundingRouter, foundingWebhook} from './lib/founding-checkout.js';
 const app=express();
+app.post('/api/founding/webhook',express.raw({type:'application/json',limit:'1mb'}),foundingWebhook);
 app.use(express.json({limit:'15mb'}));
+app.use('/api/founding',createFoundingRouter());
 if(process.env.BRIDGE_ENABLED==='true'&&!process.env.VERCEL){
  const {createBridgeRouter}=await import('./lib/bridge/router.js');app.use('/api/bridge',createBridgeRouter({enabled:true}).router);
 }else app.get('/api/bridge/status',(_req,res)=>res.json({available:false,mode:'portable-only',workerRuntime:false}));
