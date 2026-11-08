@@ -31,6 +31,7 @@ for(const route of ['analyze-thread','chat','adaptive-portions','deep-analysis']
 export default app;
 async function startServer(){
  if(process.env.NODE_ENV!=='production'){
+  app.use(express.static(path.resolve(process.cwd(),'public')));
   const {createServer}=await import('vite');const vite=await createServer({server:{middlewareMode:true,hmr:process.env.DISABLE_HMR!=='true'},appType:'spa'});app.use(vite.middlewares);
  }else{app.use(express.static(path.resolve(process.cwd(),'dist')));app.get('*',(_req,res)=>res.sendFile(path.resolve(process.cwd(),'dist','index.html')));}
  const port=Number(process.env.PORT||3000);app.listen(port,process.env.BRIDGE_ENABLED==='true'?'127.0.0.1':'0.0.0.0',()=>console.log('ChatGrab listening on '+port));

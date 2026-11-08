@@ -56,6 +56,7 @@ const STORAGE_KEY = 'chatgrab_corpus_threads';
 const initialPage=():CGPage=>{const page=new URLSearchParams(window.location.search).get('page');return ['guide','tutorial'].includes(page||'')?'guide':page==='media'?'media':page==='bridge'?'bridge':page==='analyze'?'analyze':page==='workspace'?'workspace':'capture';};
 const initialNavigationPage=():CGPage=>new URLSearchParams(window.location.search).get('page')==='analyze'?'analyze':initialPage();
 export default function App() {
+  const storageLoadFailed=useRef(false);
   // Load corpus from LocalStorage (clearing any old simulated items)
   const [corpus, setCorpus] = useState<ConversationThread[]>(() => {
     try {
@@ -63,13 +64,16 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
+          if(parsed.some(t=>!t||typeof t.id!=='string'||typeof t.title!=='string'||!Array.isArray(t.messages)||t.messages.some((m:any)=>!m||typeof m.content!=='string')))throw Error('Invalid saved library.');
           const simulatedIds = new Set(['thread-cache-architecture', 'thread-saas-gtm', 'thread-react-19']);
           const realThreads = parsed.filter((t: ConversationThread) => !simulatedIds.has(t.id));
           return realThreads;
         }
+        throw Error('Invalid saved library.');
       }
     } catch (e) {
       console.warn('Failed to load local corpus:', e);
+      storageLoadFailed.current=true;
     }
     return [];
   });
@@ -109,6 +113,7 @@ export default function App() {
   const [quickUrl, setQuickUrl] = useState('');
   const [quickCaptureError, setQuickCaptureError] = useState<string | null>(null);
   const [captureNotice, setCaptureNotice] = useState<string | null>(null);
+  const [storageError,setStorageError]=useState<string|null>(()=>storageLoadFailed.current?'Your saved library could not be read. Its stored data has been preserved. Export any work from this tab, then use Reset local library only when you are ready to discard the unreadable data.':null);
   const [batchMode, setBatchMode] = useState(false);
   const [batchInput, setBatchInput] = useState('');
   const [isQuickCapturing, setIsQuickCapturing] = useState(false);
@@ -154,7 +159,9 @@ export default function App() {
     try {
       if (!libraryReady) return;
       if (!accountUser) {
+        if(storageLoadFailed.current)return;
         localStorage.setItem(STORAGE_KEY, JSON.stringify(corpus));
+        setStorageError(null);
       } else if (cloud && activeOwnerRef.current === accountUser.id) {
         const ownerId = accountUser.id;
         const cloudClient = cloud;
@@ -176,6 +183,7 @@ export default function App() {
       }
     } catch (e) {
       console.warn('Failed to save corpus to localStorage:', e);
+      setStorageError('Your latest changes could not be saved in this browser. Export a library backup now before reloading or closing this tab.');
     }
   }, [corpus, accountUser, libraryReady]);
   const showToast = (msg: string) => {
@@ -311,6 +319,7 @@ export default function App() {
     showToast('Corpus backup downloaded');
   };
   const handleClearCorpus = () => {
+    storageLoadFailed.current=false;
     setCorpus([]);
     setActiveThread(null);
     if (!accountUser) localStorage.removeItem(STORAGE_KEY);
@@ -338,6 +347,8 @@ export default function App() {
   };
   const importConversationFile = async (file: File) => {
     try {
+      setQuickCaptureError(null);setCaptureNotice(null);
+      if(file.size>15*1024*1024)throw new Error('Choose a file smaller than 15 MB. Split large exports into individual conversations first.');
       if (file.type.startsWith('image/')) {
         setIsSupportOpen(true);
         setCaptureNotice('Use the artifact library to attach images as evidence.');
@@ -351,6 +362,7 @@ export default function App() {
   };
   const importCopiedText = () => {
     if (!quickUrl.trim()) { setQuickCaptureError('Paste conversation text into the field first.'); return; }
+    setQuickCaptureError(null);setCaptureNotice(null);
     handleThreadCaptured({ id: `text-${Date.now()}`, title: 'Pasted conversation text', capturedAt: new Date().toISOString(), model: 'Manual import', messages: [{ id: 'text-0', role: 'user', content: quickUrl }] });
     setQuickUrl('');
   };
@@ -434,6 +446,8 @@ export default function App() {
       <WorkspaceNavigation page={navigationPage} onNavigate={openPage} collapsed={sidebarCollapsed} onCollapse={toggleSidebar} mobileOpen={mobileNavigation} onClose={closeNavigation}/>
       {/* Workspace Area */}
       <main className="cg-main flex-1 w-full p-4 sm:p-6 space-y-5">
+        <aside className="cg-launch-notice" aria-label="Early access and storage"><strong>Browser-local early access</strong><span>Save backups before clearing browser data. Use a separate browser profile on shared devices.</span><a href="/founding/">Founding Member preview · payments unavailable ↗</a><a href="/privacy/">Privacy</a></aside>
+        {storageError&&<div role="alert" className="rounded-xl border border-red-300 bg-red-50 p-4 text-red-900">{storageError} <button type="button" className="underline font-bold" onClick={()=>openPage('export')}>Open backup exports</button></div>}
         {(page === 'library' || page === 'organize') ? (
           <LibraryExplorer key={accountUser?.id || 'guest'} threads={corpus} storageScope={accountUser?.id || 'guest'} analysis={false}
             onBack={()=>openPage('workspace')} onRenameThread={handleRenameThread}

@@ -88,9 +88,23 @@ export default async function handler(req: any, res: any) {
   }
   const cleanUrl=found[0];
   try {
-    const response=await fetch(cleanUrl,{headers:{'User-Agent':'Mozilla/5.0 ChatGrab/1.0','Accept':'text/html,application/xhtml+xml'},signal:AbortSignal.timeout(15000)});
+    // Canonical HTTPS target, no redirects to unrelated hosts or private services.
+    let target=new URL(cleanUrl);target.protocol='https:';
+    let response:Response|undefined;
+    const signal=AbortSignal.timeout(15000);
+    for(let redirects=0;redirects<=3;redirects++){
+      response=await fetch(target,{headers:{'User-Agent':'Mozilla/5.0 ChatGrab/1.0','Accept':'text/html,application/xhtml+xml'},signal,redirect:'manual'});
+      if(![301,302,303,307,308].includes(response.status))break;
+      const location=response.headers.get('location');await response.body?.cancel();
+      if(!location||redirects===3)throw new Error('Share link redirected too many times.');
+      target=new URL(location,target);
+      if(target.protocol!=='https:'||!['chatgpt.com','chat.openai.com'].includes(target.hostname)||target.port||target.username||target.password||!/^\/share\/[a-zA-Z0-9_-]+\/?$/.test(target.pathname))throw new Error('Share link redirected outside the supported public share path.');
+    }
+    if(!response)throw new Error('No response from share page.');
     if(!response.ok) return res.status(422).json({success:false,error:'ChatGPT share page returned HTTP '+response.status+'. Check the link is publicly shared.',allowFallbackPaste:true});
-    const html=await response.text();
+    const reader=response.body?.getReader();let size=0;const chunks:Uint8Array[]=[];
+    if(reader){while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>8*1024*1024){await reader.cancel();throw new Error('Share page exceeds the 8 MB capture limit. Use a text export instead.');}chunks.push(value);}}
+    const html=Buffer.concat(chunks).toString('utf8');
     const parsed=parseShare(html);
     if(!parsed) return res.status(422).json({success:false,error:'The shared page opened, but its transcript could not be extracted. Try pasting the transcript text.',allowFallbackPaste:true});
     return res.status(200).json({success:true,data:{...parsed,sourceUrl:cleanUrl,capturedAt:new Date().toISOString()}});
