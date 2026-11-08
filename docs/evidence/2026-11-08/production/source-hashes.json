@@ -1,0 +1,27 @@
+[
+  {
+    "path": "/founding/index.html",
+    "sha256": "aec3a3f0c834552378e843633ad040bdf3724dc65feb964b3d7d002f30b7b8ff",
+    "matches_source": true
+  },
+  {
+    "path": "/founding/demo.js",
+    "sha256": "2a9df4ba6853a7ab1357315c3a6c36020d03028668ebe240e236d61d26370dd5",
+    "matches_source": true
+  },
+  {
+    "path": "/founding/launch.css",
+    "sha256": "6dbd57bbaddaaf1be981fd66219878567207430371a5f333262ce2daab5f4792",
+    "matches_source": true
+  },
+  {
+    "path": "/privacy/index.html",
+    "sha256": "31ef5e5a94b89129bd0c3e257eef2b8ac96a81b1f3736079b4a9d0817693cd68",
+    "matches_source": true
+  },
+  {
+    "path": "/terms/index.html",
+    "sha256": "db2902977f18a71a7a1d4d6a8d2a0a2a86371a74c9cc449dcde1e61d60b85f28",
+    "matches_source": true
+  }
+]
