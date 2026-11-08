@@ -1,0 +1,88 @@
+{
+  "base": "http://127.0.0.1:3001",
+  "at": "2026-11-08T16:53:21.859Z",
+  "results": [
+    {
+      "name": "Genuine copied-text import",
+      "status": "PASS",
+      "detail": "Actual task instruction imported through the UI; exact text preserved; no source upload."
+    },
+    {
+      "name": "Reload and library search",
+      "status": "PASS",
+      "detail": "Record persisted and matching/nonmatching search reflected the saved title."
+    },
+    {
+      "name": "Downloaded backup contents",
+      "status": "PASS",
+      "detail": "Downloaded JSON independently read from disk matches original source."
+    },
+    {
+      "name": "Separate browser profile isolation",
+      "status": "PASS",
+      "detail": "Independent browser context sees no imported library. Account/tenant isolation is not offered or certified."
+    },
+    {
+      "name": "Delete and reload",
+      "status": "PASS",
+      "detail": "Confirmed per-conversation deletion persists."
+    },
+    {
+      "name": "Backup restore",
+      "status": "PASS",
+      "detail": "Downloaded JSON restored through file input; source text unchanged."
+    },
+    {
+      "name": "Malformed import preserves library",
+      "status": "PASS",
+      "detail": "Invalid JSON is visibly rejected without removing saved records."
+    },
+    {
+      "name": "Private link failure",
+      "status": "PASS",
+      "detail": "Private /s/t_ link rejected with corrective instructions."
+    },
+    {
+      "name": "Native export schema UI",
+      "status": "PASS",
+      "detail": "Synthetic text-only ChatGPT export imported with user/assistant turns. Not a real account export."
+    },
+    {
+      "name": "Actual capture API",
+      "status": "PASS",
+      "detail": "POST API parses authorized text and rejects private URL. No successful remote share claim."
+    },
+    {
+      "name": "Mock checkout success/error/cancel/retry",
+      "status": "PASS",
+      "detail": "No requests, card inputs, orders or entitlement. Checkout disabled."
+    },
+    {
+      "name": "Privacy and terms",
+      "status": "PASS",
+      "detail": "Both policy pages accessible. Proposed commercial/refund terms explicitly draft; no sale."
+    },
+    {
+      "name": "Mobile 390 and 360 px",
+      "status": "PASS",
+      "detail": "Workspace, offer, privacy and terms fit without horizontal overflow."
+    },
+    {
+      "name": "Storage failure warning",
+      "status": "PASS",
+      "detail": "Simulated quota error shows export-before-reload warning."
+    },
+    {
+      "name": "Corrupt library protection",
+      "status": "PASS",
+      "detail": "Unreadable data preserved instead of overwritten by an empty library."
+    },
+    {
+      "name": "Runtime errors",
+      "status": "PASS",
+      "detail": "No uncaught browser exceptions or HTTP 5xx in exercised flows."
+    }
+  ],
+  "jsErrors": [],
+  "badResponses": []
+}
