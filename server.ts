@@ -1,3 +1,4 @@
+import mcp from './api/mcp.js';
 import {chatgptConnection as connection} from './lib/chatgpt-connection.js';
 import express from 'express';
 import path from 'node:path';
@@ -8,6 +9,8 @@ app.use(express.json({limit:'15mb'}));
 if(process.env.BRIDGE_ENABLED==='true'&&!process.env.VERCEL){
  const {createBridgeRouter}=await import('./lib/bridge/router.js');app.use('/api/bridge',createBridgeRouter({enabled:true}).router);
 }else app.get('/api/bridge/status',(_req,res)=>res.json({available:false,mode:'portable-only',workerRuntime:false}));
+app.all('/mcp',mcp);
+app.all('/api/mcp',mcp);
 app.post('/api/fetch-share',fetchShare);
 app.post('/api/corpus/query',corpusQuery);
 app.get('/api/chatgpt/status',(_req,res)=>{res.setHeader('Cache-Control','no-store');res.json(connection);});

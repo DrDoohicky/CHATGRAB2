@@ -51,7 +51,7 @@ export interface ConversationThread {
   isFavorite?: boolean;
   renamedAt?: string;
   supportAssetIds?: string[];
-  reintegrationMeta?: {purpose: string; conflictReview: string; destinationId?: string; status: 'active' | 'withdrawn'; sources: {threadId: string; messageId: string}[]};
+  reintegrationMeta?: {supersedesId?:string;purpose: string; conflictReview: string; destinationId?: string; status: 'active' | 'withdrawn'; sources: {threadId: string; messageId: string}[]};
   mergeMeta?: {
     kind: 'derived_context_merge';
     preservesSources: true;

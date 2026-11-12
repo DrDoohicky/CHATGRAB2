@@ -1,3 +1,5 @@
+import {PortableBackupPanel} from './components/PortableBackupPanel';
+import {ImportReview} from './components/ImportReview';
 import {capturedRecord,addCapturedRecord,sameCapturedSource} from './lib/capture-record';
 import { GrabMetadata } from './components/GrabMetadata';
 import {DownloadFile} from './components/DownloadFile';
@@ -54,8 +56,9 @@ import { OnboardingGuideModal } from './components/OnboardingGuideModal';
 import './metallic-theme.css';
 import './components/workspace-navigation.css';
 const STORAGE_KEY = 'chatgrab_corpus_threads';
-const initialPage=():CGPage=>{const page=new URLSearchParams(window.location.search).get('page');return ['guide','tutorial'].includes(page||'')?'guide':page==='media'?'media':page==='bridge'?'bridge':page==='analyze'?'analyze':page==='workspace'?'workspace':'capture';};
-const initialNavigationPage=():CGPage=>new URLSearchParams(window.location.search).get('page')==='analyze'?'analyze':initialPage();
+const validPages=new Set(['capture','workspace','library','analyze','reintegrate','artifacts','export','media','bridge','guide','settings']);
+const initialNavigationPage=():CGPage=>{const raw=new URLSearchParams(window.location.search).get('page')||'capture';const p=({preserve:'capture',organize:'library',support:'artifacts',tutorial:'guide'} as Record<string,string>)[raw]||raw;return (validPages.has(p)?p:'capture') as CGPage;};
+const initialPage=():CGPage=>{const p=initialNavigationPage();return p==='reintegrate'?'workspace':p;};
 export default function App() {
   const storageLoadFailed=useRef(false);
   // Load corpus from LocalStorage (clearing any old simulated items)
@@ -84,6 +87,8 @@ export default function App() {
   const [workspaceTab, setWorkspaceTab] = useState<'transcript' | 'insights' | 'portions'>('transcript');
   const requestedThreadTab = useRef<'transcript' | 'insights' | 'portions'>('transcript');
   // Modals state (Capture modal opens by default as in SS1.jpeg)
+  const [reviewImport,setReviewImport]=useState(false);
+  const closeImportReview=React.useCallback(()=>setReviewImport(false),[]);
   const [page, setPage] = useState<CGPage>(initialPage);
   const [navigationPage,setNavigationPage]=useState<CGPage>(initialNavigationPage);
   const [sidebarCollapsed,setSidebarCollapsed]=useState(()=>{try{return localStorage.getItem('chatgrab_sidebar_collapsed')==='true';}catch{return false;}});
@@ -94,10 +99,12 @@ export default function App() {
   const openPage = (next: CGPage) => {
     const destination=next==='preserve'?'capture':next;
     const anchor=next==='reintegrate'?'workspace-reintegration':null;
+    const url=new URL(window.location.href);url.searchParams.set('page',destination);if(anchor)url.hash=anchor;else url.hash='';if(url.href!==window.location.href)history.pushState(null,'',url);
     setNavigationPage(destination);setPage(anchor?'workspace':destination);
     if(anchor)setTimeout(()=>document.getElementById(anchor)?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'}),75);
     else window.scrollTo({top:0,behavior:'instant'});
   };
+  useEffect(()=>{const restore=()=>{setNavigationPage(initialNavigationPage());setPage(initialPage());setMobileNavigation(false);};window.addEventListener('popstate',restore);return()=>window.removeEventListener('popstate',restore);},[]);
   useEffect(() => {
     if (page === 'capture' && activeThread) {
       document.getElementById('cg-active-thread')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -410,6 +417,7 @@ export default function App() {
           <span>{toastMessage}</span>
         </div>
       )}
+      {reviewImport&&<ImportReview existing={corpus} initialText={quickUrl} onClose={closeImportReview} onSave={threads=>{setCorpus(old=>[...threads,...old]);setReviewImport(false);setQuickUrl('');setQuickCaptureError(null);setActiveThread(threads[0]);openPage('capture');setCaptureNotice('Reviewed import saved. Original records preserved.');}}/>}
       {accountOpen && <ChatGPTConnectionPanel onClose={() => setAccountOpen(false)} />}
       {cloud && !libraryReady && <div className="fixed inset-0 z-[90] bg-white/90 grid place-items-center"><p className="text-slate-700 font-semibold">Opening your private library…</p></div>}
       {/* Main Header */}
@@ -438,7 +446,7 @@ export default function App() {
           <LibraryExplorer key={accountUser?.id || 'guest'} threads={corpus} storageScope={accountUser?.id || 'guest'} analysis={false}
             onBack={()=>openPage('workspace')} onRenameThread={handleRenameThread}
             onOpenThread={(thread,tab)=>{setActiveThread(thread);setWorkspaceTab(tab);openPage('capture');}}
-            onImport={()=>setIsSupportOpen(true)} onOpenLegacy={()=>setIsCorpusOpen(true)} />
+            onImport={()=>setIsSupportOpen(true)} onOpenLegacy={()=>setIsCorpusOpen(true)} onToggleFavorite={id=>setCorpus(old=>old.map(t=>t.id===id?{...t,isFavorite:!t.isFavorite}:t))} />
         ) : (page === 'artifacts' || page === 'support') ? (
           <SupportMaterialModal inline isOpen onClose={()=>openPage('workspace')} threads={corpus} activeThread={activeThread} onAssetLinked={handleAssetLinked}/>
         ) : page === 'analyze' ? (
@@ -450,7 +458,7 @@ export default function App() {
         ) : page === 'bridge' ? (
           <CrewBridge threads={corpus}/>
         ) : page === 'export' ? (
-          <section className="cg-destination"><h1>Export your conversations</h1><p>Save a portable JSON backup, or choose a conversation for Markdown, JSON and print-to-PDF.</p><div className="cg-destination-panel"><h2>Library backup</h2><p>{corpus.length} saved conversations. Supporting file originals remain in this browser; download those separately from Artifacts.</p><DownloadFile text={JSON.stringify(corpus,null,2)} filename={`chatgrab-library-${new Date().toISOString().slice(0,10)}.json`} type="application/json" disabled={!corpus.length} className="inline-block border rounded-lg px-4 py-3 mt-3 text-blue-700 font-bold">Download library JSON</DownloadFile></div><div className="cg-destination-panel"><h2>Conversation exports</h2>{corpus.length?corpus.map(thread=><div className="cg-export-row" key={thread.id}><div><strong>{thread.title}</strong><small>{thread.messages.length} messages · {new Date(thread.capturedAt).toLocaleString()}</small></div><button onClick={()=>{setActiveThread(thread);setIsExportOpen(true);}}>Export {thread.title}</button></div>):<p>Capture a conversation to enable exports.</p>}</div></section>
+          <section className="cg-destination"><h1>Export your conversations</h1><PortableBackupPanel threads={corpus} localOnly={!accountUser} onRestore={next=>{storageLoadFailed.current=false;setCorpus(next);setActiveThread(null);}}/><p>Save a portable JSON backup, or choose a conversation for Markdown, JSON and print-to-PDF.</p><div className="cg-destination-panel"><h2>Library backup</h2><p>{corpus.length} saved conversations. Supporting file originals remain in this browser; download those separately from Artifacts.</p><DownloadFile text={JSON.stringify(corpus,null,2)} filename={`chatgrab-library-${new Date().toISOString().slice(0,10)}.json`} type="application/json" disabled={!corpus.length} className="inline-block border rounded-lg px-4 py-3 mt-3 text-blue-700 font-bold">Download library JSON</DownloadFile></div><div className="cg-destination-panel"><h2>Conversation exports</h2>{corpus.length?corpus.map(thread=><div className="cg-export-row" key={thread.id}><div><strong>{thread.title}</strong><small>{thread.messages.length} messages · {new Date(thread.capturedAt).toLocaleString()}</small></div><button onClick={()=>{setActiveThread(thread);setIsExportOpen(true);}}>Export {thread.title}</button></div>):<p>Capture a conversation to enable exports.</p>}</div></section>
         ) : page === 'settings' ? (
           <section className="cg-destination"><h1>Settings</h1><div className="cg-destination-panel"><h2>Account and storage</h2><p>{accountUser?'Your conversation library is linked to your account.':'Your conversation library is saved in this browser.'} Supporting file originals are stored locally in IndexedDB.</p><button onClick={()=>setAccountOpen(true)}>ChatGPT connection</button><button onClick={()=>openPage('export')}>Backup and export</button></div><div className="cg-destination-panel"><h2>Navigation</h2><p>The desktop sidebar preference is saved on this device.</p><button onClick={toggleSidebar}>{sidebarCollapsed?'Expand desktop sidebar':'Collapse desktop sidebar'}</button><button onClick={()=>openPage('guide')}>Open capture guide</button></div></section>
         ) : page === 'capture' ? (<div className="cg-capture-original">
@@ -476,6 +484,7 @@ export default function App() {
                 {captureNotice && <div role="status" className="lg:col-span-2 text-sm text-emerald-700 px-2">{captureNotice}</div>}
                 {quickCaptureError && <div role="alert" className="lg:col-span-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{quickCaptureError}</div>}
                 <div className="lg:col-span-2 flex flex-wrap gap-2 pt-3 border-t border-blue-100">
+                  <button type="button" onClick={()=>setReviewImport(true)} className="px-4 py-2 text-sm font-bold text-white bg-blue-800 rounded-lg">Review paste / file import</button>
                   <button type="button" onClick={() => void handleQuickPaste()} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Paste from clipboard</button>
                   <label className="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import JSON <input className="hidden" type="file" accept=".json,application/json" onChange={e => { const f=e.target.files?.[0]; if(f) void importConversationFile(f); e.target.value=''; }} /></label>
                   <button type="button" onClick={importCopiedText} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import copied text</button>
