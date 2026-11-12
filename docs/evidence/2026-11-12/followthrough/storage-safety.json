@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "corruptStorageDownloadExact": true,
+  "restoreCannotOverwriteUnreadableLibrary": true,
+  "uploadedHTMLDownloadedAsOriginalWithoutExecution": true,
+  "scope": "Synthetic local Chromium browser fixtures"
+}

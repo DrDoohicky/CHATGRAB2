@@ -1,5 +1,7 @@
 # ChatGrab system audit — November 12, 2026
 
+**Historical audit snapshot.** The implemented follow-through and newer deployed acceptance results are in [FOLLOWTHROUGH-2026-11-12.md](FOLLOWTHROUGH-2026-11-12.md). Earlier missing-feature rows below are retained for provenance.
+
 Issue: https://github.com/DrDoohicky/CHATGRAB2/issues/8. Atlas full-execution authorization on aichatlab main c5d76f73656a2ed1b368c4097ac8557c61c523b6. This is an isolated audit and reversible repair, with no production publication or live payments. Evidence is under `docs/evidence/2026-11-12/system-audit/`. User conversation contents, share token, credentials and temporary preview-access links are deliberately excluded.
 
 ## Customer-facing result
