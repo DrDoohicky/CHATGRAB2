@@ -1,3 +1,4 @@
+import {capturedRecord,addCapturedRecord,sameCapturedSource} from './lib/capture-record';
 import { GrabMetadata } from './components/GrabMetadata';
 import {DownloadFile} from './components/DownloadFile';
 import {BatchImporter} from './lib/batch-import';
@@ -191,20 +192,12 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 3000);
   };
   const handleThreadCaptured = (newThread: ConversationThread) => {
-    // Add to corpus (avoid duplicates by ID or update)
-    setCorpus((prev) => {
-      const existsIdx = prev.findIndex((t) => t.id === newThread.id);
-      if (existsIdx !== -1) {
-        const updated = [...prev];
-        updated[existsIdx] = newThread;
-        return updated;
-      }
-      return [newThread, ...prev];
-    });
+    const duplicate=corpus.find(t=>sameCapturedSource(t,newThread));
+    setCorpus(prev=>addCapturedRecord(prev,newThread));
     openPage('capture');
-    setActiveThread(newThread);
+    setActiveThread(duplicate||newThread);
     setWorkspaceTab('transcript');
-    showToast(`Successfully captured "${newThread.title}"`);
+    showToast(duplicate?`Already preserved "${duplicate.title}"`: `Successfully captured "${newThread.title}"`);
   };
   const handleUpdateInsights = (updatedInsights: ThreadInsights) => {
     if (!activeThread) return;
@@ -393,15 +386,7 @@ export default function App() {
       if (!response.ok || !result.success || !Array.isArray(result.data?.messages) || !result.data.messages.length) {
         throw new Error(result.error || 'Unable to read messages from this shared conversation.');
       }
-      const thread: ConversationThread = {
-        id: `thread-${Date.now()}`,
-        title: result.data.title || 'Captured Conversation',
-        sourceUrl: result.data.sourceUrl || shareUrl,
-        capturedAt: new Date().toISOString(),
-        originalCreatedAt: result.data.originalCreatedAt || new Date().toISOString(),
-        model: result.data.model || 'ChatGPT',
-        messages: result.data.messages,
-      };
+      const thread = capturedRecord(result.data,shareUrl);
       handleThreadCaptured(thread);
       setQuickUrl('');
       // Analysis is optional; successful preservation must never depend on an AI quota.
