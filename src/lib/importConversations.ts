@@ -35,6 +35,7 @@ export function parseConversationFile(text:string,name:string,existing:Conversat
   data&&Array.isArray(data.messages)?[data]:data?.data&&Array.isArray(data.data.messages)?[data.data]:
   Array.isArray(data)?[{title:name,messages:data}]:null;
  if(!candidates?.length)throw new Error('Choose a ChatGrab library backup, conversation JSON, or a nonempty messages array.');
+ const suppliedIds=candidates.filter(t=>typeof t.id==='string').map(t=>t.id);if(new Set(suppliedIds).size!==suppliedIds.length)throw Error('Conversation IDs must be unique in an import.');
  const ids=new Set(existing.map(t=>t.id));const remapped=new Map<string,string>();
  const imported=candidates.map((item:any)=>{
   for(const field of ['capturedAt','originalCreatedAt'])if(item[field]!==undefined&&(typeof item[field]!=='string'||!Number.isFinite(Date.parse(item[field]))))throw Error('Conversation dates must be valid ISO date strings.');
@@ -51,5 +52,5 @@ export function parseConversationFile(text:string,name:string,existing:Conversat
   const id=oldId&&!ids.has(oldId)?oldId:crypto.randomUUID();ids.add(id);if(oldId){remapped.set(oldId,id);idMap?.set(oldId,id);}
   return {...item,id,title:typeof item.title==='string'?item.title:name,capturedAt:typeof item.capturedAt==='string'?item.capturedAt:now,model:typeof item.model==='string'?item.model:'Imported source',messages} as ConversationThread;
  }).filter((t):t is ConversationThread=>!!t);
- return imported.map(t=>({...t,messages:t.messages.map(m=>({...m,...(m.sourceThreadId?{sourceThreadId:remapped.get(m.sourceThreadId)||m.sourceThreadId}:{})})),...(t.reintegrationMeta?{reintegrationMeta:{...t.reintegrationMeta,destinationId:remapped.get(t.reintegrationMeta.destinationId||'')||t.reintegrationMeta.destinationId,sources:t.reintegrationMeta.sources.map(s=>({...s,threadId:remapped.get(s.threadId)||s.threadId}))}}:{})}));
+ return imported.map(t=>({...t,messages:t.messages.map(m=>({...m,...(m.sourceThreadId?{sourceThreadId:remapped.get(m.sourceThreadId)||m.sourceThreadId}:{})})),...(t.mergeMeta?{mergeMeta:{...t.mergeMeta,sources:t.mergeMeta.sources.map(s=>({...s,id:remapped.get(s.id)||s.id}))}}:{}),...(t.reintegrationMeta?{reintegrationMeta:{...t.reintegrationMeta,...(t.reintegrationMeta.supersedesId?{supersedesId:remapped.get(t.reintegrationMeta.supersedesId)||t.reintegrationMeta.supersedesId}:{}),destinationId:remapped.get(t.reintegrationMeta.destinationId||'')||t.reintegrationMeta.destinationId,sources:t.reintegrationMeta.sources.map(s=>({...s,threadId:remapped.get(s.threadId)||s.threadId}))}}:{})}));
 }
