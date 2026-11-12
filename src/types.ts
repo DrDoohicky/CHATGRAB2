@@ -44,6 +44,7 @@ export interface ConversationThread {
   sourceUrl?: string;
   capturedAt: string;
   originalCreatedAt?: string;
+  captureLimitations?: string[];
   model: string;
   messages: ChatMessage[];
   insights?: ThreadInsights;

@@ -9,7 +9,7 @@ export function capturedRecord(data:any,sourceUrl?:string):ConversationThread {
   return {...m,id};
  });
  const original=typeof data.originalCreatedAt==='string'&&Number.isFinite(Date.parse(data.originalCreatedAt))?data.originalCreatedAt:undefined;
- return {id:'thread-'+crypto.randomUUID(),title:typeof data.title==='string'&&data.title.trim()?data.title:'Captured Conversation',sourceUrl:typeof data.sourceUrl==='string'?data.sourceUrl:sourceUrl,capturedAt:new Date().toISOString(),...(original?{originalCreatedAt:original}:{}),model:typeof data.model==='string'&&data.model?data.model:'Unknown',messages};
+ return {id:'thread-'+crypto.randomUUID(),title:typeof data.title==='string'&&data.title.trim()?data.title:'Captured Conversation',sourceUrl:typeof data.sourceUrl==='string'?data.sourceUrl:sourceUrl,capturedAt:new Date().toISOString(),...(original?{originalCreatedAt:original}:{}),...(Array.isArray(data.limitations)&&data.limitations.every((s:unknown)=>typeof s==='string')?{captureLimitations:data.limitations.slice(0,10).map((s:string)=>s.slice(0,500))}:{}),model:typeof data.model==='string'&&data.model?data.model:'Unknown',messages};
 }
 export function sameCapturedSource(a:ConversationThread,b:ConversationThread){
  if(!a.sourceUrl||!b.sourceUrl)return false;

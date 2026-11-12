@@ -192,6 +192,7 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 3000);
   };
   const handleThreadCaptured = (newThread: ConversationThread) => {
+    setCaptureNotice(newThread.captureLimitations?.join(' ')||null);
     const duplicate=corpus.find(t=>sameCapturedSource(t,newThread));
     setCorpus(prev=>addCapturedRecord(prev,newThread));
     openPage('capture');

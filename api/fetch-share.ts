@@ -127,7 +127,7 @@ export default async function handler(req: any, res: any) {
     const signal=AbortSignal.timeout(15000);
     for(let redirects=0;redirects<=3;redirects++){
       for(let attempt=0;attempt<2;attempt++){
-        response=await fetch(target,{headers:{'User-Agent':'Mozilla/5.0 ChatGrab/1.0','Accept':'text/html,application/xhtml+xml'},signal,redirect:'manual'});
+        response=await fetch(target,{headers:{'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 ChatGrab/1.0','Accept':'text/html,application/xhtml+xml'},signal,redirect:'manual'});
         const retryAfter=response.headers.get('retry-after');
         if(attempt===0&&[502,503,504].includes(response.status)&&(!retryAfter||/^0(?:\.\d+)?$/.test(retryAfter))){await response.body?.cancel();await waitToRetry(signal);continue;}
         break;
@@ -144,7 +144,7 @@ export default async function handler(req: any, res: any) {
     if(reader){while(true){const {done,value}=await reader.read();if(done)break;size+=value.byteLength;if(size>8*1024*1024){await reader.cancel();throw new Error('Share page exceeds the 8 MB capture limit. Use a text export instead.');}chunks.push(value);}}
     const html=Buffer.concat(chunks).toString('utf8');
     const parsed=parseShare(html);
-    if(!parsed) return res.status(422).json({success:false,code:'SHARE_PARSE_UNSUPPORTED',error:'The shared page opened, but its transcript could not be extracted. Try pasting the transcript text.',allowFallbackPaste:true});
+    if(!parsed){const previewOnly=/<meta[^>]+property=["']og:site_name["'][^>]+content=["']ChatGPT["']/i.test(html)&&!/<script/i.test(html);return res.status(422).json({success:false,code:previewOnly?'SHARE_PREVIEW_ONLY':'SHARE_PARSE_UNSUPPORTED',error:previewOnly?'The share service returned only a link preview, not the transcript. Your link has been kept. Open it in your browser, or import copied text.':'The shared page opened, but its transcript could not be extracted. Try pasting the transcript text.',allowFallbackPaste:true});}
     return res.status(200).json({success:true,data:{...parsed,sourceUrl:cleanUrl,capturedAt:new Date().toISOString()}});
   } catch(err:any) {
     if(err instanceof CaptureFailure)return res.status(err.status).json({success:false,code:err.code,error:err.message,allowFallbackPaste:true});
