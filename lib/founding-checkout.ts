@@ -1,6 +1,7 @@
 import {createHash, randomUUID} from 'node:crypto';
 import express from 'express';
 import Stripe from 'stripe';
+import {FoundingTestLedger} from './founding-test-ledger.js';
 import {HttpsProxyAgent} from 'https-proxy-agent';
 
 const OFFER = 'chatgrab-founding-v1';
@@ -70,11 +71,12 @@ export function foundingWebhook(req: express.Request, res: express.Response) {
   const signature = req.headers['stripe-signature'];
   const key = process.env.STRIPE_SECRET_KEY || '';
   const secret = process.env.STRIPE_WEBHOOK_SECRET || '';
-  if (process.env.FOUNDING_CHECKOUT_MODE !== 'test' || !key.startsWith('sk_test_') || !secret) return res.status(503).json({error: 'Test webhook is not configured.'});
+  if (process.env.VERCEL_ENV === 'production' || process.env.FOUNDING_CHECKOUT_MODE !== 'test' || !key.startsWith('sk_test_') || !secret) return res.status(503).json({error: 'Test webhook is not configured.'});
   if (typeof signature !== 'string' || !Buffer.isBuffer(req.body)) return res.status(400).json({error: 'Signed raw webhook required.'});
   try {
     const event = new Stripe(key).webhooks.constructEvent(req.body, signature, secret);
     if (event.livemode) return res.status(400).json({error: 'Live events are not accepted.'});
+    if(process.env.FOUNDING_TEST_LEDGER_PATH&&!process.env.VERCEL){const ledger=new FoundingTestLedger(process.env.FOUNDING_TEST_LEDGER_PATH);try{const fulfillment=ledger.apply(event);return res.json({received:true,mode:'test',membershipActivated:false,fulfillment});}finally{ledger.close();}}
     // Deliberately side-effect free: repeated events cannot grant duplicate entitlements.
     // Browser receipts query Stripe directly. Durable live fulfillment is not implemented.
     return res.json({received: true, mode: 'test', membershipActivated: false});
