@@ -1,3 +1,4 @@
+import {SourceMetrics} from './SourceMetrics';
 import React,{useEffect,useMemo,useState} from 'react';
 import {ArrowRight,ClipboardCopy,Download,ExternalLink,RotateCcw} from 'lucide-react';
 import './manual-analysis-page.css';
@@ -69,6 +70,7 @@ export function ManualAnalysisPage({threads,onOpenAdvanced}:{threads:Conversatio
      <div className="cg-manual-choices" aria-label="Select analysis topics">{areas.map(([id,label])=><label key={id}><input type="checkbox" checked={draft.categories.includes(id)} onChange={()=>toggle(id)}/>{label}</label>)}</div>
      <label className="cg-manual-consent"><input type="checkbox" checked={allowed} onChange={e=>setAllowed(e.target.checked)}/>I've reviewed what I'm choosing to share with ChatGPT. No material is transmitted by this site.</label>
    </section>
+   <SourceMetrics threads={selectedThreads}/>
    <section><div className="cg-manual-heading"><span>02</span><div><h2>Ask ChatGPT</h2><p>Copy the request, open your existing ChatGPT login and paste it there.</p></div></div>
      <textarea aria-label="ChatGPT prompt" readOnly rows={8} value={prompt} placeholder="Choose saved conversations or add material, then select an analysis topic."/>
      <div className="cg-manual-actions"><button disabled={!allowed||!prompt} onClick={()=>void copy(prompt)}><ClipboardCopy size={17}/> Copy request</button><a href="https://chatgpt.com/" target="_blank" rel="noreferrer">Open ChatGPT <ExternalLink size={16}/></a></div>
