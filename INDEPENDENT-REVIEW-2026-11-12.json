@@ -3,8 +3,8 @@
   "date": "2026-11-12",
   "status": "DELIVERED_FOR_INDEPENDENT_REVIEW",
   "atlasAssignment": "d3be3a7",
-  "appSource": "5116bbe",
-  "harnessSource": "3b41351",
+  "appSource": "5116bbecea0f2d53d63b348eb27e4e424510b753",
+  "harnessSource": "3b41351e7495ae15196baff0c8cdbec57fdf7235",
   "preview": {
     "url": "https://chatgrab-analysis-archiver-jlwk0ulmb-inetatlanta.vercel.app",
     "deployment": "dpl_3vCwhSoq2oMkANAt6aT2Hoa4TF9u",
@@ -53,5 +53,6 @@
     "https://github.com/DrDoohicky/CHATGRAB2/pull/9",
     "https://github.com/DrDoohicky/CHATGRAB2/pull/10"
   ],
-  "privacy": "Synthetic sources only. Auth/cookie material removed before sharing; a failed private diagnostic log was scrubbed, and runner errors now print only a sanitized first line. No private transcript/provider credentials/browser profile/raw trace published."
+  "privacy": "Synthetic sources only. Auth/cookie material removed before sharing; a failed private diagnostic log was scrubbed, and runner errors now print only a sanitized first line. No private transcript/provider credentials/browser profile/raw trace published.",
+  "paymentReplaySource": "15d44ccc32fa3323a0acbe8708babd4b53697b73"
 }
