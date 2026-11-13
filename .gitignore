@@ -15,3 +15,5 @@ evidence/
 patch-issue.py
 .chatgrab-bridge/
 .vercel
+
+node_modules
