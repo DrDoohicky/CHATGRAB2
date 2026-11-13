@@ -25,3 +25,5 @@
 .cg-manual .cg-manual-batch-actions button{padding:8px 13px;font-size:13px}
 .cg-manual-filter-options{margin-top:12px;display:flex;flex-direction:column;gap:9px}
 .cg-manual-filter-options input[type=search]{width:100%;background:#fff;border:1px solid #bacfe6;border-radius:9px;padding:10px}
+
+.cg-source-counts{display:flex;flex-wrap:wrap;gap:18px;margin:16px 0}.cg-source-counts div{background:#edf5fd;padding:12px;border-radius:10px;min-width:95px}.cg-source-counts dt{font-weight:700}.cg-source-counts dd{font-size:24px;font-weight:850;margin:0}.cg-manual section[aria-label="Reproducible source metrics"] pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:350px;overflow:auto}.cg-manual section[aria-label="Reproducible source metrics"] summary{cursor:pointer;overflow-wrap:anywhere;margin:10px 0}.cg-manual section[aria-label="Reproducible source metrics"] input{display:block;width:100%;padding:10px;border:1px solid #abc4df;border-radius:9px}
