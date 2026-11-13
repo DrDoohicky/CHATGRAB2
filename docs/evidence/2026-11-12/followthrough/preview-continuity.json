@@ -1,0 +1,42 @@
+{
+  "base": "https://chatgrab-analysis-archiver-hqdefyyw0-inetatlanta.vercel.app",
+  "results": [
+    {
+      "name": "Synthetic library import",
+      "status": "PASS",
+      "detail": "Real file input, not route-mocked provider output"
+    },
+    {
+      "name": "Folder rename move and reload",
+      "status": "PASS",
+      "detail": "Actual UI mutations persisted without modifying source messages"
+    },
+    {
+      "name": "Open organized source",
+      "status": "PASS",
+      "detail": "Selected record opens after folder persistence"
+    },
+    {
+      "name": "Multi-chat context and citation guard",
+      "status": "PASS",
+      "detail": "Two real selected sources; labeled synthetic response accepted, fabricated quotation rejected"
+    },
+    {
+      "name": "Reviewed continuity save withdraw restore",
+      "status": "PASS",
+      "detail": "Consent required, attributed source messages preserved, historical originals unchanged"
+    },
+    {
+      "name": "Continuity packet and provenance revision",
+      "status": "PASS",
+      "detail": "Portable fresh-chat instructions include original and corrected decisions with IDs; new revision preserves earlier record"
+    },
+    {
+      "name": "Six widths including 320",
+      "status": "PASS",
+      "detail": "Chromium responsive viewports, not actual Android hardware"
+    }
+  ],
+  "errors": [],
+  "providerData": "Synthetic fixture only"
+}

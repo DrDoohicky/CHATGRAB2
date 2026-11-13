@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "syntheticRecords": 250,
+  "advancedContentSearch": true,
+  "favoritePersisted": true,
+  "codeClipboardWhitespaceExact": true,
+  "supportingBlobPersistedAcrossReload": true,
+  "scope": "Chromium disposable browser; no account cloud sync or device storage certification"
+}

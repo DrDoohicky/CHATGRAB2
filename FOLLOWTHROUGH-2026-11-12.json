@@ -1,0 +1,50 @@
+{
+  "schema": "aichatlab-followthrough/1",
+  "date": "2026-11-12",
+  "assignmentCommit": "fc9892d",
+  "status": "WORKING_PREVIEW_WITH_EXPLICIT_HOST_GATES",
+  "sourceCodeSha": "95fb58cf046d5c0a9070d4b5a9d6ef26a7b96241",
+  "applicationPR": "https://github.com/DrDoohicky/CHATGRAB2/pull/9",
+  "preview": {
+    "url": "https://chatgrab-analysis-archiver-hqdefyyw0-inetatlanta.vercel.app",
+    "deployment": "dpl_DTK4t9mEhsZCrgFmrbBNoGN7dq9x",
+    "state": "READY",
+    "target": "preview",
+    "protection": "Unchanged; short-lived same-project OIDC used in test client, origin-scoped and never published"
+  },
+  "payments": {
+    "pr": "https://github.com/DrDoohicky/CHATGRAB2/pull/10",
+    "sha": "06aa25a895bc249bcdac8e0b1d6fcd3d3b5af73b",
+    "scope": "Opt-in local TEST fulfillment ledger only",
+    "testCount": 43,
+    "realMemberships": false,
+    "realChargesOrRefunds": false
+  },
+  "validation": {
+    "applicationTests": 48,
+    "lint": "PASS",
+    "builds": "PASS",
+    "realDeployedMVP": "PASS",
+    "realAuthorizedManualImport": "PASS; four exact source messages",
+    "remoteShareAutomatic": "FAIL; SHARE_PREVIEW_ONLY, manual route verified",
+    "completeFileBackupRestore": "PASS",
+    "continuityRevisionAndPacket": "PASS",
+    "crewHumanReceipt": "PASS; no worker ACK",
+    "readOnlyMcp": "PASS official SDK over deployed HTTP; not ChatGPT host install"
+  },
+  "remainingHumanGates": [
+    "Small genuine nonsensitive native conversations.json for native fidelity acceptance",
+    "User-operated fresh authenticated ChatGPT paste/check and private plugin installation",
+    "Physical Android/iPhone file-picker/download/PWA check",
+    "Named worker identity/transport for actual authenticated ACK"
+  ],
+  "production": {
+    "url": "https://chatgrab.app",
+    "sha": "d8786f2525db750d5aeef9d6f80089b632e8a568",
+    "deployment": "dpl_2ULzAwkbUka2VnQ6kuAZzyjDfw4i",
+    "unchanged": true,
+    "paymentsEnabled": false
+  },
+  "evidence": "docs/evidence/2026-11-12/followthrough",
+  "privacy": "Only synthetic examples and sanitized status summaries. No user conversation/share token, credentials, OIDC token or temporary access URL."
+}

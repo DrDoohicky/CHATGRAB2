@@ -1,3 +1,4 @@
+import {capturedRecord} from '../lib/capture-record';
 import React, { useState, useEffect } from 'react';
 import { X, Clipboard, ArrowRight, Loader2, Sparkles, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 import { ConversationThread } from '../types';
@@ -149,25 +150,16 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
 
       if (!res.ok || !data.success) {
         if (data.allowFallbackPaste) {
-          setError('Public page could not be read directly. You can paste the conversation transcript text directly.');
-          setMode('raw');
+          setError(data.error || 'The share page could not be read. Retry the link or switch to pasted text.');
           setIsLoading(false);
           return;
         }
         throw new Error(data.error || 'Failed to capture thread');
       }
 
-      const capturedThread: ConversationThread = {
-        id: `thread-${Date.now()}`,
-        title: data.data.title || 'Captured Conversation',
-        sourceUrl: data.data.sourceUrl || targetUrl || undefined,
-        capturedAt: new Date().toISOString(),
-        originalCreatedAt: data.data.originalCreatedAt || new Date().toISOString(),
-        model: data.data.model || 'GPT-4o',
-        messages: data.data.messages || [],
-      };
+      const capturedThread = capturedRecord(data.data,targetUrl||undefined);
 
-      // 2. Automatically generate intelligence with ChatGPT
+      // Optional analysis must not alter the preserved source or imply provider availability.
       try {
         const analyzeRes = await fetch('/api/analyze-thread', {
           method: 'POST',

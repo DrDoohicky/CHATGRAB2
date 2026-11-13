@@ -1,0 +1,8 @@
+{
+  "realAuthorizedShare": true,
+  "preview": "https://chatgrab-analysis-archiver-f13nde2ur-inetatlanta.vercel.app",
+  "httpStatus": 422,
+  "success": false,
+  "code": "SHARE_PREVIEW_ONLY",
+  "error": "The share service returned only a link preview, not the transcript. Your link has been kept. Open it in your browser, or import copied text."
+}

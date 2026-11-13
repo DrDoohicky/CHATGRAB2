@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { X, Upload, FileText, Image as ImageIcon, File, Link2, Pencil, ExternalLink } from 'lucide-react';
 import { ConversationThread, SupportAsset } from '../types';
 
-import { listAssets, saveAsset } from '../lib/assets';
+import { listAssets, saveAsset, downloadOriginal } from '../lib/assets';
 
 function formatBytes(n: number) {
   if (n < 1024) return `${n} B`;
@@ -76,9 +76,8 @@ export const SupportMaterialModal: React.FC<Props> = ({ inline=false, isOpen, on
 
   const openAsset = async (asset: SupportAsset & { blob?: Blob }) => {
     if (!asset.blob) return;
-    const url = URL.createObjectURL(asset.blob);
-    window.open(url, '_blank', 'noopener,noreferrer');
-    setTimeout(() => URL.revokeObjectURL(url), 120000);
+    downloadOriginal(asset);
+
   };
 
   const rename = (asset:SupportAsset & {blob?:Blob}) => setRenaming({asset,name:asset.name});
@@ -123,7 +122,7 @@ export const SupportMaterialModal: React.FC<Props> = ({ inline=false, isOpen, on
 
         {renaming&&<form onSubmit={saveRename} className="mt-4 p-4 border rounded-xl"><label className="block font-semibold">File name<input autoFocus aria-label="File name" value={renaming.name} onChange={e=>setRenaming({...renaming,name:e.target.value})} className="block mt-2 border rounded-lg p-2 w-full"/></label><button type="submit" className="px-3 py-2 mt-2 text-blue-700 font-bold">Save file name</button><button type="button" onClick={()=>setRenaming(null)} className="px-3 py-2">Cancel rename</button></form>}
         <div className="mt-7 pt-5 border-t border-slate-200"><div className="flex items-center gap-2"><Link2 className="w-4 h-4 text-blue-600" /><h3 className="font-bold">Support Library</h3></div>
-          <div className="mt-3 space-y-2">{assets.length ? assets.map(a => <div key={a.id} className="grid grid-cols-[auto_1fr_auto] gap-3 items-center p-3 border border-slate-200 rounded-xl">{iconFor(a.type)}<div className="min-w-0"><b className="text-sm block truncate">{a.name}</b><span className="text-xs text-slate-500 block truncate">{formatBytes(a.size)} · {a.linkedThreadTitle ? `Linked to ${a.linkedThreadTitle}` : 'Unlinked'}{a.notes ? ` · ${a.notes}` : ''}</span></div><div className="flex gap-1"><button onClick={() => openAsset(a)} className="p-2 rounded-lg hover:bg-slate-100" title="Open"><ExternalLink className="w-4 h-4" /></button><button onClick={() => rename(a)} className="p-2 rounded-lg hover:bg-slate-100" title="Rename"><Pencil className="w-4 h-4" /></button></div></div>) : <div className="text-sm text-slate-400 py-6 text-center">No support material saved yet.</div>}</div>
+          <div className="mt-3 space-y-2">{assets.length ? assets.map(a => <div key={a.id} className="grid grid-cols-[auto_1fr_auto] gap-3 items-center p-3 border border-slate-200 rounded-xl">{iconFor(a.type)}<div className="min-w-0"><b className="text-sm block truncate">{a.name}</b><span className="text-xs text-slate-500 block truncate">{formatBytes(a.size)} · {a.linkedThreadTitle ? `Linked to ${a.linkedThreadTitle}` : 'Unlinked'}{a.notes ? ` · ${a.notes}` : ''}</span></div><div className="flex gap-1"><button onClick={() => openAsset(a)} className="p-2 rounded-lg hover:bg-slate-100" title="Download original"><ExternalLink className="w-4 h-4" /></button><button onClick={() => rename(a)} className="p-2 rounded-lg hover:bg-slate-100" title="Rename"><Pencil className="w-4 h-4" /></button></div></div>) : <div className="text-sm text-slate-400 py-6 text-center">No support material saved yet.</div>}</div>
         </div>
       </div>
     </div>

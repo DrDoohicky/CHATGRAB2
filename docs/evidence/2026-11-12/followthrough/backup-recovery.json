@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "collisionPreservedExistingRecord": true,
+  "importedFileLinkedToRemappedThread": true,
+  "quotaFailurePreservedExistingState": true,
+  "fixtures": "Synthetic; real browser IndexedDB and localStorage"
+}

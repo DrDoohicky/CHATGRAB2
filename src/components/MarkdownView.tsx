@@ -28,9 +28,9 @@ export const MarkdownView: React.FC<MarkdownViewProps> = ({ content, className =
           let codeBody = '';
           if (firstLineEnd !== -1) {
             lang = part.slice(3, firstLineEnd).trim() || 'code';
-            codeBody = part.slice(firstLineEnd + 1, -3).trim();
+            codeBody = part.slice(firstLineEnd + 1, -3);
           } else {
-            codeBody = part.slice(3, -3).trim();
+            codeBody = part.slice(3, -3);
           }
 
           const isCopied = copiedIndex === partIdx;
