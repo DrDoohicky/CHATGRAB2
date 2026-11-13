@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 interface Props { inline?: boolean; isOpen: boolean; onClose: () => void; onStartCapture: () => void; }
 const sections = [
-  { id:'tutorial', title:'Capture a conversation', description:'Open your ChatGPT conversation, choose Share, copy its public link, then paste it into Capture. Review what the share link makes public.', cards:['open-chat','choose-share','copy-link','paste-into-chatgrab'] },
+  { id:'tutorial', title:'Capture a conversation', description:'Use reviewed paste or file import to preserve the complete text. Public-share capture is optional and may return only a link preview; if that happens, open the conversation yourself and use the manual import. The share illustrations below show where those controls are, not guaranteed capture success.', cards:['open-chat','choose-share','copy-link','paste-into-chatgrab'] },
   { id:'provenance', title:'Preserve source and provenance', description:'Keep original messages distinct from derived insights and review decisions.', cards:['source-record','derived-insights','review-decisions'] },
   { id:'analytics', title:'Choose contextual analyses', description:'Select sources and prepare a review request for ChatGPT. Import its response and check the cited passages. Direct account integration remains pending.', cards:['select-sources','choose-analyses','explain-contradictions','discover-connections'] },
   { id:'evolution', title:'Understand what changed', description:'Compare earlier and later statements in their original context.', cards:['earlier-statement','later-statement','knowledge-evolution'] },

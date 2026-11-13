@@ -493,7 +493,7 @@ export default function App() {
                   <button type="button" onClick={() => setBatchMode(!batchMode)} className="ml-auto px-3 py-2 text-sm font-bold text-white bg-slate-800 rounded-lg">{batchMode ? 'Single' : 'Batch process'}</button>
                 </div>
                 {batchMode && <div className="cg-batch-form lg:col-span-2 space-y-2"><p className="text-sm text-slate-600">Import up to 100 public /share/ links, one per line. The queue continues while you use other pages in this tab.</p><textarea aria-label="Batch share links" maxLength={65000} value={batchInput} onChange={e=>setBatchInput(e.target.value)} rows={4} className="w-full border border-slate-300 rounded-xl p-3 text-sm" placeholder="One public share URL per line"/><button type="button" disabled={!batchInput.trim()||!libraryReady||isQuickCapturing||batchState.running||batchState.items.some(item=>item.status==='queued')} className="cg-batch-start bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg" onClick={()=>{try{batchQueue.start(batchInput);setQuickCaptureError(null);}catch(error){setQuickCaptureError(error instanceof Error?error.message:'Could not start imports.');}}}>Capture batch</button></div>}
-                <div className="lg:col-span-2 text-xs text-slate-500 px-1">Your library stays in this browser. Export a backup to preserve it on another device.</div>
+                <div className="lg:col-span-2 text-xs text-slate-500 px-1">Your library stays in this browser. Use complete backup in Export to include original supporting files. Share links may return only a preview; reviewed paste / file import is the reliable alternative.</div>
               </form>
             </section>
             <section id="cg-workspace" className="cg-workspace rounded-[1.75rem] border border-slate-200 bg-white/95 p-5 sm:p-7 shadow-sm">
@@ -708,12 +708,12 @@ export default function App() {
           type="button"
           onClick={() => setIsChatbotOpen(true)}
           className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-600 hover:from-blue-800 hover:to-indigo-700 text-white font-semibold text-xs rounded-2xl shadow-xl shadow-blue-900/20 hover:shadow-2xl transition-all cursor-pointer active:scale-95 group"
-          aria-label="Conversation assistant" title="Open ChatGPT Multi-Turn Assistant"
+          aria-label="Conversation assistant" title="Open context helper"
         >
           <div className="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center">
             <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
           </div>
-          <span>ChatGPT Assistant</span>
+          <span>Context helper</span>
         </button>
       )}
       {/* ChatGPT Multi-Turn Chatbot */}
