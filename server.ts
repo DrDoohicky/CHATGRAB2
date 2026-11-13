@@ -332,58 +332,24 @@ app.post('/api/fetch-share', async (req, res) => {
 
     // 2. If raw text or markdown transcript is provided (without a share link)
     if (rawText && rawText.trim().length > 10) {
-      const prompt = `You are a ChatGPT transcript parser. Parse the following pasted text into a structured JSON representation of the conversation.
-Extract:
-- title: A clear, descriptive title for the conversation topic
-- model: Suggested model used (e.g. "GPT-4o")
-- messages: An array of objects with "role" ('user' or 'assistant') and "content" (string with markdown preserved).
-
-Input text:
-${rawText.slice(0, 30000)}`;
-
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: prompt,
-        config: {
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              title: { type: Type.STRING },
-              model: { type: Type.STRING },
-              messages: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    role: { type: Type.STRING },
-                    content: { type: Type.STRING },
-                  },
-                  required: ['role', 'content'],
-                },
-              },
-            },
-            required: ['title', 'messages'],
-          },
-        },
-      });
-
-      const parsed = JSON.parse(response.text || '{}');
-      const messages = (parsed.messages || []).map((m: any, idx: number) => ({
-        id: `msg-${Date.now()}-${idx}`,
-        role: m.role === 'user' ? 'user' : 'assistant',
-        content: m.content,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      }));
-
+      // Deterministic, lossless capture: preserve the complete pasted source verbatim.
+      // Role markers are not inferred because arbitrary prose can contain those labels.
+      // This path requires no AI API key and never silently truncates content.
+      const now = new Date().toISOString();
       return res.json({
         success: true,
         data: {
-          title: parsed.title || 'Captured Conversation',
-          model: parsed.model || 'GPT-4o',
-          capturedAt: new Date().toISOString(),
-          messages,
-          sourceUrl: undefined,
+          title: 'Pasted conversation — original preserved',
+          model: 'Unknown (not inferred)',
+          capturedAt: now,
+          messages: [{
+            id: `raw-${Date.now()}`,
+            role: 'user',
+            content: rawText,
+            timestamp: now,
+          }],
+          captureFormat: 'verbatim-unparsed',
+          completeness: 'complete-as-submitted',
         },
       });
     }

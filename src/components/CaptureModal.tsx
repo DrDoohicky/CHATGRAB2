@@ -55,14 +55,8 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
 
   const handleRawTextChange = (value: string) => {
     setRawText(value);
-    const extracted = extractChatGPTUrl(value);
-    if (extracted) {
-      // Automatically rectify if user pasted a Zoom/chat message containing a ChatGPT share link
-      setUrl(extracted);
-      setMode('url');
-      setRectifiedNotice(`Detected ChatGPT share link in message: ${extracted}`);
-      setError(null);
-    }
+    // Never reinterpret transcript text as a share URL: transcripts can contain links.
+    setError(null);
   };
 
   const handlePasteClipboard = async () => {
@@ -98,8 +92,8 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
 
     // Extract any ChatGPT URL in either field
     const extractedFromUrl = extractChatGPTUrl(url);
-    const extractedFromRaw = extractChatGPTUrl(rawText);
-    const targetUrl = extractedFromUrl || extractedFromRaw || (mode === 'url' ? url.trim() : null);
+    const extractedFromRaw = mode === 'url' ? extractChatGPTUrl(rawText) : null;
+    const targetUrl = mode === 'url' ? (extractedFromUrl || extractedFromRaw || url.trim()) : null;
 
     if (targetUrl) {
       // URL ingestion mode with rectified URL
@@ -154,27 +148,7 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
         messages: data.data.messages || [],
       };
 
-      // 2. Automatically generate intelligence with Gemini
-      try {
-        const analyzeRes = await fetch('/api/analyze-thread', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: capturedThread.title,
-            messages: capturedThread.messages,
-          }),
-        });
-
-        if (analyzeRes.ok) {
-          const analyzeData = await analyzeRes.json();
-          if (analyzeData.success && analyzeData.insights) {
-            capturedThread.insights = analyzeData.insights;
-          }
-        }
-      } catch (analyzeErr) {
-        console.warn('Initial analysis background warning:', analyzeErr);
-      }
-
+      // Capture must succeed independently of optional AI analysis.
       onThreadCaptured(capturedThread);
       onClose();
       setUrl('');
@@ -218,7 +192,7 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
 
               {/* Subtitle */}
               <p className="text-slate-600 text-sm leading-relaxed mb-5">
-                Bring in a public ChatGPT share URL. ChatGrab preserves the source, analyzes the record, and connects it to your corpus.
+                Bring in a public ChatGPT share URL or paste a transcript. ChatGrab preserves the source without requiring an AI API key.
               </p>
 
               {/* Mode Selector */}
@@ -282,7 +256,7 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
                         {isLoading ? (
                           <>
                             <Loader2 className="w-4 h-4 animate-spin" />
-                            <span>Analyzing...</span>
+                            <span>Capturing...</span>
                           </>
                         ) : (
                           <>
@@ -341,7 +315,7 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
                       {isLoading ? (
                         <>
                           <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>Parsing & Analyzing...</span>
+                          <span>Preserving...</span>
                         </>
                       ) : (
                         <>
