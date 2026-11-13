@@ -4,7 +4,7 @@ import argparse,json,os,re,zipfile
 from pathlib import Path
 p=argparse.ArgumentParser();p.add_argument('source');p.add_argument('destination');a=p.parse_args()
 sensitive={'authorization','proxy-authorization','cookie','set-cookie','x-vercel-trusted-oidc-idp-token','x-vercel-protection-bypass','x-vercel-oidc-token'}
-secret=os.environ.get('VERCEL_OIDC_TOKEN','');stats={'headerValuesRedacted':0,'exactTokenOccurrencesRedacted':0,'jwtPatternsRedacted':0,'jsonRecords':0,'cookieContainersRedacted':0}
+secret=os.environ.get('VERCEL_OIDC_TOKEN','');stats={'headerValuesRedacted':0,'exactTokenOccurrencesRedacted':0,'jwtPatternsRedacted':0,'jsonRecords':0,'cookieContainersRedacted':0,'filmstripFramesOmitted':0}
 def clean(obj):
  if isinstance(obj,list):return [clean(x) for x in obj]
  if isinstance(obj,dict):
@@ -24,13 +24,25 @@ def clean(obj):
  return obj
 Path(a.destination).parent.mkdir(parents=True,exist_ok=True)
 with zipfile.ZipFile(a.source) as z,zipfile.ZipFile(a.destination,'w',compression=zipfile.ZIP_DEFLATED) as out:
+ omitted=set()
+ for name in z.namelist():
+  if name.endswith('.trace'):
+   for line in z.read(name).decode().splitlines():
+    try:
+     record=json.loads(line)
+     if record.get('type')=='screencast-frame' and record.get('sha1'):omitted.add('resources/'+record['sha1'])
+    except json.JSONDecodeError:pass
  for item in z.infolist():
+  if item.filename in omitted:continue
   data=z.read(item.filename)
   if item.filename.endswith(('.trace','.network','.stacks','.json')):
    text=data.decode('utf-8');lines=[]
    for line in text.splitlines():
     if not line.strip():continue
-    try:lines.append(json.dumps(clean(json.loads(line)),separators=(',',':')));stats['jsonRecords']+=1
+    try:
+     record=json.loads(line)
+     if record.get('type')=='screencast-frame':stats['filmstripFramesOmitted']+=1;continue
+     lines.append(json.dumps(clean(record),separators=(',',':')));stats['jsonRecords']+=1
     except json.JSONDecodeError:lines.append(clean(line))
    data=('\n'.join(lines)+'\n').encode()
   elif secret and secret.encode() in data:
