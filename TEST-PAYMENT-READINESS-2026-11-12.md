@@ -11,3 +11,9 @@ Tests use deliberately synthetic events and Stripe's official test-signature gen
 Commercial release still requires explicit human approval, genuine account identity and cloud entitlement storage, actual provider webhook delivery, refund/support operations, finalized commercial/privacy terms, and product acceptance. Existing consumer pages correctly remain a test preview with draft commercial terms, no real license or reservation, and no promised live sale. Do not merge or enable live checkout under this test-readiness assignment.
 
 Run `npm test`, `npm run lint`, `npm run build`. The new ledger tests require Node's built-in SQLite (the current Node 24 runtime); no new database package or service was provisioned. Keep local database files and credentials outside the repository. This change provides a test harness for the lifecycle, not an unreviewed live fulfillment implementation.
+
+## Fresh sandbox replay and browser update
+
+On the follow-up replay, Stripe moved its contact/card controls into a `js.stripe.com` frame with new input IDs. The old runner stopped at its obsolete top-document `#email` selector before submitting a payment. The runner now finds visible fields across Stripe's frames, explicitly chooses Card and uses only public test-card values.
+
+The fresh run then passed real Stripe-hosted **sandbox** checkout, server verification of 1900 USD, repeated verification, foreign-browser receipt denial and desktop/phone layout. The application server for that provider run was the existing PR #7 source `17438e65ddfbfed253205373e7d24eea69f4dfac` on local port 3023; this is not a claim of deployed checkout or an actual provider webhook delivered to the new ledger. No real money or membership. The 43 local ledger/signature tests also passed again. Provider account connection and webhook delivery were not changed.

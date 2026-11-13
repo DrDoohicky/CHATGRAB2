@@ -18,18 +18,20 @@ fs.mkdirSync(output,{recursive:true});
   for(const width of [1440,390]){await page.setViewportSize({width,height:1000});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:output+'/staging-'+width+'.png',fullPage:true});}
   await page.locator('#confirm').check();await page.locator('#checkout').click();
   await page.waitForURL('https://checkout.stripe.com/**',{timeout:45000});
-  await page.locator('#email').waitFor({timeout:20000});
+  const field=async selector=>{for(let i=0;i<80;i++){for(const frame of page.frames()){const target=frame.locator(selector).first();if(await target.isVisible().catch(()=>false))return target;}await page.waitForTimeout(250);}throw Error('Stripe sandbox field unavailable: '+selector);};
+  await (await field('input[name=email],#email')).waitFor();
+  for(const frame of page.frames()){const card=frame.getByText('Card',{exact:true}).first();if(await card.isVisible().catch(()=>false)){await card.click();break;}}
   assert(await page.getByText('Sandbox',{exact:true}).count());
   await page.screenshot({path:output+'/stripe-hosted.png',fullPage:true});
-  await page.locator('#email').fill('chatgrab-test@example.com');
-  await page.locator('#cardNumber').fill('4242424242424242');
-  await page.locator('#cardExpiry').fill('1230');
-  await page.locator('#cardCvc').fill('123');
-  await page.locator('#billingName').fill('ChatGrab Staging Test');
-  await page.locator('#billingCountry').selectOption('US');
-  if(await page.locator('#billingPostalCode').count())await page.locator('#billingPostalCode').fill('10001');
-  if(await page.locator('#enableStripePass').count())await page.locator('#enableStripePass').uncheck();
-  await page.getByRole('button',{name:'Pay',exact:true}).click();
+  await (await field('input[name=email],#email')).fill('chatgrab-test@example.com');
+  await (await field('input[name=number],#cardNumber')).fill('4242424242424242');
+  await (await field('input[name=expiry],#cardExpiry')).fill('1230');
+  await (await field('input[name=cvc],#cardCvc')).fill('123');
+  await (await field('input[name=name],#billingName')).fill('ChatGrab Staging Test');
+  await (await field('select[name=country],#billingCountry')).selectOption('US');
+  await (await field('input[name=postalCode],#billingPostalCode')).fill('10001');
+  for(const frame of page.frames())for(const selector of ['#enableStripePass','input[name=linkOptIn]']){const checkbox=frame.locator(selector);if(await checkbox.isVisible().catch(()=>false))await checkbox.uncheck();}
+  let submitted=false;for(const frame of page.frames()){const button=frame.getByRole('button',{name:'Pay',exact:true});if(await button.isVisible().catch(()=>false)){await button.click();submitted=true;break;}}assert(submitted,'Sandbox Pay button must be visible');
   await page.waitForURL(url=>url.origin===origin&&url.pathname==='/founding/test/',{timeout:60000});
   await page.getByText('Stripe verified the $19 test payment.',{exact:false}).waitFor({timeout:30000});
   const sessionId=new URL(page.url()).searchParams.get('session_id');
