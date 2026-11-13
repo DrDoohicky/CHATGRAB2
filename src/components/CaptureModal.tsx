@@ -55,14 +55,8 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
 
   const handleRawTextChange = (value: string) => {
     setRawText(value);
-    const extracted = extractChatGPTUrl(value);
-    if (extracted) {
-      // Automatically rectify if user pasted a Zoom/chat message containing a ChatGPT share link
-      setUrl(extracted);
-      setMode('url');
-      setRectifiedNotice(`Detected ChatGPT share link in message: ${extracted}`);
-      setError(null);
-    }
+    // Never reinterpret transcript text as a share URL: transcripts can contain links.
+    setError(null);
   };
 
   const handlePasteClipboard = async () => {
