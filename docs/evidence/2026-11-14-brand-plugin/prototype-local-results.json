@@ -1,0 +1,14 @@
+{
+  "base": "http://127.0.0.1:3070",
+  "results": [
+    "Context search, literal specials, surrounding messages, focus, 3-hit wrap, role filter PASS",
+    "Exact prompt/response/source saved, append correction, archive/restore history, XSS, reload PASS",
+    "Comparison and source identity at 1440/768/390/320, mobile tabs and overflow PASS",
+    "Real downloaded v2 backup → fresh-browser restore preserves record bytes/IDs/events; tamper rejected PASS",
+    "Changed source visibly marked stale; retained review snapshots remain exact PASS",
+    "Two conversations reuse message IDs without focus collisions; switching resets search PASS",
+    "Review quota failure visible in UI, no false Saved, previous history intact PASS"
+  ],
+  "uncaughtErrors": [],
+  "automaticAIRequests": 0
+}
