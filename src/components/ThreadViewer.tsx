@@ -1,7 +1,7 @@
 import React, { useState,useEffect } from 'react';
 import { Search, User, Bot, Copy, Check, MessageSquare, Clock, Filter } from 'lucide-react';
 import { ConversationThread } from '../types';
-import {messageAnchor,wrappedHit} from '../lib/transcript-search';
+import {messageAnchor,wrappedHit,literalParts} from '../lib/transcript-search';
 import './review-archive.css';
 import { MarkdownView } from './MarkdownView';
 
@@ -146,7 +146,7 @@ export const ThreadViewer: React.FC<ThreadViewerProps> = ({ thread }) => {
 
                     <div>
                       <span className="text-xs font-bold text-slate-900">
-                        {isUser ? 'Prompt / User' : msg.role==='assistant'?'Assistant':'System'}
+                        {isUser ? 'Prompt / User' : msg.role==='assistant'?'Assistant':msg.role||'Unknown'}
                       </span>
                       {msg.model && (
                         <span className="ml-2 text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -179,7 +179,7 @@ export const ThreadViewer: React.FC<ThreadViewerProps> = ({ thread }) => {
 
                 {/* Message Body with Markdown */}
                 <div className="text-slate-800">
-                  <MarkdownView content={msg.content} highlight={searchQuery} />
+                  {searchQuery?<pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">{literalParts(msg.content,searchQuery).map((part,i)=>part.match?<mark className="cg-search-mark" key={i}>{part.text}</mark>:part.text)}</pre>:<MarkdownView content={msg.content}/> }
                 </div>
               </div>
             );
