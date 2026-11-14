@@ -3,7 +3,7 @@ import { ArrowRight, Database, MessageCircle, Download, FileArchive, HelpCircle,
 import { ReferenceArtwork } from './ReferenceArtwork';
 import './chatgrab-dashboard.css';
 
-export type CGPage = 'workspace' | 'capture' | 'preserve' | 'organize' | 'analyze' | 'reintegrate' | 'artifacts' | 'export' | 'library' | 'support' | 'guide' | 'media' | 'settings' | 'bridge';
+export type CGPage = 'workspace' | 'capture' | 'preserve' | 'organize' | 'analyze' | 'reintegrate' | 'artifacts' | 'export' | 'library' | 'support' | 'guide' | 'media' | 'settings' | 'bridge' | 'plugin';
 type Props = { page: CGPage; count: number; onNavigate: (p: CGPage) => void; onOpenLibrary: () => void; onOpenSupport: () => void; onOpenGuide: () => void; onExport: () => void; onAnalyze: () => void; onReintegrate: () => void; onAccount: () => void };
 const features = [
   { id: 'preserve', title: 'Preserve', desc: 'Keep the original conversation intact.', action: 'Capture & Preserve' },

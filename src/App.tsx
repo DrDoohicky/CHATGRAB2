@@ -1,3 +1,5 @@
+import {PluginPage} from './components/PluginPage';
+import {EdgeLauncher} from './components/EdgeLauncher';
 import {ReviewStorageContext} from './components/review-storage-context';
 import {PortableBackupPanel} from './components/PortableBackupPanel';
 import {ImportReview} from './components/ImportReview';
@@ -57,7 +59,7 @@ import { OnboardingGuideModal } from './components/OnboardingGuideModal';
 import './metallic-theme.css';
 import './components/workspace-navigation.css';
 const STORAGE_KEY = 'chatgrab_corpus_threads';
-const validPages=new Set(['capture','workspace','library','analyze','reintegrate','artifacts','export','media','bridge','guide','settings']);
+const validPages=new Set(['capture','workspace','library','analyze','reintegrate','artifacts','export','media','bridge','guide','settings','plugin']);
 const initialNavigationPage=():CGPage=>{const raw=new URLSearchParams(window.location.search).get('page')||'capture';const p=({preserve:'capture',organize:'library',support:'artifacts',tutorial:'guide'} as Record<string,string>)[raw]||raw;return (validPages.has(p)?p:'capture') as CGPage;};
 const initialPage=():CGPage=>{const p=initialNavigationPage();return p==='reintegrate'?'workspace':p;};
 export default function App() {
@@ -463,7 +465,7 @@ export default function App() {
           <section className="cg-destination"><h1>Export your conversations</h1><PortableBackupPanel threads={corpus} localOnly={!accountUser&&!storageLoadFailed.current} onRestore={next=>{storageLoadFailed.current=false;setCorpus(next);setActiveThread(null);}}/><p>Save a portable JSON backup, or choose a conversation for Markdown, JSON and print-to-PDF.</p><div className="cg-destination-panel"><h2>Library backup</h2><p>{corpus.length} saved conversations. Supporting file originals remain in this browser; download those separately from Artifacts.</p><DownloadFile text={JSON.stringify(corpus,null,2)} filename={`chatgrab-library-${new Date().toISOString().slice(0,10)}.json`} type="application/json" disabled={!corpus.length} className="inline-block border rounded-lg px-4 py-3 mt-3 text-blue-700 font-bold">Download library JSON</DownloadFile></div><div className="cg-destination-panel"><h2>Conversation exports</h2>{corpus.length?corpus.map(thread=><div className="cg-export-row" key={thread.id}><div><strong>{thread.title}</strong><small>{thread.messages.length} messages · {new Date(thread.capturedAt).toLocaleString()}</small></div><button onClick={()=>{setActiveThread(thread);setIsExportOpen(true);}}>Export {thread.title}</button></div>):<p>Capture a conversation to enable exports.</p>}</div></section>
         ) : page === 'settings' ? (
           <section className="cg-destination"><h1>Settings</h1><div className="cg-destination-panel"><h2>Account and storage</h2><p>{accountUser?'Your conversation library is linked to your account.':'Your conversation library is saved in this browser.'} Supporting file originals are stored locally in IndexedDB.</p><button onClick={()=>setAccountOpen(true)}>ChatGPT connection</button><button onClick={()=>openPage('export')}>Backup and export</button></div><div className="cg-destination-panel"><h2>Navigation</h2><p>The desktop sidebar preference is saved on this device.</p><button onClick={toggleSidebar}>{sidebarCollapsed?'Expand desktop sidebar':'Collapse desktop sidebar'}</button><button onClick={()=>openPage('guide')}>Open capture guide</button></div></section>
-        ) : page === 'capture' ? (<div className="cg-capture-original">
+        ) : page === 'plugin' ? (<PluginPage onNavigate={openPage}/>) : page === 'capture' ? (<div className="cg-capture-original">
         {/* If no conversation is active: visual landing workspace */}
         <>
           <div className="space-y-5 my-1">
@@ -646,7 +648,7 @@ export default function App() {
           </>}
           </>
         )}
-        {page==='capture'&&<section className="rounded-2xl border border-blue-200 bg-white p-5 text-slate-800" aria-label="Latest ChatGrab milestones"><p className="text-sm font-bold text-blue-700">LATEST RELEASE · NOVEMBER 14, 2026</p><h2 className="text-xl font-bold my-2">Search in context. Keep every reviewed version.</h2><p>Context-preserving transcript search, source-linked review history, responsive source/review comparison, and complete backups with saved reviews are here. Reviewed imports, library organization and local source metrics remain available. Prepare guided AI reviews through your own account, keep reviewed context revisions, and explore portable Crew Console handoffs.</p><p className="mt-2">Integrated AI connections, smoother automatic capture, and synchronized account experiences are in development.</p><div className="flex flex-wrap gap-3 mt-3"><button className="font-bold text-blue-800 underline" onClick={()=>openPage('analyze')}>Explore source analytics</button><a className="font-bold text-blue-800 underline" href="/downloads/ChatGrab-Production-Kit.zip" download="ChatGrab-Production-Kit.zip">Download the video production kit · ZIP</a><a className="font-bold text-blue-800 underline" href="/history/">Earlier builds and milestones</a></div></section>}
+        {page==='capture'&&<section className="rounded-2xl border border-blue-200 bg-white p-5 text-slate-800" aria-label="Latest ChatGrab milestones"><p className="text-sm font-bold text-blue-700">LATEST RELEASE · NOVEMBER 14, 2026</p><h2 className="text-xl font-bold my-2">Search in context. Keep every reviewed version.</h2><p>Context-preserving transcript search, source-linked review history, responsive source/review comparison, and complete backups with saved reviews are here. Reviewed imports, library organization and local source metrics remain available. Prepare guided AI reviews through your own account, keep reviewed context revisions, and explore portable Crew Console handoffs.</p><p className="mt-2">The ChatGPT plugin connection guide and right-edge quick access are now available. Native capture, integrated AI replies and synchronized accounts remain in development.</p><div className="flex flex-wrap gap-3 mt-3"><button className="font-bold text-blue-800 underline" onClick={()=>openPage('analyze')}>Explore source analytics</button><button className="font-bold text-blue-800 underline" onClick={()=>openPage('plugin')}>ChatGPT plugin setup</button><a className="font-bold text-blue-800 underline" href="/downloads/ChatGrab-Production-Kit.zip" download="ChatGrab-Production-Kit.zip">Download the video production kit · ZIP</a><a className="font-bold text-blue-800 underline" href="/history/">Earlier builds and milestones</a></div></section>}
       </main>
       </div>
       {/* Capture Modal (SS1.jpeg replica) */}
@@ -705,20 +707,8 @@ export default function App() {
         onStartCapture={() => setIsCaptureModalOpen(true)}
       />
       <BatchImportProgress enabled={libraryReady} queue={batchQueue} state={batchState} onOpen={()=>openPage('capture')}/>
-      {/* Floating Action Button for ChatGPT Chatbot */}
-      {!isChatbotOpen && !batchState.items.length && (
-        <button
-          type="button"
-          onClick={() => setIsChatbotOpen(true)}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-600 hover:from-blue-800 hover:to-indigo-700 text-white font-semibold text-xs rounded-2xl shadow-xl shadow-blue-900/20 hover:shadow-2xl transition-all cursor-pointer active:scale-95 group"
-          aria-label="Conversation assistant" title="Open context helper"
-        >
-          <div className="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center">
-            <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
-          </div>
-          <span>Context helper</span>
-        </button>
-      )}
+      {!isChatbotOpen&&<EdgeLauncher onNavigate={openPage} onOpenContext={()=>setIsChatbotOpen(true)}/>}
+      <footer className="cg-app-family-footer">Part of <a href="https://aichatlab.app/" target="_blank" rel="noopener noreferrer">AIChatLab.app ↗</a></footer>
       {/* ChatGPT Multi-Turn Chatbot */}
       <ChatGPTCompanion
         isOpen={isChatbotOpen}
