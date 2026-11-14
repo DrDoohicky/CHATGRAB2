@@ -644,6 +644,7 @@ export default function App() {
           </>}
           </>
         )}
+        {page==='capture'&&<section className="rounded-2xl border border-blue-200 bg-white p-5 text-slate-800" aria-label="Latest ChatGrab milestones"><p className="text-sm font-bold text-blue-700">LATEST RELEASE · NOVEMBER 14, 2026</p><h2 className="text-xl font-bold my-2">More ways to keep your conversations useful.</h2><p>Reviewed imports, preserved source text, library search and organization, complete portable backups, and local source metrics are here. Prepare guided AI reviews through your own account, keep reviewed context revisions, and explore portable Crew Console handoffs.</p><p className="mt-2">Integrated AI connections, smoother automatic capture, and synchronized account experiences are in development.</p><div className="flex flex-wrap gap-3 mt-3"><button className="font-bold text-blue-800 underline" onClick={()=>openPage('analyze')}>Explore source analytics</button><a className="font-bold text-blue-800 underline" href="/downloads/ChatGrab-Production-Kit.zip" download="ChatGrab-Production-Kit.zip">Download the video production kit · ZIP</a><a className="font-bold text-blue-800 underline" href="/history/">Earlier builds and milestones</a></div></section>}
       </main>
       </div>
       {/* Capture Modal (SS1.jpeg replica) */}

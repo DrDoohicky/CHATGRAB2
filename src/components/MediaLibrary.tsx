@@ -17,6 +17,6 @@ export function MediaLibrary({onTutorial,onCapture}:{onTutorial:()=>void;onCaptu
     </div>
     <section className="cg-media-map" aria-labelledby="continuity-map-title"><h2 id="continuity-map-title">The seven-stage map</h2><a href="/media/ChatGrab_Continuity_Framework.pdf#page=2" target="_blank" rel="noopener noreferrer"><img src="/media/framework-slide-02.jpg" alt="Seven stages: Capture, Provenance, Analytics, Evolution, Evidence, Reintegration and Utility" loading="lazy"/><span>Explore the map in the full PDF <ExternalLink size={17}/></span></a></section>
     <div className="cg-media-chapters"><div><BookOpen size={24}/><h2>Explore by topic</h2></div><div className="cg-media-chapter-grid">{sections.map(([label,id,count])=><button key={id} onClick={()=>{onTutorial();setTimeout(()=>document.getElementById('guide-'+id)?.scrollIntoView({block:'start',behavior:'smooth'}),120);}}><span>{label}</span><small>{count} illustrated cards</small><ArrowRight size={16}/></button>)}</div></div>
-    <div className="cg-media-footer"><span>Ready to preserve your own source?</span><button onClick={onCapture}>Capture a conversation <ArrowRight size={16}/></button></div>
+    <p><a href="/downloads/ChatGrab-Production-Kit.zip" download="ChatGrab-Production-Kit.zip">Download the ChatGrab video production kit · narration, storyboard and nine image references</a></p><div className="cg-media-footer"><span>Ready to preserve your own source?</span><button onClick={onCapture}>Capture a conversation <ArrowRight size={16}/></button></div>
   </section>;
 }

@@ -1,0 +1,21 @@
+{
+  "headers": [
+    {
+      "source": "/downloads/ChatGrab-Production-Kit.zip",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/zip"
+        },
+        {
+          "key": "Content-Disposition",
+          "value": "attachment; filename=\"ChatGrab-Production-Kit.zip\""
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    }
+  ]
+}
