@@ -1,0 +1,49 @@
+{
+  "status": "PASS",
+  "base": "http://127.0.0.1:3060",
+  "transport": "Official MCP SDK streamable HTTP, anonymous",
+  "serverInfo": {
+    "name": "ChatGrab",
+    "version": "0.1.0"
+  },
+  "tools": [
+    "get_plugin_status",
+    "get_workspace_link"
+  ],
+  "checks": [
+    "Anonymous SDK initialization/discovery; exact two read-only noauth tools",
+    "Status returns only public capability data, no account or conversation access",
+    "Workspace tool returns canonical HTTPS workspace and capture route",
+    "Unexpected identity/transcript arguments and unsupported capture tool rejected",
+    "Unsupported methods return 405, no fake SSE subscription",
+    "Foreign POST/preflight denied; ChatGPT preflight has exact origin, no wildcard",
+    "Oversized body and malformed JSON-RPC envelope rejected",
+    "Local /mcp alias exercised with SDK"
+  ],
+  "statusResponse": {
+    "schemaVersion": "chatgrab-plugin-status/1",
+    "product": "ChatGrab",
+    "serverHealth": "ok",
+    "authenticated": false,
+    "capabilities": {
+      "status": true,
+      "workspaceLink": true,
+      "privateLibrary": false,
+      "captureCurrentChat": false,
+      "historyAccess": false,
+      "automaticAnalysis": false,
+      "threadPanel": false,
+      "workerExecution": false,
+      "livePayments": false
+    },
+    "message": "Read-only entrypoint. Open the workspace for user-controlled imports; no conversation context grant or account connection is established."
+  },
+  "workspaceResponse": {
+    "url": "https://chatgrab.app/",
+    "importUrl": "https://chatgrab.app/?page=capture",
+    "requiresApiKey": false,
+    "instructions": "Open ChatGrab and use its user-controlled paste or compatible file import. Supply only material you want to preserve. Reviewed paste/file import and local review history are available in the published workspace. Existing private chats cannot be read by this tool."
+  },
+  "chatGPTInstallationTested": false,
+  "chatGPTHostInvocationTested": false
+}
