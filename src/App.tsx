@@ -1,3 +1,4 @@
+import {ReviewStorageContext} from './components/review-storage-context';
 import {PortableBackupPanel} from './components/PortableBackupPanel';
 import {ImportReview} from './components/ImportReview';
 import {capturedRecord,addCapturedRecord,sameCapturedSource} from './lib/capture-record';
@@ -47,7 +48,7 @@ import { Header } from './components/Header';
 import { CaptureModal } from './components/CaptureModal';
 import { CorpusModal } from './components/CorpusModal';
 import { ExportModal } from './components/ExportModal';
-import { ThreadViewer } from './components/ThreadViewer';
+import { TranscriptReviewWorkspace } from './components/TranscriptReviewWorkspace';
 import { InsightsView } from './components/InsightsView';
 import { ChatGPTCompanion } from './components/ChatGPTCompanion';
 import { AdaptivePortionsView } from './components/AdaptivePortionsView';
@@ -409,6 +410,7 @@ export default function App() {
     : 0;
   const readTimeMinutes = Math.max(1, Math.ceil(totalWords / 200));
   return (
+    <ReviewStorageContext.Provider key={accountUser?.id||'guest'} value={accountUser?.id?'account:'+accountUser.id:'local'}>
     <div className="cg-app cg-v2 min-h-screen text-slate-900 flex flex-col font-sans">
       {/* Toast Notification */}
       {toastMessage && (
@@ -532,7 +534,7 @@ export default function App() {
             <div className="bg-white rounded-2xl px-5 py-3 border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="font-mono font-medium px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  {activeThread.model || 'GPT-4o'}
+                  {activeThread.model || 'Model unspecified'}
                 </span>
                 <span className="text-slate-500 flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5 text-slate-400" />
@@ -559,7 +561,7 @@ export default function App() {
                 )}
               </div>
               {/* View Selector Tabs (Transcript vs AI Intelligence) */}
-              <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+              <div className="flex flex-wrap items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold">
                 <button
                   type="button"
                   onClick={() => setWorkspaceTab('transcript')}
@@ -601,7 +603,7 @@ export default function App() {
             </div>
             {/* Tab 1: Transcript */}
             {workspaceTab === 'transcript' && (
-              <ThreadViewer thread={activeThread} />
+              <TranscriptReviewWorkspace key={activeThread.id} thread={activeThread} threads={corpus} favorite={activeThread.isFavorite} storageScope={accountUser?.id||'guest'} onOpenThread={t=>{setActiveThread(t);setWorkspaceTab('transcript');}}/>
             )}
             {/* Tab 2: AI Intelligence */}
             {workspaceTab === 'insights' && (
@@ -644,7 +646,7 @@ export default function App() {
           </>}
           </>
         )}
-        {page==='capture'&&<section className="rounded-2xl border border-blue-200 bg-white p-5 text-slate-800" aria-label="Latest ChatGrab milestones"><p className="text-sm font-bold text-blue-700">LATEST RELEASE · NOVEMBER 14, 2026</p><h2 className="text-xl font-bold my-2">More ways to keep your conversations useful.</h2><p>Reviewed imports, preserved source text, library search and organization, complete portable backups, and local source metrics are here. Prepare guided AI reviews through your own account, keep reviewed context revisions, and explore portable Crew Console handoffs.</p><p className="mt-2">Integrated AI connections, smoother automatic capture, and synchronized account experiences are in development.</p><div className="flex flex-wrap gap-3 mt-3"><button className="font-bold text-blue-800 underline" onClick={()=>openPage('analyze')}>Explore source analytics</button><a className="font-bold text-blue-800 underline" href="/downloads/ChatGrab-Production-Kit.zip" download="ChatGrab-Production-Kit.zip">Download the video production kit · ZIP</a><a className="font-bold text-blue-800 underline" href="/history/">Earlier builds and milestones</a></div></section>}
+        {page==='capture'&&<section className="rounded-2xl border border-blue-200 bg-white p-5 text-slate-800" aria-label="Latest ChatGrab milestones"><p className="text-sm font-bold text-blue-700">LATEST RELEASE · NOVEMBER 14, 2026</p><h2 className="text-xl font-bold my-2">Search in context. Keep every reviewed version.</h2><p>Context-preserving transcript search, source-linked review history, responsive source/review comparison, and complete backups with saved reviews are here. Reviewed imports, library organization and local source metrics remain available. Prepare guided AI reviews through your own account, keep reviewed context revisions, and explore portable Crew Console handoffs.</p><p className="mt-2">Integrated AI connections, smoother automatic capture, and synchronized account experiences are in development.</p><div className="flex flex-wrap gap-3 mt-3"><button className="font-bold text-blue-800 underline" onClick={()=>openPage('analyze')}>Explore source analytics</button><a className="font-bold text-blue-800 underline" href="/downloads/ChatGrab-Production-Kit.zip" download="ChatGrab-Production-Kit.zip">Download the video production kit · ZIP</a><a className="font-bold text-blue-800 underline" href="/history/">Earlier builds and milestones</a></div></section>}
       </main>
       </div>
       {/* Capture Modal (SS1.jpeg replica) */}
@@ -726,6 +728,7 @@ export default function App() {
         page={navigationPage}
       />
     </div>
+    </ReviewStorageContext.Provider>
   );
 }
 

@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
+import {literalParts} from '../lib/transcript-search';
 import { Copy, Check } from 'lucide-react';
 
 interface MarkdownViewProps {
   content: string;
   className?: string;
+  highlight?: string;
 }
 
-export const MarkdownView: React.FC<MarkdownViewProps> = ({ content, className = '' }) => {
+export const MarkdownView: React.FC<MarkdownViewProps> = ({ content, className = '', highlight = '' }) => {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null);
 
   const handleCopyCode = (codeText: string, index: number) => {
@@ -49,7 +51,7 @@ export const MarkdownView: React.FC<MarkdownViewProps> = ({ content, className =
                 </button>
               </div>
               <pre className="p-3.5 overflow-x-auto text-[13px] font-mono text-slate-200 leading-normal selection:bg-blue-600/40">
-                <code>{codeBody}</code>
+                <code>{marked(codeBody,highlight)}</code>
               </pre>
             </div>
           );
@@ -70,21 +72,21 @@ export const MarkdownView: React.FC<MarkdownViewProps> = ({ content, className =
               if (line.startsWith('### ')) {
                 return (
                   <h3 key={lineIdx} className="text-base font-bold text-slate-900 mt-4 mb-2 flex items-center gap-2">
-                    {renderInline(line.replace('### ', ''))}
+                    {renderInline(line.replace('### ', ''),highlight)}
                   </h3>
                 );
               }
               if (line.startsWith('## ')) {
                 return (
                   <h2 key={lineIdx} className="text-lg font-bold text-slate-900 mt-5 mb-2.5 pb-1 border-b border-slate-200">
-                    {renderInline(line.replace('## ', ''))}
+                    {renderInline(line.replace('## ', ''),highlight)}
                   </h2>
                 );
               }
               if (line.startsWith('# ')) {
                 return (
                   <h1 key={lineIdx} className="text-xl font-extrabold text-slate-900 mt-6 mb-3">
-                    {renderInline(line.replace('# ', ''))}
+                    {renderInline(line.replace('# ', ''),highlight)}
                   </h1>
                 );
               }
@@ -93,7 +95,7 @@ export const MarkdownView: React.FC<MarkdownViewProps> = ({ content, className =
               if (line.startsWith('> ')) {
                 return (
                   <blockquote key={lineIdx} className="border-l-4 border-blue-500 pl-3.5 py-1 my-2 bg-blue-50/50 rounded-r text-slate-700 italic text-sm">
-                    {renderInline(line.replace(/^>\s*/, ''))}
+                    {renderInline(line.replace(/^>\s*/, ''),highlight)}
                   </blockquote>
                 );
               }
@@ -103,7 +105,7 @@ export const MarkdownView: React.FC<MarkdownViewProps> = ({ content, className =
                 return (
                   <div key={lineIdx} className="flex items-start gap-2 ml-1 text-slate-700">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-2 shrink-0" />
-                    <span>{renderInline(line.replace(/^[-*]\s*/, ''))}</span>
+                    <span>{renderInline(line.replace(/^[-*]\s*/, ''),highlight)}</span>
                   </div>
                 );
               }
@@ -116,7 +118,7 @@ export const MarkdownView: React.FC<MarkdownViewProps> = ({ content, className =
                     <span className="font-semibold text-blue-600 text-xs mt-0.5 shrink-0 min-w-4 text-right">
                       {numMatch[1]}.
                     </span>
-                    <span>{renderInline(numMatch[2])}</span>
+                    <span>{renderInline(numMatch[2],highlight)}</span>
                   </div>
                 );
               }
@@ -124,7 +126,7 @@ export const MarkdownView: React.FC<MarkdownViewProps> = ({ content, className =
               // Standard paragraph
               return (
                 <p key={lineIdx} className="text-slate-700 leading-relaxed">
-                  {renderInline(line)}
+                  {renderInline(line,highlight)}
                 </p>
               );
             })}
@@ -136,7 +138,9 @@ export const MarkdownView: React.FC<MarkdownViewProps> = ({ content, className =
 };
 
 // Render bold, inline code, links
-function renderInline(text: string) {
+function marked(text:string,query:string){return literalParts(text,query).map((part,i)=>part.match?<mark key={i} className="cg-search-mark">{part.text}</mark>:part.text);}
+
+function renderInline(text: string,query='') {
   // Split by inline code `...`
   const codeParts = text.split(/(`[^`]+`)/g);
 
@@ -144,7 +148,7 @@ function renderInline(text: string) {
     if (sub.startsWith('`') && sub.endsWith('`')) {
       return (
         <code key={i} className="px-1.5 py-0.5 mx-0.5 bg-slate-100 border border-slate-200/80 rounded font-mono text-[13px] text-blue-700 font-medium">
-          {sub.slice(1, -1)}
+          {marked(sub.slice(1, -1),query)}
         </code>
       );
     }
@@ -155,11 +159,11 @@ function renderInline(text: string) {
       if (b.startsWith('**') && b.endsWith('**')) {
         return (
           <strong key={`${i}-${bi}`} className="font-semibold text-slate-900">
-            {b.slice(2, -2)}
+            {marked(b.slice(2, -2),query)}
           </strong>
         );
       }
-      return b;
+      return marked(b,query);
     });
   });
 }
