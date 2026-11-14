@@ -1,7 +1,7 @@
 import type {ConversationThread} from '../types';
 import {digestBridge} from './crew-bridge';
 export const REVIEW_ANALYSES=['contradictions','accomplishments','apologies','decisions','themes','neighbors','evolution','narrative','unresolved'];
-export type ReviewContext={schema:'chatgrab-review-context/1';id:string;createdAt:string;analyses:string[];threads:{id:string;title:string;capturedAt:string;messages:{id:string;role:string;content:string}[]}[];digest:string};
+export type ReviewContext={schema:'chatgrab-review-context/1';id:string;createdAt:string;analyses:string[];threads:{id:string;title:string;capturedAt:string;messages:{id:string;role:string;content:string;timestamp?:string;model?:string}[]}[];digest:string};
 type Evidence={threadId:string;messageId:string;excerpt:string};
 export type ImportedAnalysis={schema:'chatgrab-analysis/1';contextId:string;contextDigest:string;provider:'ChatGPT';narrative:string;findings:{id:string;type:string;title:string;context:string;interpretation:string;status:string;evidence:Evidence[]}[];limitations:string[]};
 export type SecondOpinion={schema:'chatgrab-second-opinion/1';contextId:string;contextDigest:string;analysisDigest:string;provider:'Gemini';summary:string;checks:{claim:string;verdict:string;reason:string;evidence:Evidence[]}[];limitations:string[]};
@@ -15,7 +15,7 @@ function match(v:any,context:ReviewContext){if(v.contextId!==context.id||v.conte
 export async function buildReviewContext(threads:ConversationThread[],selectedMessages:string[],analyses:string[]):Promise<ReviewContext>{
  if(!analyses.length||analyses.some(a=>!REVIEW_ANALYSES.includes(a)))throw Error('Choose supported analysis categories.');
  const wanted=new Set(selectedMessages);let count=0,total=0;const ids=new Set<string>();
- const sources=threads.map(t=>{if(ids.has(t.id))throw Error('Duplicate conversation ID.');ids.add(t.id);const seen=new Set<string>();const messages=t.messages.filter(m=>wanted.has(t.id+'::'+m.id)).map(m=>{if(seen.has(m.id)||!m.id||typeof m.content!=='string')throw Error('Source message IDs must be unique and text must be available.');seen.add(m.id);count++;total+=m.content.length;if(m.content.length>12000)throw Error('A message exceeds 12,000 characters. Select a shorter source record.');return {id:m.id,role:m.role,content:m.content};});return {id:t.id,title:t.title,capturedAt:t.capturedAt,messages};}).filter(t=>t.messages.length);
+ const sources=threads.map(t=>{if(ids.has(t.id))throw Error('Duplicate conversation ID.');ids.add(t.id);const seen=new Set<string>();const messages=t.messages.filter(m=>wanted.has(t.id+'::'+m.id)).map(m=>{if(seen.has(m.id)||!m.id||typeof m.content!=='string')throw Error('Source message IDs must be unique and text must be available.');seen.add(m.id);count++;total+=m.content.length;if(m.content.length>12000)throw Error('A message exceeds 12,000 characters. Select a shorter source record.');return {id:m.id,role:m.role,content:m.content,...(m.timestamp?{timestamp:m.timestamp}:{}),...(m.model?{model:m.model}:{})};});return {id:t.id,title:t.title,capturedAt:t.capturedAt,messages};}).filter(t=>t.messages.length);
  if(!count||count>40||total>60000)throw Error('Select 1–40 source messages, up to 60,000 characters total. No source text has been truncated.');
  const body={schema:'chatgrab-review-context/1' as const,id:crypto.randomUUID(),createdAt:new Date().toISOString(),analyses:[...new Set(analyses)],threads:sources};return {...body,digest:await digestBridge(body)};
 }
