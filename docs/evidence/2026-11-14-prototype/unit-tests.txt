@@ -1,0 +1,78 @@
+
+> react-example@0.0.0 test
+> node --import tsx --test test/*.test.ts
+
+✔ independent connections cannot both admit the same nonce; audit and replay reservation survive reopening (22.132082ms)
+✔ signed receipt verification uses the durable journal and rejects malformed expiration (3.35215ms)
+✔ committed admission survives child-process exit without database close (112.627154ms)
+✔ analysis handoff includes only explicitly selected messages and no API credentials or other chat metadata (9.054024ms)
+✔ analysis importer accepts exact citations and rejects fabricated quotes, categories, contexts and completion claims (5.107723ms)
+✔ second opinion binds the exact analysis and source context, preserving independent disagreement (2.108578ms)
+✔ large multi-chat sources are batched with every message ID exactly once (1.426983ms)
+✔ an oversized single message is split into numbered parts without text loss or broken surrogate pairs (0.757569ms)
+✔ recent filtering applies to the original last 100 messages and an empty selection stays empty (1.471512ms)
+✔ API validates requests and reports a pending native connection without modifying sources (106.839974ms)
+✔ queue validates and deduplicates URLs, preserves successes and retries only failures (37.591424ms)
+✔ pause aborts active request; cancellation and owner change never save late responses; unfinished queue recovers paused (11.816238ms)
+✔ versioned shared queue and receipts recover after a fresh read; corrupt state is never overwritten on load (19.25586ms)
+✔ published Crew Console and ChatGrab use the identical portable contract (0.989254ms)
+✔ capture never invents original date or model and validates message shape (2.051249ms)
+✔ identical recaptures retain original human metadata; changed sources create snapshots (0.493366ms)
+✔ assistant includes only selected sources and their connected files (1.519314ms)
+✔ context limits disclose shortened sources and preserve message IDs (0.264796ms)
+✔ empty selection does not silently include the entire library (0.187105ms)
+✔ keeps exact quotations tied to the correct conversation (0.928343ms)
+✔ replaces invented or cross-chat quotations with actual source text (0.350957ms)
+✔ drops unknown citations and marks unsupported findings unresolved (1.449752ms)
+✔ rejects categories outside the selected analyses (0.239927ms)
+✔ portable contract preserves source IDs, checks integrity and requires explicit bounded consent (19.274786ms)
+✔ common sensitive patterns are removed and receipts cannot imply worker ACK or match another handoff (3.140911ms)
+✔ durable store denies unauthorized actions, deduplicates delivery, uses versions and retains audit (27.348634ms)
+✔ committed checkpoint survives a process killed without closing the database (161.155371ms)
+✔ HTTP backend requires local session, rejects cross-origin and ignores claimed worker identity (114.862003ms)
+✔ hosted service stays disabled with no filesystem or session access (16.035691ms)
+✔ share fetch rejects off-domain redirects, reports provider blocks and bounds response size (39.425688ms)
+✔ transient upstream errors retry once without privacy claims; rate limits are not hammered (352.857472ms)
+✔ share captures preserve whitespace, dates, roles and reject non-text loss (2.792939ms)
+✔ current public-share JSON preserves every role, source ID, code block and original date (2.924025ms)
+✔ public document request identifies ChatGrab and distinguishes social preview from transcript (0.874827ms)
+✔ capture date is never fabricated into the chat range (28.122341ms)
+✔ range uses saved message dates, independent of capture time (0.434427ms)
+✔ ChatGrab topic preview describes project subjects rather than its name alone (1.85221ms)
+✔ a library backup restores separate conversations and source metadata (1.703967ms)
+✔ restore skips exact duplicates and preserves existing records on ID collision (0.621451ms)
+✔ malformed messages fail rather than becoming blank or fabricated conversation text (0.659024ms)
+✔ native ChatGPT export preserves selected branch, roles and original text without including alternative replies (1.385139ms)
+✔ native export refuses unsupported multimodal content instead of silently losing source data (0.279726ms)
+✔ review parser preserves code whitespace and only recognizes roles outside fences (6.987618ms)
+✔ manual preview rejects unfinished fences, ambiguous transcript and links (1.06114ms)
+✔ JSON preview rejects duplicate message IDs and invalid source dates without replacing originals (0.554768ms)
+✔ real MCP SDK discovers two anonymous read-only tools and rejects private-data calls (29.644618ms)
+✔ receiver rejects tampering, missing monitor, expired grants, false identity, blocked calls and replay; records denials (4.80527ms)
+✔ receiver fails closed if its audit store cannot append (1.213196ms)
+✔ review sealing preserves exact prompt/answer/source and detects altered bytes (18.379697ms)
+✔ invalid literal citations cannot be archived as checked or unchecked (3.705496ms)
+✔ correction parents and history are retained, bounded, and verified (20.131383ms)
+✔ restore remaps live links, leaving immutable prompts/snapshots/digests intact (15.462291ms)
+✔ same ID with different review contents rejects instead of overwriting (4.345625ms)
+✔ malformed archives, wrong prompt and missing correction parents are rejected (2.833259ms)
+✔ checked analysis and independent second opinion archive with exact request and response (3.454377ms)
+✔ counts original labels, preserves evidence and uses message dates only (12.485786ms)
+✔ empty inputs and unknown verbatim attribution do not invent speakers or dates (0.479142ms)
+✔ shared trace strips header forms, cookie containers, URL access codes and the actual client token (201.999341ms)
+✔ trace compaction omits only redundant filmstrip frames and keeps action/DOM evidence (124.365791ms)
+✔ literal search preserves exact text including code whitespace and escapes as text (0.919603ms)
+✔ message anchors scope reused IDs and result navigation wraps both ways (0.279028ms)
+ℹ tests 61
+ℹ suites 0
+ℹ pass 61
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5525.635606
+npm notice
+npm notice New major version of npm available! 11.9.0 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

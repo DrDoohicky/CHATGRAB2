@@ -1,0 +1,21 @@
+{
+  "checks": [
+    "Append-only review and state-event storage",
+    "Account and guest review storage separated",
+    "Whole backup includes only guest reviews, supporting original and JSON-normalized source metadata",
+    "Quota failure explicitly rejects, no partial review save",
+    "Stale concurrent write rejected without overwriting history",
+    "Oversized review rejected without changing archive",
+    "Corrupt archive blocks writes and preserves original bytes",
+    "Conflicting conversation ID remapped; existing source preserved",
+    "Review live link remapped, immutable prompt/response/snapshot/digest unchanged",
+    "Supporting original bytes preserved and live file link remapped",
+    "Transaction failure preserves existing library and review history",
+    "New backup missing checksum rejected before writes",
+    "New backup mismatch checksum rejected before writes",
+    "Legacy v1 format remains readable under its original file-hash scheme",
+    "Existing v1 IndexedDB original file bytes survive review-store upgrade"
+  ],
+  "uncaughtErrors": [],
+  "fixtures": "Synthetic; real Chromium IndexedDB, localStorage, crypto and original Blob bytes."
+}
