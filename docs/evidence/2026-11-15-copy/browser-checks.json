@@ -1,0 +1,87 @@
+{
+  "errors": [],
+  "checks": [
+    {
+      "route": "capture",
+      "main": 1,
+      "overflow": false
+    },
+    {
+      "route": "workspace",
+      "main": 1,
+      "overflow": false
+    },
+    {
+      "route": "analyze",
+      "main": 2,
+      "overflow": false
+    },
+    {
+      "route": "library",
+      "main": 1,
+      "overflow": false
+    },
+    {
+      "route": "artifacts",
+      "main": 1,
+      "overflow": false
+    },
+    {
+      "route": "export",
+      "main": 1,
+      "overflow": false
+    },
+    {
+      "route": "media",
+      "main": 1,
+      "overflow": false
+    },
+    {
+      "route": "guide",
+      "main": 1,
+      "overflow": false
+    },
+    {
+      "route": "plugin",
+      "main": 1,
+      "overflow": false
+    },
+    {
+      "route": "settings",
+      "main": 1,
+      "overflow": false
+    },
+    {
+      "route": "bridge",
+      "main": 1,
+      "overflow": false
+    },
+    {
+      "route": "guide",
+      "width": 1280,
+      "overflow": false
+    },
+    {
+      "route": "guide",
+      "width": 768,
+      "overflow": false
+    },
+    {
+      "route": "guide",
+      "width": 390,
+      "overflow": false
+    },
+    {
+      "route": "guide",
+      "width": 320,
+      "overflow": false
+    },
+    {
+      "route": "copy-review",
+      "width": 390,
+      "overflow": false
+    }
+  ],
+  "reviewExport": "passed",
+  "reviewNotesAcrossViews": "passed"
+}
