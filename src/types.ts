@@ -1,9 +1,11 @@
+export type PacketAnnotation = {category: 'decision' | 'constraint' | 'correction' | 'background'; rationale: string};
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp?: string;
   model?: string;
+  packetAnnotation?: PacketAnnotation;
   sourceThreadId?: string;
   sourceMessageId?: string;
 }

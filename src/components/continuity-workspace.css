@@ -27,3 +27,5 @@
 @media(max-width:800px){.cg-continuity{padding:16px}.cg-continuity-columns{grid-template-columns:1fr}.cg-continuity-panel{padding:15px}}
 
 .cg-message-picker{margin-top:20px}.cg-message-picker details{border:1px solid #d6e3f2;border-radius:10px;padding:12px;margin-top:10px}.cg-message-picker summary{font-weight:800;color:#234c83;cursor:pointer}.cg-message-picker .cg-thread-options{margin-top:12px;max-height:300px}
+
+.cg-packet-message{border:1px solid #ced9e7;border-radius:14px;padding:12px;background:#fff;margin:10px 0}.cg-packet-notes{padding:12px;background:#edf3fb;border-radius:10px}.cg-packet-notes label{display:grid!important;gap:7px!important;font-size:15px;font-weight:700}.cg-packet-notes select,.cg-packet-notes textarea{width:100%;min-width:0;background:#fff;color:#19334e;border:1px solid #9db0c8;border-radius:8px;padding:10px;font:600 15px/1.5 system-ui}.cg-packet-notes small{display:block;color:#344b65;font-size:14px;line-height:1.6;font-weight:550}.cg-packet-notes label span{font-weight:550}

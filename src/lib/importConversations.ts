@@ -1,3 +1,4 @@
+import {validatePacketAnnotation} from './continuity-packet';
 import type {ConversationThread,ChatMessage} from '../types';
 
 // ChatGPT exports are trees. Import the selected branch, not every alternative reply.
@@ -43,6 +44,7 @@ export function parseConversationFile(text:string,name:string,existing:Conversat
   const messageIds=new Set<string>();
   const messages:ChatMessage[]=item.messages.map((m:any,i:number)=>{
    if(!m||typeof m.content!=='string'||!['user','assistant','system'].includes(m.role)||m.attachments?.length||m.fileAttachments?.length)throw new Error('Every imported message needs a supported role and text content.');
+   if(m.packetAnnotation!==undefined)validatePacketAnnotation(m.packetAnnotation);
    const id=String(m.id??'message-'+i);if(!id||messageIds.has(id))throw Error('Message IDs must be nonempty and unique within each conversation. Nothing has been imported.');messageIds.add(id);
    return {...m,id,role:m.role,content:m.content};
   });
