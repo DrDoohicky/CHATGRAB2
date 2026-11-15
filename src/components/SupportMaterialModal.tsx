@@ -93,7 +93,7 @@ export const SupportMaterialModal: React.FC<Props> = ({ inline=false, isOpen, on
         {!inline && <button aria-label="Close" onClick={onClose} className="absolute top-4 right-4 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 grid place-items-center"><X className="w-4 h-4" /></button>}
         <div className="text-[11px] font-bold tracking-widest text-blue-700 uppercase">SUPPORT MATERIAL</div>
         <h2 className="text-2xl font-extrabold text-slate-900 mt-1">Add the files that belong around the conversation.</h2>
-        <p className="text-sm text-slate-600 mt-2 max-w-3xl">PDFs, screenshots, generated images, JSON, documents, audio/video, exports, and external evidence can be preserved without pretending they were part of the transcript.</p>
+        <p className="text-sm text-slate-600 mt-2 max-w-3xl">Keep supporting documents, screenshots, images, audio and video alongside a chat. They remain separate files, so you can tell what was in the conversation and what you added afterward.</p>
 
         <label onDragOver={e=>e.preventDefault()} onDrop={e=>{e.preventDefault();setFiles(Array.from(e.dataTransfer.files));}} className="mt-5 min-h-36 border-2 border-dashed border-blue-200 bg-blue-50/50 rounded-2xl flex flex-col items-center justify-center gap-2 p-5 text-center cursor-pointer hover:bg-blue-50">
           <Upload className="w-7 h-7 text-blue-600" />

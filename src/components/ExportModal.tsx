@@ -97,7 +97,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   Generate PDF / Print
                 </p>
                 <p className="text-xs text-slate-500">
-                  Formatted document report with summary, takeaways & transcript
+                  Readable document with the conversation, summary and any saved takeaways
                 </p>
               </div>
             </div>
@@ -140,7 +140,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   Export JSON (.json)
                 </p>
                 <p className="text-xs text-slate-500">
-                  Full schema archive with messages, insights, and metadata
+                  JSON file with saved messages, reviews and record details for reuse in compatible tools
                 </p>
               </div>
             </div>

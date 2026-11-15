@@ -336,7 +336,7 @@ ${snippet.slice(0, 15000)}`,
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-slate-500 max-w-2xl mt-0.5">
-                Intelligently segment conversations of any length into digestible thematic phases, analytical slices, and actionable milestones.
+                Break a long conversation into smaller sections so you can read and reuse the parts you need. Review the selected messages before bringing them into another chat.
               </p>
             </div>
           </div>
@@ -725,7 +725,7 @@ ${snippet.slice(0, 15000)}`,
           ) : (
             <div className="bg-white rounded-3xl p-12 text-center border border-slate-200 text-slate-500 text-xs">
               <Layers className="w-8 h-8 text-slate-300 mx-auto mb-3" />
-              <p>Select a portion from the deck to inspect its transcript and decisions.</p>
+              <p>Choose a section to read its messages and review the decisions made there.</p>
             </div>
           )}
         </div>

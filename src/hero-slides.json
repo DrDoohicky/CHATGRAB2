@@ -2,14 +2,14 @@
   {
     "id": "rad",
     "lines": [
-      "It's so rad…"
+      "It's so rad\u2026"
     ],
     "duration": 3700
   },
   {
     "id": "fab",
     "lines": [
-      "It's super fab…"
+      "It's super fab\u2026"
     ],
     "duration": 3700
   },
@@ -24,16 +24,16 @@
     "id": "catalog",
     "lines": [
       "All your conversations.",
-      "One connected",
-      "contextual catalog."
+      "The answers.",
+      "And the reasons."
     ],
     "duration": 6100
   },
   {
     "id": "context",
     "lines": [
-      "From scattered chats.",
-      "To connected context."
+      "Keep the background.",
+      "Build on what matters."
     ],
     "duration": 5300
   },
@@ -72,8 +72,8 @@
   {
     "id": "carry",
     "lines": [
-      "Unify. Analyze.",
-      "Preserve. Reintegrate."
+      "Save. Understand.",
+      "Check. Reintegrate."
     ],
     "duration": 5700
   }

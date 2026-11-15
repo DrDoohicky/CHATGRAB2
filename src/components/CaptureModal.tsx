@@ -223,7 +223,7 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
 
               {/* Subtitle */}
               <p className="text-slate-600 text-sm leading-relaxed mb-5">
-                Bring in a public ChatGPT share URL. ChatGrab preserves the source, analyzes the record, and connects it to your corpus.
+                Save a conversation so you can revisit the answers and the reasons behind them. Try a public ChatGPT share link, or paste or import the messages and check them before saving. Analysis is a separate step after capture.
               </p>
 
               {/* Mode Selector */}
@@ -377,7 +377,7 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
 
             {/* Helper Footer */}
             <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-              <span>Supports share links, raw transcripts, and linked support files</span>
+              <span>Try a share link, paste conversation text, or import a file. Check that the messages you need were included.</span>
               <span className="font-medium text-slate-500">Stored locally in your corpus</span>
             </div>
           </div>

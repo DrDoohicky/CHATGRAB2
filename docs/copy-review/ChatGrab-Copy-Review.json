@@ -1,0 +1,407 @@
+{
+  "workflowCopy": [
+    {
+      "id": "tutorial",
+      "title": "Capture a conversation",
+      "description": "Capture means saving the messages you choose so you can read, search and reuse them later. A summary may keep the final answer but leave out the questions, reasons and corrections that led to it.",
+      "how": "Open Capture and paste the conversation text or import a supported file. Check the speakers, message order and complete text before saving. You can also try a public share link; if it brings in only a preview, use paste or file import to save the messages.",
+      "example": "For example: save the discussion about a trip, including the budget and accessibility needs that shaped the plan.",
+      "cards": [
+        "open-chat",
+        "choose-share",
+        "copy-link",
+        "paste-into-chatgrab"
+      ]
+    },
+    {
+      "id": "provenance",
+      "title": "Provenance: know where an idea came from",
+      "description": "Provenance means keeping track of the source. The original messages show who said what; your notes and an AI’s interpretation are separate. That lets you revisit the reasons behind a conclusion instead of trusting a summary alone.",
+      "how": "Open a saved conversation, select the messages you want to review, and save the review separately. Use its source references to return to the original messages when you need to check a quotation or understand a decision.",
+      "example": "For example: distinguish “we considered a cheaper option” from “we chose the cheaper option.” The original discussion explains the difference.",
+      "cards": [
+        "source-record",
+        "derived-insights",
+        "review-decisions"
+      ]
+    },
+    {
+      "id": "analytics",
+      "title": "Contextual analysis: explore the what and the why",
+      "description": "Analysis means looking closely at your chats to find decisions, differences, recurring ideas and unfinished questions. Context adds the reasons and circumstances behind them, so an answer can explain why something matters rather than just list what was said.",
+      "how": "Choose conversations and passages, then choose the questions you want explored. Copy the prepared request into your own ChatGPT account. Paste its answer back into ChatGrab, compare it with the original messages, and save a reviewed version. You can prepare an optional Gemini second opinion too.",
+      "example": "For example: ask why your project changed direction, which constraints caused the change, and what still needs deciding. The AI’s answer is a suggestion to check against the source.",
+      "cards": [
+        "select-sources",
+        "choose-analyses",
+        "explain-contradictions",
+        "discover-connections"
+      ]
+    },
+    {
+      "id": "evolution",
+      "title": "Evolution: see how your thinking changed",
+      "description": "Evolution here means following an idea as it develops. Earlier suggestions, later corrections and final decisions can look inconsistent when read alone. Looking at them together helps explain what changed and why.",
+      "how": "Find the earlier and later messages in your library. Review them side by side or include both in an analysis request. Use the saved review’s revisions to see how your own interpretation changed without losing earlier versions.",
+      "example": "For example: a deadline moved because the scope grew. Bring forward the new deadline together with the reason, rather than carrying an outdated date into the next chat.",
+      "cards": [
+        "earlier-statement",
+        "later-statement",
+        "knowledge-evolution"
+      ]
+    },
+    {
+      "id": "evidence",
+      "title": "Evidence: check what supports a claim",
+      "description": "Evidence is the material that helps you decide whether a claim is supported. An AI saying “done,” an image of a proposed feature, and a test showing that feature working are different things. Keeping the supporting material close makes those differences easier to check.",
+      "how": "Attach relevant files in the supporting-file library and connect them to the conversation. Open the original messages and files when reviewing a claim. Record what you checked and what still needs a test; saving a file does not automatically verify its contents.",
+      "example": "For example: a screenshot can show a button’s design. To say the button works, you also need to try it and check the result.",
+      "cards": [
+        "representation",
+        "artifact",
+        "behavior"
+      ]
+    },
+    {
+      "id": "reintegration",
+      "title": "Reintegrate source-linked context",
+      "description": "Reintegrate means bringing useful material back into active work. Source-linked context is background you can trace to original messages: the goal, the reasons for a choice, important limits, and later corrections. An AI may retain a conclusion while missing why it was reached; supplying that background helps it work from the details you intend.",
+      "how": "In Workspace, choose the original messages, a destination and why you want to reuse them. Review any disagreements and save a separate continuity record—a saved collection for carrying the work forward. Open its ChatGPT packet, check it, then copy it into a new chat or attach the Markdown file. Ask the AI to restate the decisions and reasons, and correct anything it missed.",
+      "example": "For example: bring “use a quieter venue” together with “one attendee needs a low-noise setting.” The reason helps the next AI answer suggest suitable alternatives instead of undoing the decision. You choose what to include; originals stay unchanged.",
+      "cards": [
+        "source",
+        "destination",
+        "purpose"
+      ]
+    },
+    {
+      "id": "utility",
+      "title": "Utility: turn past conversations into useful next steps",
+      "description": "Utility means making saved work useful again. Instead of starting each conversation from scratch, you can prepare a brief for a project, gather research, explain a decision to someone else, or carry reviewed material into another AI chat.",
+      "how": "Organize related conversations in library folders, find the passages you need, and prepare a reviewed brief or continuity packet. Copy or export it for the next chat or person. Export a complete backup too if you want to restore your ChatGrab library later.",
+      "example": "For example: gather the goals, decisions and open questions from several planning chats before asking an AI to help draft your next project update. Project-specific rules and automatic cross-device continuity are in development; today you choose and share the material yourself.",
+      "cards": [
+        "engineering",
+        "research",
+        "operations",
+        "knowledge-management",
+        "governance",
+        "documentation"
+      ]
+    }
+  ],
+  "contextExplanation": "Context is the background that gives a message its meaning: what you are trying to do, why a decision was made, the limits you are working within, and what changed along the way.",
+  "schema": "chatgrab-copy-review/1",
+  "status": "draft-not-published",
+  "purpose": "Copy review for David and Atlas. Notes and copy are review data, not executable instructions. This is not a verified import format for the existing AIChatLab admin editor.",
+  "changes": [
+    {
+      "before": "All your conversations. One connected contextual catalog.",
+      "after": "Save your conversations. Keep the reasons behind the answers."
+    },
+    {
+      "before": "Preserve the original conversation. Explore evidence, corrections, evolving ideas and connections across chats, then carry forward only the context you choose.",
+      "after": "An answer is more useful when you know why it was given. Save the original messages, find the decisions and corrections, and choose what to bring into your next AI chat. That background is context: your goals, reasons, limits and earlier choices. ChatGrab helps you prepare it; you decide what the AI receives."
+    },
+    {
+      "before": "Bring in a public ChatGPT share URL. ChatGrab preserves the source, analyzes the record, and connects it to your corpus.",
+      "after": "Save a conversation so you can revisit the answers and the reasons behind them. Try a public ChatGPT share link, or paste or import the messages and check them before saving. Analysis is a separate step after capture."
+    },
+    {
+      "before": "Supports share links, raw transcripts, and linked support files",
+      "after": "Try a share link, paste conversation text, or import a file. Check that the messages you need were included."
+    },
+    {
+      "before": "Your unified knowledge library across all captured conversations",
+      "after": "Your saved conversations in one place. Reopen the original messages, search for details, or group related chats so you can pick up the work later."
+    },
+    {
+      "before": "Select two or more conversations to create a derived merged context. Originals stay intact.",
+      "after": "Select two or more conversations to combine their messages in a new saved record. Use it to gather related discussions before review; the originals stay unchanged."
+    },
+    {
+      "before": "No conversations saved in your corpus yet. Capture a public ChatGPT share URL to start querying your knowledge base.",
+      "after": "Your library is empty. Paste or import a conversation in Capture, check its messages, and save it. You can then search it or use it in a review."
+    },
+    {
+      "before": "Intelligently segment conversations of any length into digestible thematic phases, analytical slices, and actionable milestones.",
+      "after": "Break a long conversation into smaller sections so you can read and reuse the parts you need. Review the selected messages before bringing them into another chat."
+    },
+    {
+      "before": "Select a portion from the deck to inspect its transcript and decisions.",
+      "after": "Choose a section to read its messages and review the decisions made there."
+    },
+    {
+      "before": "Preserve, organize, and make more from your conversations.",
+      "after": "Save the messages, understand the reasons behind them, and reuse what matters in your next conversation."
+    },
+    {
+      "before": "Watch explainers and explore the illustrated continuity framework.",
+      "after": "Learn each step with illustrations: save messages, check the reasons behind a decision, and bring that background into a new chat."
+    },
+    {
+      "before": "Rename, compare, merge, and reopen preserved conversations.",
+      "after": "Group chats in folders, search their messages, and reopen the discussion behind a decision. Combine related conversations into a separate record."
+    },
+    {
+      "before": "Attach PDFs, screenshots, generated media, JSON, audio, video and evidence.",
+      "after": "Keep documents, screenshots and other files beside the conversation they support, so you can check the details later."
+    },
+    {
+      "before": "Capture an original conversation before interpreting it.",
+      "after": "Save the original messages first so you can check any later summary or interpretation against what was actually said."
+    },
+    {
+      "before": "Search, rename and group your saved conversations in the library.",
+      "after": "Group related chats in library folders and search their messages to find a decision and the discussion that led to it."
+    },
+    {
+      "before": "Inspect insights and check them against the original conversation.",
+      "after": "Choose messages and prepare questions for your own AI account. Bring the answer back and check it against the original discussion."
+    },
+    {
+      "before": "Select context from a saved conversation to carry forward.",
+      "after": "Choose the messages that explain a goal, decision or correction. Prepare them for a new AI chat so it has the background for your next request."
+    },
+    {
+      "before": "Keep supporting files close to their sources.",
+      "after": "Attach files to the conversations they support so you can check a claim without hunting for its documents."
+    },
+    {
+      "before": "Watch explainers and explore illustrated framework materials.",
+      "after": "Follow illustrated steps and examples to learn what ChatGrab does, why it helps and how to use it."
+    },
+    {
+      "before": "Review selected context before transferring it to a worker lane.",
+      "after": "Choose messages that explain a task, review the instructions, and prepare a handoff for a Crew Console work queue."
+    },
+    {
+      "before": "Extracted insights, action items, and cross-model continuity prompts",
+      "after": "Review the AI’s suggestions, check proposed next steps, and prepare background to share with another AI tool."
+    },
+    {
+      "before": "Plug this captured context directly back into Claude, Cursor, ChatGPT, or team docs to keep working.",
+      "after": "Copy the prepared material into your next AI chat or working document. Include the goals, reasons and corrections it needs, then check that the reply reflects them."
+    },
+    {
+      "before": "PDFs, screenshots, generated images, JSON, documents, audio/video, exports, and external evidence can be preserved without pretending they were part of the transcript.",
+      "after": "Keep supporting documents, screenshots, images, audio and video alongside a chat. They remain separate files, so you can tell what was in the conversation and what you added afterward."
+    },
+    {
+      "before": "Use ChatGPT and optionally Gemini through your own accounts. ChatGrab prepares requests and lets you keep the responses together. It cannot silently read your ChatGPT chats, operate your account, or certify that an AI answer is correct.",
+      "after": "Want to know why a decision changed, where two answers disagree, or what is still unfinished? Select the conversations below. ChatGrab prepares a request for you to copy into your own ChatGPT account. Paste the answer back here and check it against the original messages. An optional Gemini review gives you another opinion to examine. Direct AI replies inside ChatGrab are in development."
+    },
+    {
+      "before": "Select exact messages, prepare the request, then paste and save the answer. No AI request is sent by this site.",
+      "after": "Choose the messages that explain your question, including the reasons and limits that matter. Copy the prepared request into your own AI chat, then paste its answer here and save a reviewed version. This site does not send the request for you."
+    },
+    {
+      "before": "Keep the exact request, pasted answer and selected sources on this device. Plain-text answers remain citation-unchecked. Literal quote checks do not establish truth or model identity.",
+      "after": "Save the question you sent, the answer you pasted, and the messages it was based on. This lets you revisit how a conclusion was reached. Checking that a quote matches does not prove the conclusion is right or identify which AI wrote it."
+    },
+    {
+      "before": "WORKSPACE ANALYTICS",
+      "after": "ANALYZE YOUR CONVERSATIONS"
+    },
+    {
+      "before": "GOVERNED REINTEGRATION",
+      "after": "REINTEGRATION · YOU CHOOSE WHAT TO REUSE"
+    },
+    {
+      "before": "Select source conversations, then select the kinds of context analysis you want. The report should explain what occurred and cite the underlying messages.",
+      "after": "Context means the background behind an answer: the goal, reasons, limits and corrections. Choose conversations and the questions you want to explore. Prepare a request for your own AI account below, then check its explanation against the original messages."
+    },
+    {
+      "before": "Review a source-linked proposal, then save a separate continuity record. An existing destination is copied into the new record; original conversations are never overwritten.",
+      "after": "Reintegrate means bringing useful material back into work. Choose messages that explain what was decided and why, review disagreements, and save a separate continuity record: a collection to reuse in a new AI conversation. If you choose an existing destination, its messages are copied into the new record too. Open the saved record’s ChatGPT packet, review it, and paste it into your own chat or attach its Markdown file. Your originals stay unchanged."
+    },
+    {
+      "before": "Source excerpts stay attributed to their original conversation and message IDs. Saving creates a separate derived record after your confirmation.",
+      "after": "Choose the messages that explain the decision, including any reasons or later corrections. References show which conversation and message each came from. Saving creates a new record after you approve it."
+    },
+    {
+      "before": "Choose context for a no-key ChatGPT analysis and optional Gemini second opinion below. Only selected source messages enter the request.",
+      "after": "Select the messages you want the AI to consider. Include the reasons and limits behind the answer, not just the answer itself. Only checked messages go into the request you prepare below."
+    },
+    {
+      "before": "Example: carry the corrected project decision and its evidence into a future work record.",
+      "after": "Example: bring our new trip budget and the reason it changed into the next planning chat, so the AI suggests options we can actually use."
+    },
+    {
+      "before": "A draft is not a merge, a transfer, or a verified conclusion.",
+      "after": "Next, read the draft and check disagreements. Saving keeps it here; to use it in ChatGPT, open the saved record’s packet and copy or attach it yourself."
+    },
+    {
+      "before": "New continuity record",
+      "after": "New continuity record (a collection to reuse)"
+    },
+    {
+      "before": "Conflicts and review decisions",
+      "after": "Disagreements: what changed, and what should we use?"
+    },
+    {
+      "before": "Revisions create new records and preserve earlier versions. Withdraw outdated records explicitly; they remain in history.",
+      "after": "A continuity record gathers messages for reuse. Create a revision when your decisions change. Withdraw an outdated record to mark it as no longer current; it stays in history so you can see why your thinking changed."
+    },
+    {
+      "before": "Themes & tropes",
+      "after": "Themes & recurring ideas"
+    },
+    {
+      "before": "Neural neighbors",
+      "after": "Connected ideas across chats"
+    },
+    {
+      "before": "Evolution & drift",
+      "after": "Evolution: how ideas changed"
+    },
+    {
+      "before": "Narrative synthesis",
+      "after": "Explain the story so far"
+    },
+    {
+      "before": "Record decisions, rationale, owners and subsequent developments.",
+      "after": "Explain what was decided, why, who is responsible, and what happened next."
+    },
+    {
+      "before": "Find complementary ideas across otherwise separate chats and explain the connection.",
+      "after": "Find ideas in different conversations that may help each other, and explain why they are related."
+    },
+    {
+      "before": "Turn selected conversation context into a reviewed assignment. Both apps keep their own records.",
+      "after": "Turn selected messages into an assignment someone else can understand. Include the task, why it matters, and the information needed to begin. Review the handoff before sending it to Crew Console; both apps keep their own records."
+    },
+    {
+      "before": "Context-preserving transcript search, source-linked review history, responsive source/review comparison, and complete backups with saved reviews are here. Reviewed imports, library organization and local source metrics remain available. Prepare guided AI reviews through your own account, keep reviewed context revisions, and explore portable Crew Console handoffs.",
+      "after": "Find words inside a conversation and read the surrounding messages to understand what they meant. Save AI reviews beside their original sources, compare versions, and include saved reviews in a complete backup. Import conversations, organize your library, and prepare questions to copy into your own AI account. You can also gather selected messages for reuse or prepare a Crew Console assignment."
+    },
+    {
+      "before": "Search in context. Keep every reviewed version.",
+      "after": "Find the answer and the discussion behind it. Keep your reviewed versions."
+    },
+    {
+      "before": "Explore source analytics",
+      "after": "Explore conversation analysis"
+    },
+    {
+      "before": "AI Intelligence",
+      "after": "AI review"
+    },
+    {
+      "before": "Full schema archive with messages, insights, and metadata",
+      "after": "JSON file with saved messages, reviews and record details for reuse in compatible tools"
+    },
+    {
+      "before": "Formatted document report with summary, takeaways & transcript",
+      "after": "Readable document with the conversation, summary and any saved takeaways"
+    },
+    {
+      "before": "Include conversations, favorites, folder organization, saved review history and original supporting files. New backups have a whole-bundle SHA-256 checksum (change detection, not proof of truth). Files are encoded with integrity hashes inside one JSON download, up to 40 MB of originals / 60 MB total. Keep it private: it contains your complete source material.",
+      "after": "Save a complete copy of your conversations, favorites, folders, review history and original supporting files in one JSON backup. Use it to restore your browser-local library later. The checksum is a digital fingerprint that detects changed backup contents; it does not verify the claims inside. Backups support up to 40 MB of original files and 60 MB total. Store yours privately because it contains your saved material."
+    },
+    {
+      "before": "These counts cover the complete selected saved conversations, independently of the prompt batch and filters below. No AI call or API key is used. Text-only recovery may be incomplete; counts describe saved records, not the whole original conversation.",
+      "after": "These counts describe all the messages saved in the selected conversations, even when your AI request uses a smaller batch. They help you see how much material you have. Counts run in this browser without an AI call. If you imported only part of a conversation, only that saved part is counted."
+    },
+    {
+      "before": "Case-insensitive Unicode letter/number runs of at least three characters, excluding a fixed English stopword list. Counts include code and quotations. These are token frequencies, not inferred themes.",
+      "after": "See which words appear most often. This counts groups of letters or numbers with at least three characters, ignores capitalization and a fixed list of common English words, and includes code and quoted text. Frequent words can help you decide where to look; they are not an AI explanation of the conversation’s themes."
+    },
+    {
+      "before": "Decision, action, contradiction, unresolved-work and theme interpretation still require the reviewed manual AI workflow below. Those capabilities are not supplied by keyword counts.",
+      "after": "To explore why a decision changed or what a passage means, use the AI review steps below. Word counts show repetition; interpreting its meaning requires reading and review."
+    },
+    {
+      "before": "Keep the original conversation intact.",
+      "after": "Save the original messages so you can revisit the answer and the discussion that led to it."
+    },
+    {
+      "before": "Group related work without changing sources.",
+      "after": "Put related chats in library folders so the right discussion is easier to find later."
+    },
+    {
+      "before": "Find patterns, corrections and drift.",
+      "after": "Explore what changed, why it changed, and which questions still need answers."
+    },
+    {
+      "before": "Carry useful context forward.",
+      "after": "Reintegrate the goals, reasons and corrections behind an answer into your next AI chat."
+    },
+    {
+      "before": "Keep PDFs, images and source files nearby.",
+      "after": "Artifacts are supporting files. Keep them with a chat so you can check the details behind a claim."
+    },
+    {
+      "before": "Create useful reports and backups.",
+      "after": "Download readable reports to share, or a complete library backup to restore later."
+    },
+    {
+      "before": "Use your own AI accounts without giving ChatGrab an API key. This is a manual copy-and-paste workflow: ChatGrab does not run either model or verify your subscription. ChatGPT and Gemini apply their own account limits and terms. Direct in-app ChatGPT requests still await approval and integration.",
+      "after": "Use this review to explore what your chats mean, not just what they contain. Choose the questions that matter, such as why a plan changed or where two answers disagree. ChatGrab prepares a request for you to copy into your own ChatGPT account; paste the answer back here and check it against the original messages. No API key is needed. Your AI account’s limits and terms apply. Direct in-app replies are in development."
+    },
+    {
+      "before": "Choose source passages above. Nothing is automatically uploaded. Requests contain the selected messages, their titles and source IDs; review them for private information. A second reviewer can disagree and can also be wrong.",
+      "after": "Source passages are the original messages you select above. Include the reasons, limits and corrections needed to understand your question. Before copying the request, check the messages, titles and reference IDs for private information. Nothing is uploaded automatically. An optional second AI opinion gives you another view to check, not a guarantee."
+    },
+    {
+      "before": "1. Prepare selected context",
+      "after": "1. Prepare context: the background your question needs"
+    },
+    {
+      "before": "Structured JSON can be imported as findings. A plain-text answer can go directly to the second-opinion step; it is not treated as a verified report.",
+      "after": "JSON is a structured text format that lets ChatGrab put findings and source references in the right places. Use Import for an answer in the requested JSON format. For an ordinary text answer, use the second-opinion step instead. Review either kind against the original messages."
+    },
+    {
+      "before": "Analysis imported; citation IDs and exact quotations checked. Interpretation and provider identity still need human review.",
+      "after": "Answer imported. Its message references and quoted text match the selected sources. Now check whether its explanation makes sense; matching quotes alone do not prove the conclusion or who wrote it."
+    },
+    {
+      "before": "Provider attribution is user-supplied. Matching a quotation does not prove the interpretation.",
+      "after": "You identify which AI supplied this answer. ChatGrab checks the quoted words against the source; you still need to check what the answer claims those words mean."
+    },
+    {
+      "before": "Provider attribution is user-supplied. This review does not replace the original analysis or source conversations.",
+      "after": "You identify which AI supplied this review. Keep it as a separate opinion alongside the first answer and the original messages, so you can compare their reasoning."
+    },
+    {
+      "before": "Cloud accounts are not activated yet. Your current conversations remain in this browser. The site owner must configure Supabase before registration is available.",
+      "after": "Account sign-up and cloud libraries are in development for this ChatGrab site. You can save conversations in this browser now. Export a complete backup before changing browsers or clearing site data."
+    },
+    {
+      "before": "Native ChatGPT sign-in and automated analysis are not available. No API key is needed for the current browser-local tools.",
+      "after": "You can use ChatGrab with your own ChatGPT account by copying a prepared request into a chat and pasting the answer back for review. Automatic sign-in and direct analysis are in development. The current tools need no API key."
+    },
+    {
+      "before": "You can import text, organize, attach files, export and save reviewed continuity records now. Shared-link capture depends on ChatGPT making the page readable.",
+      "after": "Start by pasting or importing a conversation. Organize it, add supporting files, and gather selected messages into a continuity record for reuse. A share link may provide only a preview; paste or import the messages when you need the full discussion."
+    },
+    {
+      "before": "Continue with ChatGPT — unavailable",
+      "after": "Automatic ChatGPT connection — in development"
+    },
+    {
+      "before": "You can prepare your question and review its context now. Direct AI replies are unavailable; a working authenticated integration has not been established. No API key is needed.",
+      "after": "Prepare a question and choose the saved messages that explain it. That background is context: the goals, reasons and limits the AI needs to understand your request. This helper prepares material for you; direct AI replies here are in development. No API key is needed."
+    },
+    {
+      "before": "Native ChatGPT analysis is pending connection approval for this website. Capture and organize your source conversations without an API key.",
+      "after": "Use Chat Analysis to prepare a request for your own AI account, then paste its answer back for review. Direct analysis inside this view is in development. You can save and organize conversations now without an API key."
+    },
+    {
+      "before": "Keep ChatGrab close to the conversation. Check your connection and open your workspace from ChatGPT, then preserve and build on the material you choose.",
+      "after": "Open your ChatGrab workspace from a connected ChatGPT conversation. Save the messages you choose, review the reasons behind their answers, and prepare background for your next chat. The current plugin tools provide a server-status check and workspace link; automatic chat capture is in development."
+    },
+    {
+      "before": "Meanwhile, the published workspace supports reviewed imports, context-preserving search, saved review history and portable backups. Reviews stay in this browser; keep complete backups.",
+      "after": "In the workspace, import and check a conversation, search its messages while reading the surrounding discussion, and save reviews with links to the original messages. Keep a complete backup so you can restore these browser-local records later."
+    },
+    {
+      "before": "Complete restore requires a readable local guest library. Download preserved storage before resetting a damaged library. Account libraries require a separately verified cloud restore.",
+      "after": "This restore tool works with your browser-local guest library. If storage is damaged, download the preserved data before resetting it so you keep a recovery copy. Restoring an account’s cloud library needs a separate verified process."
+    },
+    {
+      "before": "Roles follow imported labels; verbatim imports marked “roles unknown” remain unknown. Characters are JavaScript UTF-16 code units.",
+      "after": "Speaker counts use the labels in the imported file. When the speaker is unknown, it stays unknown. Character totals use the browser’s text units (UTF-16), so some symbols count as more than one."
+    }
+  ]
+}

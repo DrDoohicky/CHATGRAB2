@@ -152,7 +152,7 @@ export const CorpusModal: React.FC<CorpusModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-500">
-                Your unified knowledge library across all captured conversations
+                Your saved conversations in one place. Reopen the original messages, search for details, or group related chats so you can pick up the work later.
               </p>
             </div>
           </div>
@@ -217,7 +217,7 @@ export const CorpusModal: React.FC<CorpusModalProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-blue-100 bg-blue-50/60 px-4 py-3">
               <div>
                 <div className="text-xs font-bold text-[#102a56]">Library actions</div>
-                <div className="text-[11px] text-slate-500">Select two or more conversations to create a derived merged context. Originals stay intact.</div>
+                <div className="text-[11px] text-slate-500">Select two or more conversations to combine their messages in a new saved record. Use it to gather related discussions before review; the originals stay unchanged.</div>
               </div>
               <button type="button" onClick={mergeSelected} disabled={selectedIds.length < 2} className="px-3 py-2 rounded-xl bg-[#0e274c] text-white text-xs font-bold disabled:opacity-35">
                 Merge Selected ({selectedIds.length})
@@ -443,7 +443,7 @@ export const CorpusModal: React.FC<CorpusModalProps> = ({
                 </div>
               ) : (
                 <p className="text-xs text-slate-500 mb-3 italic">
-                  No conversations saved in your corpus yet. Capture a public ChatGPT share URL to start querying your knowledge base.
+                  Your library is empty. Paste or import a conversation in Capture, check its messages, and save it. You can then search it or use it in a review.
                 </p>
               )}
 

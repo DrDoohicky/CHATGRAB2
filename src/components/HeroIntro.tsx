@@ -9,7 +9,7 @@ export function HeroIntro(){
   const slide=slides[index];
   return <div className="cg-hero-copy">
     <p className="cg-platform-note">BUILT FOR CHATGPT</p>
-    <h1 className="sr-only">All your conversations. One connected contextual catalog.</h1>
+    <h1 className="sr-only">Save your conversations. Keep the reasons behind the answers.</h1>
     <div className="cg-hero-stage" aria-hidden="true">
       <div key={slide.id} className={`cg-hero-slide cg-slide-${slide.id} cg-transition-${index%3}`} data-paused={paused||reduced} style={{animationDuration:`${slide.duration}ms`}} onAnimationEnd={()=>{if(!paused&&!reduced)setIndex(previous=>(previous+1)%slides.length);}}>
         {slide.id==='brand'?<span>It's <BrandWord/>.</span>:slide.lines.map((line,i)=><span key={line} className={i>0?'cg-hero-line-accent':''}>{line}</span>)}
@@ -20,6 +20,6 @@ export function HeroIntro(){
       <div className="cg-slide-choices" aria-label="Headline panels">{slides.map((item,i)=><button type="button" key={item.id} aria-label={`Show panel ${i+1}: ${item.lines.join(' ')}`} aria-pressed={i===index} onClick={()=>{setIndex(i);setPaused(true);}}/>)}</div>
     </div>
     <p className="cg-hero-motto">Unify · Analyze · Preserve · Reintegrate</p>
-    <p className="cg-hero-description">Preserve the original conversation. Explore evidence, corrections, evolving ideas and connections across chats, then carry forward only the context you choose.</p>
+    <p className="cg-hero-description">An answer is more useful when you know why it was given. Save the original messages, find the decisions and corrections, and choose what to bring into your next AI chat. That background is context: your goals, reasons, limits and earlier choices. ChatGrab helps you prepare it; you decide what the AI receives.</p>
   </div>;
 }
