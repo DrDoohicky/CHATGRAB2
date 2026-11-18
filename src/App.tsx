@@ -1,3 +1,4 @@
+import {GuidedWorkflow} from './components/GuidedWorkflow';
 import {SourceDocumentPanel} from './components/SourceDocumentPanel';
 import {PluginPage} from './components/PluginPage';
 import {EdgeLauncher} from './components/EdgeLauncher';
@@ -441,7 +442,8 @@ export default function App() {
       <WorkspaceNavigation page={navigationPage} onNavigate={openPage} collapsed={sidebarCollapsed} onCollapse={toggleSidebar} mobileOpen={mobileNavigation} onClose={closeNavigation}/>
       {/* Workspace Area */}
       <main className="cg-main flex-1 w-full p-4 sm:p-6 space-y-5">
-        <aside className="cg-launch-notice" aria-label="Early access and storage"><strong>Browser-local early access</strong><span>Save backups before clearing browser data. Use a separate browser profile on shared devices.</span><a href="/founding/">Founding Member preview · payments unavailable ↗</a><a href="/privacy/">Privacy</a></aside>
+        <aside className="cg-storage-strip" aria-label="Early access and storage"><span><strong>Saved in this browser.</strong> Back up before clearing browser data.</span><button type="button" onClick={()=>openPage('export')}>Export backup</button><details><summary>Storage & privacy</summary><p>Use a separate browser profile on shared devices. Browser-local storage is not cloud synchronization.</p><a href="/privacy/">Read privacy information</a><a href="/founding/">Founding Member preview · payments unavailable</a></details></aside>
+        {['capture','analyze','export'].includes(page)&&<GuidedWorkflow current={page==='export'?3:page==='analyze'?2:activeThread?1:0} hasSource={corpus.length>0} onImport={()=>setReviewImport(true)} onReview={()=>{if(corpus.length){setActiveThread(activeThread||corpus[0]);setWorkspaceTab('transcript');openPage('capture');}}} onAnalyze={()=>openPage('analyze')} onExport={()=>openPage('export')}/>}
         {storageError&&<div role="alert" className="rounded-xl border border-red-300 bg-red-50 p-4 text-red-900">{storageError} {storageLoadFailed.current&&<button type="button" className="underline font-bold" onClick={()=>downloadText(localStorage.getItem(STORAGE_KEY)||'','chatgrab-preserved-storage.json','application/json')}>Download preserved storage</button>} <button type="button" className="underline font-bold" onClick={()=>openPage('export')}>Open backup exports</button></div>}
         {(page === 'library' || page === 'organize') ? (
           <LibraryExplorer key={accountUser?.id || 'guest'} threads={corpus} storageScope={accountUser?.id || 'guest'} analysis={false}
@@ -451,7 +453,7 @@ export default function App() {
         ) : (page === 'artifacts' || page === 'support') ? (
           <SupportMaterialModal inline isOpen onClose={()=>openPage('workspace')} threads={corpus} activeThread={activeThread} onAssetLinked={handleAssetLinked}/>
         ) : page === 'analyze' ? (
-          <ManualAnalysisPage threads={corpus} onOpenAdvanced={()=>{openPage('workspace');setTimeout(()=>document.getElementById('workspace-analytics')?.scrollIntoView({block:'start'}),75);}}/>
+          <ManualAnalysisPage initialSelectionId={activeThread?.id} threads={corpus} onOpenAdvanced={()=>{openPage('workspace');setTimeout(()=>document.getElementById('workspace-analytics')?.scrollIntoView({block:'start'}),75);}}/>
         ) : page === 'media' ? (
           <MediaLibrary onTutorial={()=>openPage('guide')} onCapture={()=>openPage('capture')}/>
         ) : page === 'guide' ? (
@@ -467,7 +469,9 @@ export default function App() {
         <>
           <div className="space-y-5 my-1">
             <section className="cg-hero cg-capture-hero relative overflow-hidden rounded-[2rem] shadow-sm">
-              <div className="p-6 sm:p-9"><div className="text-sm font-bold text-blue-700">Your conversation workspace</div><h1 className="text-3xl font-bold text-slate-900 mt-2">Keep the messages. Keep the meaning.</h1><p className="mt-3 text-slate-700">Save a conversation or source document, review what matters, and bring the useful parts into your next conversation.</p><button type="button" onClick={()=>setReviewImport(true)} className="mt-5 px-5 py-3 rounded-xl bg-blue-800 text-white font-bold">Import a conversation or source file</button></div>
+              <div className="cg-intake-intro"><div className="text-sm font-bold text-blue-700">Your source workspace</div><h1>{corpus.length?'Your source is ready to review.':'Keep the messages. Keep the meaning.'}</h1><p>{corpus.length?'Check the original, then prepare a request for your own ChatGPT account.':'Choose a conversation export, continuity capsule, or pasted text. Review it before saving.'}</p><div className="cg-intake-actions">{corpus.length>0&&<button type="button" className="cg-intake-primary" onClick={()=>openPage('analyze')}>Analyze selected source</button>}<button type="button" className={corpus.length?'cg-intake-secondary':'cg-intake-primary'} aria-label="Import a conversation or source file" onClick={()=>setReviewImport(true)}>{corpus.length?'Import another source':'Import source'}</button></div></div>
+              {captureNotice&&<p role="status" className="cg-intake-notice">{captureNotice}</p>}
+              <details className="cg-secondary-intake"><summary>Other intake options · share links, batches and artifacts</summary><p>Public share links sometimes provide only a preview. Reviewed file or text import preserves the material you supply.</p>
               <form id="cg-capture" onSubmit={handleQuickCaptureSubmit} className="cg-capture relative mx-5 sm:mx-9 lg:mx-12 mb-7 sm:mb-9 p-3 sm:p-4 rounded-2xl bg-white/95 border border-blue-100 shadow-[0_12px_35px_rgba(29,78,216,.10)] grid lg:grid-cols-[1fr_auto] gap-2">
                 <div className="flex items-center gap-2 px-3 h-12 rounded-xl border border-slate-200 bg-white">
                   <Share2 className="w-4 h-4 text-blue-600 shrink-0" />
@@ -477,21 +481,17 @@ export default function App() {
                 {captureNotice && <div role="status" className="lg:col-span-2 text-sm text-emerald-700 px-2">{captureNotice}</div>}
                 {quickCaptureError && <div role="alert" className="lg:col-span-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{quickCaptureError}<button type="button" className="block underline font-bold mt-2" onClick={()=>setReviewImport(true)}>Use reviewed manual import</button></div>}
                 <div className="lg:col-span-2 flex flex-wrap gap-2 pt-3 border-t border-blue-100">
-                  <button type="button" onClick={()=>setReviewImport(true)} className="px-4 py-2 text-sm font-bold text-white bg-blue-800 rounded-lg">Review paste / file import</button>
-                  <button type="button" onClick={() => void handleQuickPaste()} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Paste from clipboard</button>
-                  <label className="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import JSON <input className="hidden" type="file" accept=".json,application/json" onChange={e => { const f=e.target.files?.[0]; if(f) void importConversationFile(f); e.target.value=''; }} /></label>
-                  <button type="button" onClick={importCopiedText} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import copied text</button>
-                  <label className="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import file <input className="hidden" type="file" accept=".json,.txt,.md,.csv,text/*" onChange={e => { const f=e.target.files?.[0]; if(f) void importConversationFile(f); e.target.value=''; }} /></label>
                   <button type="button" onClick={() => setIsSupportOpen(true)} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import image / artifact</button>
-                  <button type="button" onClick={() => setBatchMode(!batchMode)} className="ml-auto px-3 py-2 text-sm font-bold text-white bg-slate-800 rounded-lg">{batchMode ? 'Single' : 'Batch process'}</button>
+                  <button type="button" onClick={() => setBatchMode(!batchMode)} className="px-3 py-2 text-sm font-bold text-white bg-slate-800 rounded-lg">{batchMode ? 'Single link' : 'Batch process'}</button>
                 </div>
                 {batchMode && <div className="cg-batch-form lg:col-span-2 space-y-2"><p className="text-sm text-slate-600">Import up to 100 public /share/ links, one per line. The queue continues while you use other pages in this tab.</p><textarea aria-label="Batch share links" maxLength={65000} value={batchInput} onChange={e=>setBatchInput(e.target.value)} rows={4} className="w-full border border-slate-300 rounded-xl p-3 text-sm" placeholder="One public share URL per line"/><button type="button" disabled={!batchInput.trim()||!libraryReady||isQuickCapturing||batchState.running||batchState.items.some(item=>item.status==='queued')} className="cg-batch-start bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg" onClick={()=>{try{batchQueue.start(batchInput);setQuickCaptureError(null);}catch(error){setQuickCaptureError(error instanceof Error?error.message:'Could not start imports.');}}}>Capture batch</button></div>}
                 <div className="lg:col-span-2 text-xs text-slate-500 px-1">Your library stays in this browser. Use complete backup in Export to include original supporting files. Share links may return only a preview; reviewed paste / file import is the reliable alternative.</div>
               </form>
+              </details>
             </section>
-            <section id="cg-workspace" className="cg-workspace rounded-[1.75rem] border border-slate-200 bg-white/95 p-5 sm:p-7 shadow-sm">
+            {corpus.length>0?<section id="cg-workspace" className="cg-workspace rounded-[1.75rem] border border-slate-200 bg-white/95 p-5 sm:p-7 shadow-sm">
               <div className="flex flex-wrap justify-between items-center gap-3 mb-5">
-                <div><div className="text-[11px] font-bold uppercase tracking-[.2em] text-blue-600">Continuity library</div><h3 className="text-2xl font-black text-[#102a56]">Your Workspace</h3><p className="text-sm text-slate-500">Captured conversations, organized and ready for review.</p></div>
+                <div><div className="text-[11px] font-bold uppercase tracking-[.2em] text-blue-600">Continuity library</div><h3 className="text-2xl font-black text-[#102a56]">Saved sources</h3><p className="text-sm text-slate-500">Captured conversations, organized and ready for review.</p></div>
                 <button type="button" onClick={() => setIsCorpusOpen(true)} className="px-4 py-2 rounded-xl border border-blue-200 text-blue-700 font-semibold text-sm">Browse Library ({corpus.length})</button>
               </div>
               {corpus.length > 0 ? (
@@ -510,11 +510,12 @@ export default function App() {
                   <p className="text-slate-700 font-semibold">Your first captured conversation will appear here, ready to explore.</p>
                 </div>
               )}
-            </section>
+            </section>:<p className="cg-empty-source">No sources saved yet. Start with Import source above.</p>}
           </div>
           {activeThread && (
           /* Active Thread Workspace */
           <div id="cg-active-thread" className="space-y-5" style={{scrollMarginTop:160}}>
+            <div className="cg-review-next"><p><strong>Review the original source.</strong> Its contents stay unchanged.</p><button type="button" onClick={()=>openPage('analyze')}>Continue to Analyze</button></div>
             {/* Thread Metadata Strip */}
             <div className="bg-white rounded-2xl px-5 py-3 border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-3 flex-wrap">
@@ -632,7 +633,8 @@ export default function App() {
           </>}
           </>
         )}
-        {page==='capture'&&<section className="rounded-2xl border border-blue-200 bg-white p-5 text-slate-800" aria-label="Latest ChatGrab milestones"><p className="text-sm font-bold text-blue-700">LATEST RELEASE · NOVEMBER 18, 2026</p><h2 className="text-xl font-bold my-2">Reviewed imports, clearer tools, and a guided tour.</h2><p>Import conversation exports, copied text, or a continuity capsule through a review step. Capsules retain their exact JSON and are clearly marked as reconstructed source documents. Keep packet notes beside selected messages, save and compare AI reviews, and restore your library from a complete backup. The sidebar brings your tools together, and Take the Tour includes the illustrated engineering overview.</p><p className="mt-2">The ChatGPT plugin connection guide and right-edge quick access are now available. Native capture, integrated AI replies and synchronized accounts remain in development.</p><div className="flex flex-wrap gap-3 mt-3"><button className="font-bold text-blue-800 underline" onClick={()=>openPage('analyze')}>Explore conversation analysis</button><button className="font-bold text-blue-800 underline" onClick={()=>openPage('plugin')}>ChatGPT plugin setup</button><a className="font-bold text-blue-800 underline" href="/downloads/ChatGrab-Production-Kit.zip" download="ChatGrab-Production-Kit.zip">Download the video production kit · ZIP</a><a className="font-bold text-blue-800 underline" href="/history/">Earlier builds and milestones</a></div></section>}
+        {page==='capture'&&<section className="cg-whats-new" aria-label="Latest ChatGrab milestones"><strong>What’s new · November 18</strong><p>Guided source intake, clear analysis handoff, retained reviews and exact backup recovery.</p><a href="/history/releases.html">Read release details</a> · <a href="/history/">Visual build history</a><details><summary>More release information</summary><p>Reviewed imports preserve original JSON, source-linked notes and saved reviews. Complete backup restores your browser-local library and original files. Native chat capture, integrated AI replies and synchronized accounts remain in development.</p><a href="/downloads/ChatGrab-Production-Kit.zip" download>Download video production kit</a></details></section>}
+
       </main>
       </div>
       {/* Capture Modal (SS1.jpeg replica) */}

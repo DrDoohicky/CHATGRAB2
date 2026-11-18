@@ -11,3 +11,6 @@
 .cg-tools-menu>a{display:block;padding:10px 12px;border-radius:8px;font-size:14px;font-weight:700;color:#174b85;text-decoration:none}.cg-tools-menu>a:hover{background:#edf5ff}
 .cg-edge-panel{max-height:calc(57dvh - 16px);overflow:auto}@media(max-width:760px){.cg-edge-panel{max-height:calc(65dvh - 16px)}}
 .cg-app.cg-v2 .cg-header-tools>button:not(.cg-account) span{display:none}@media(max-width:360px){.cg-app.cg-v2 .cg-topbar>a[title="ChatGrab version history"]{display:none!important}}
+/* Dock the launcher in document flow on compact screens so it cannot cover input. */
+@media(max-width:1000px){.cg-edge-launcher{position:relative!important;top:auto!important;right:auto!important;transform:none!important;align-self:flex-end;margin:10px 18px;width:auto;max-width:calc(100% - 36px)}.cg-edge-trigger{border:1px solid #4388ce;border-radius:12px;width:54px;height:54px}.cg-edge-panel{position:absolute;right:0;bottom:64px;top:auto;max-width:calc(100vw - 36px);width:310px;max-height:min(500px,70dvh)}}
+@media(min-width:1001px){.cg-v2 .cg-main{padding-right:82px!important}}
