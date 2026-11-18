@@ -1,9 +1,19 @@
 import type {ConversationThread} from '../types';
 import {parseConversationFile} from './importConversations';
 // Only explicit role delimiters outside fenced code are treated as speaker turns.
-export function previewManualImport(text:string,name:string,existing:ConversationThread[],mode:'json'|'turns'|'verbatim',title:string):ConversationThread[]{
+export function previewManualImport(text:string,name:string,existing:ConversationThread[],mode:'json'|'document'|'turns'|'verbatim',title:string):ConversationThread[]{
  if(new Blob([text]).size>15*1024*1024)throw Error('Import is limited to 15 MB. Split a larger export first; nothing has been saved.');
- if(mode==='json')return parseConversationFile(text,name.endsWith('.json')?name:'conversation.json',existing);
+ if(mode==='json'||mode==='document'){
+  const value=JSON.parse(text.replace(/^\uFEFF/,''));
+  const capsule=value?.schema==='chatgrab.governed-continuity-capsule.v1';
+  if(mode==='document'||capsule){
+   if(!value||typeof value!=='object')throw Error('Choose a JSON object or array for a structured source document.');
+   if(existing.some(t=>t.model==='Structured JSON source — roles unknown'&&t.messages.length===1&&t.messages[0].content===text))return [];
+   const limitations=['Structured source document. Speaker roles are unknown; the user role below is a storage container, not source attribution.',capsule?'Continuity reconstruction, not a complete conversation transcript. Imported claims have not been independently verified.':'Imported source material has not been independently verified.'];
+   return parseConversationFile(JSON.stringify({title:typeof value.title==='string'?value.title:name,model:'Structured JSON source — roles unknown',captureLimitations:limitations,messages:[{id:'source-document',role:'user',content:text}]}),'conversation.json',existing);
+  }
+  return parseConversationFile(text,name.endsWith('.json')?name:'conversation.json',existing);
+ }
  if(!text.trim())throw Error('Paste the complete conversation first.');
  if(/^https?:\/\//.test(text.trim()))throw Error('This is a link. Open the conversation and copy its message text, or choose an export file.');
  let messages:{id:string;role:'user'|'assistant'|'system';content:string}[]=[];

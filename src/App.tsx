@@ -1,3 +1,4 @@
+import {SourceDocumentPanel} from './components/SourceDocumentPanel';
 import {PluginPage} from './components/PluginPage';
 import {EdgeLauncher} from './components/EdgeLauncher';
 import {ReviewStorageContext} from './components/review-storage-context';
@@ -470,19 +471,11 @@ export default function App() {
         <>
           <div className="space-y-5 my-1">
             <section className="cg-hero cg-capture-hero relative overflow-hidden rounded-[2rem] shadow-sm">
-              <div className="cg-hero-glow" aria-hidden="true"/>
-              <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-200/30 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-28 left-1/3 w-96 h-96 bg-indigo-200/25 rounded-full blur-3xl pointer-events-none" />
-              <div className="cg-hero-content relative grid lg:grid-cols-[1.05fr_.95fr] gap-6 items-center p-6 sm:p-9 lg:p-12">
-                <HeroIntro/>
-                <div className="cg-globe-visual">
-                  <img src="/images/capture-connected-record-v2.png" alt="Connected glass conversation panels orbiting a luminous blue record, with images, documents and audio" className="cg-globe-image" fetchPriority="high" />
-                </div>
-              </div>
+              <div className="p-6 sm:p-9"><div className="text-sm font-bold text-blue-700">Your conversation workspace</div><h1 className="text-3xl font-bold text-slate-900 mt-2">Keep the messages. Keep the meaning.</h1><p className="mt-3 text-slate-700">Save a conversation or source document, review what matters, and bring the useful parts into your next conversation.</p><button type="button" onClick={()=>setReviewImport(true)} className="mt-5 px-5 py-3 rounded-xl bg-blue-800 text-white font-bold">Import a conversation or source file</button></div>
               <form id="cg-capture" onSubmit={handleQuickCaptureSubmit} className="cg-capture relative mx-5 sm:mx-9 lg:mx-12 mb-7 sm:mb-9 p-3 sm:p-4 rounded-2xl bg-white/95 border border-blue-100 shadow-[0_12px_35px_rgba(29,78,216,.10)] grid lg:grid-cols-[1fr_auto] gap-2">
                 <div className="flex items-center gap-2 px-3 h-12 rounded-xl border border-slate-200 bg-white">
                   <Share2 className="w-4 h-4 text-blue-600 shrink-0" />
-                  <input aria-label="ChatGPT share link or conversation text" value={quickUrl} onChange={e => { setQuickUrl(e.target.value); setQuickCaptureError(null); setCaptureNotice(null); }} placeholder="Paste a public ChatGPT share URL…" className="w-full bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400" />
+                  <input aria-label="ChatGPT share link or conversation text" value={quickUrl} onChange={e => { setQuickUrl(e.target.value); setQuickCaptureError(null); setCaptureNotice(null); }} placeholder="Optional: paste a public ChatGPT share URL…" className="w-full bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400" />
                 </div>
                 <button type="submit" disabled={isQuickCapturing} className="h-12 px-5 rounded-xl bg-[#0d5ed7] hover:bg-[#084fb9] text-white text-sm font-bold flex items-center justify-center gap-2">{isQuickCapturing ? "Capturing…" : "Capture Thread"} <ArrowRight className="w-4 h-4" /></button>
                 {captureNotice && <div role="status" className="lg:col-span-2 text-sm text-emerald-700 px-2">{captureNotice}</div>}
@@ -490,9 +483,9 @@ export default function App() {
                 <div className="lg:col-span-2 flex flex-wrap gap-2 pt-3 border-t border-blue-100">
                   <button type="button" onClick={()=>setReviewImport(true)} className="px-4 py-2 text-sm font-bold text-white bg-blue-800 rounded-lg">Review paste / file import</button>
                   <button type="button" onClick={() => void handleQuickPaste()} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Paste from clipboard</button>
-                  <label className="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import JSON <input className="hidden" type="file" accept=".json,application/json" onChange={e => { const f=e.target.files?.[0]; if(f) void importConversationFile(f); e.target.value=''; }} /></label>
+                  <label className="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import JSON <input className="hidden" type="file" accept=".json,application/json" onChange={e => { const f=e.target.files?.[0]; if(f) void f.text().then(text=>{setQuickUrl(text);setReviewImport(true);}).catch(()=>setQuickCaptureError('File could not be read.')); e.target.value=''; }} /></label>
                   <button type="button" onClick={importCopiedText} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import copied text</button>
-                  <label className="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import file <input className="hidden" type="file" accept=".json,.txt,.md,.csv,text/*" onChange={e => { const f=e.target.files?.[0]; if(f) void importConversationFile(f); e.target.value=''; }} /></label>
+                  <label className="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import file <input className="hidden" type="file" accept=".json,.txt,.md,.csv,text/*" onChange={e => { const f=e.target.files?.[0]; if(f) void f.text().then(text=>{setQuickUrl(text);setReviewImport(true);}).catch(()=>setQuickCaptureError('File could not be read.')); e.target.value=''; }} /></label>
                   <button type="button" onClick={() => setIsSupportOpen(true)} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import image / artifact</button>
                   <button type="button" onClick={() => setBatchMode(!batchMode)} className="ml-auto px-3 py-2 text-sm font-bold text-white bg-slate-800 rounded-lg">{batchMode ? 'Single' : 'Batch process'}</button>
                 </div>
@@ -603,6 +596,7 @@ export default function App() {
                 </button>
               </div>
             </div>
+            <SourceDocumentPanel thread={activeThread}/>
             {/* Tab 1: Transcript */}
             {workspaceTab === 'transcript' && (
               <TranscriptReviewWorkspace key={activeThread.id} thread={activeThread} threads={corpus} favorite={activeThread.isFavorite} storageScope={accountUser?.id||'guest'} onOpenThread={t=>{setActiveThread(t);setWorkspaceTab('transcript');}}/>
