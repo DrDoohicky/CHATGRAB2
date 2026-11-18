@@ -1,0 +1,69 @@
+{
+  "base": "http://127.0.0.1:3053",
+  "results": [
+    {
+      "width": 1440,
+      "onePrimaryIntake": true,
+      "keyboardEntry": true,
+      "invalidJsonError": true,
+      "reviewConsent": true,
+      "fourStageNavigation": true,
+      "selectedSourceInAnalysis": true,
+      "backupOriginalExact": true,
+      "urlErrorAndBatchPreserved": true,
+      "artifactDialog": true,
+      "launcherDocked": false,
+      "launcherEscapeFocus": true,
+      "overflow": false,
+      "errors": []
+    },
+    {
+      "width": 768,
+      "onePrimaryIntake": true,
+      "keyboardEntry": true,
+      "invalidJsonError": true,
+      "reviewConsent": true,
+      "fourStageNavigation": true,
+      "selectedSourceInAnalysis": true,
+      "backupOriginalExact": true,
+      "urlErrorAndBatchPreserved": true,
+      "artifactDialog": true,
+      "launcherDocked": true,
+      "launcherEscapeFocus": true,
+      "overflow": false,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "onePrimaryIntake": true,
+      "keyboardEntry": true,
+      "invalidJsonError": true,
+      "reviewConsent": true,
+      "fourStageNavigation": true,
+      "selectedSourceInAnalysis": true,
+      "backupOriginalExact": true,
+      "urlErrorAndBatchPreserved": true,
+      "artifactDialog": true,
+      "launcherDocked": true,
+      "launcherEscapeFocus": true,
+      "overflow": false,
+      "errors": []
+    },
+    {
+      "width": 320,
+      "onePrimaryIntake": true,
+      "keyboardEntry": true,
+      "invalidJsonError": true,
+      "reviewConsent": true,
+      "fourStageNavigation": true,
+      "selectedSourceInAnalysis": true,
+      "backupOriginalExact": true,
+      "urlErrorAndBatchPreserved": true,
+      "artifactDialog": true,
+      "launcherDocked": true,
+      "launcherEscapeFocus": true,
+      "overflow": false,
+      "errors": []
+    }
+  ]
+}

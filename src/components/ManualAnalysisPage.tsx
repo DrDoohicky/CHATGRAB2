@@ -14,13 +14,13 @@ const areas=[['contradictions','Contradictions'],['accomplishments','Accomplishm
 const STORAGE_KEY='chatgrab-manual-analysis-draft-v1';
 const initial=():ReviewSnapshot=>{try{const raw=localStorage.getItem(STORAGE_KEY);if(raw){const value=JSON.parse(raw);if(value&&typeof value.source==='string'&&Array.isArray(value.categories)&&typeof value.chatgptAnswer==='string'&&typeof value.geminiAnswer==='string')return {source:value.source,categories:value.categories.filter((id:unknown)=>areas.some(([key])=>key===id)),chatgptAnswer:value.chatgptAnswer,geminiAnswer:value.geminiAnswer,batchIndex:Number.isInteger(value.batchIndex)&&value.batchIndex>=0?value.batchIndex:0,messageSearch:typeof value.messageSearch==='string'?value.messageSearch:'',recentOnly:value.recentOnly===true,secondPromptBinding:typeof value.secondPromptBinding==='string'?value.secondPromptBinding:'',answerPrompt:typeof value.answerPrompt==='string'?value.answerPrompt:'',selectedIds:Array.isArray(value.selectedIds)?value.selectedIds.filter((id:unknown)=>typeof id==='string'):[],createdAt:typeof value.createdAt==='string'?value.createdAt:new Date().toISOString(),prompt:'',secondPrompt:''};}}catch{}return {source:'',categories:['contradictions','decisions'],chatgptAnswer:'',geminiAnswer:'',prompt:'',secondPrompt:'',createdAt:new Date().toISOString()};};
 function downloadJSON(data:unknown){const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='chatgrab-manual-analysis-'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),3000);}
-export function ManualAnalysisPage({threads,onOpenAdvanced}:{threads:ConversationThread[];onOpenAdvanced:()=>void}){
+export function ManualAnalysisPage({threads,onOpenAdvanced,initialSelectionId}:{initialSelectionId?:string;threads:ConversationThread[];onOpenAdvanced:()=>void}){
  const [draft,setDraft]=useState<ReviewSnapshot>(initial);
  const [copyMessage,setCopyMessage]=useState('');
  const [fallback,setFallback]=useState('');
  const [reviewed,setReviewed]=useState(false),[saving,setSaving]=useState(false),[saveError,setSaveError]=useState(''),[historyRevision,setHistoryRevision]=useState(0);
  const [answerFileError,setAnswerFileError]=useState('');
- const [checkedIds,setCheckedIds]=useState<string[]>(()=>draft.selectedIds?.length?draft.selectedIds:threads.length===1?[threads[0].id]:[]);
+ const [checkedIds,setCheckedIds]=useState<string[]>(()=>initialSelectionId&&threads.some(t=>t.id===initialSelectionId)?[initialSelectionId]:draft.selectedIds?.length?draft.selectedIds:threads.length===1?[threads[0].id]:[]);
  const [filter,setFilter]=useState('');
  const selectedThreads=useMemo(()=>threads.filter(t=>checkedIds.includes(t.id)),[threads,checkedIds]);
  const [batchIndex,setBatchIndex]=useState(draft.batchIndex||0);
