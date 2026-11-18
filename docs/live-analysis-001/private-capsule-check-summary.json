@@ -1,0 +1,39 @@
+{
+  "base": "http://127.0.0.1:3051",
+  "privateSource": true,
+  "sourceBytes": 47703,
+  "results": [
+    {
+      "viewport": "1440x1000 Chromium",
+      "capsuleClassified": true,
+      "exactSource": true,
+      "copyReviewGateExplained": true,
+      "clipboard": "actual clipboard write/read passed",
+      "responseFileImport": true,
+      "saveReload": true,
+      "staleResponseBlocked": true,
+      "reviewBundleExport": true,
+      "freshBrowserBackupRestore": true,
+      "retainedSnapshotIntegrity": true,
+      "approvedLogoIntact": true,
+      "noAutomaticPosts": true,
+      "uncaughtErrors": []
+    },
+    {
+      "viewport": "390x844 touch Chromium (not physical hardware)",
+      "capsuleClassified": true,
+      "exactSource": true,
+      "copyReviewGateExplained": true,
+      "clipboard": "denial/selectable fallback passed",
+      "responseFileImport": true,
+      "saveReload": true,
+      "staleResponseBlocked": true,
+      "reviewBundleExport": true,
+      "freshBrowserBackupRestore": true,
+      "retainedSnapshotIntegrity": true,
+      "approvedLogoIntact": true,
+      "noAutomaticPosts": true,
+      "uncaughtErrors": []
+    }
+  ]
+}
