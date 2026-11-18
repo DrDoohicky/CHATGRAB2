@@ -1,0 +1,24 @@
+{
+  "assignment": "CG-PLUGIN-001",
+  "endpoint": "https://chatgrab.app/api/mcp",
+  "authentication": "none",
+  "expectedTools": ["get_plugin_status", "get_workspace_link"],
+  "expectedWorkspace": "https://chatgrab.app/?page=capture",
+  "serverTransportTested": true,
+  "chatgptInstallationTested": false,
+  "chatgptHostInvocationTested": false,
+  "hostEvidenceToRecord": [
+    "Actual private connection created in the authorized ChatGPT account",
+    "Discovered tool names and metadata from host",
+    "Real get_plugin_status invocation and response",
+    "Real get_workspace_link invocation and response",
+    "Workspace link opened successfully",
+    "No current-chat capture or identity access claimed"
+  ],
+  "prompts": [
+    "Use ChatGrab to check its connection status, then give me its workspace link.",
+    "Use ChatGrab to open its workspace.",
+    "Capture this current chat automatically."
+  ],
+  "negativePromptExpected": "Explain that current-chat capture is in development and not granted to these read-only tools; do not transmit transcript text."
+}

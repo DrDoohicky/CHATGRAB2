@@ -1,1 +1,10 @@
-{"$schema":"https://agent-plugins.org/schemas/1.0.0/plugin.schema.json","name":"chatgrab","version":"0.1.0","description":"Read-only ChatGrab status and workspace entrypoint. User-controlled imports; no private-chat access, analysis or payments."}
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "chatgrab",
+  "version": "0.1.1",
+  "description": "Read-only ChatGrab status and workspace entrypoint. User-controlled imports; no private-chat access, analysis or payments.",
+  "homepage": "https://chatgrab.app/",
+  "author": {
+    "name": "AIChatLab"
+  }
+}
