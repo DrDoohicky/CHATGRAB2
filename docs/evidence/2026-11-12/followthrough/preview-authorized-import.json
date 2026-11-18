@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "scope": "Actual user-authorized browser-readable share imported through new review file chooser; 4-message preview, consent, save and reload",
+  "exactIdsRolesText": true,
+  "remoteCaptureSuccess": false,
+  "nativeAccountExport": false,
+  "privateSourcePublished": false
+}

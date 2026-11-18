@@ -1,0 +1,184 @@
+{
+  "base": "https://chatgrab-analysis-archiver-jlwk0ulmb-inetatlanta.vercel.app",
+  "browser": "156.0.8078.79",
+  "os": "linux",
+  "syntheticOnly": true,
+  "checks": [
+    {
+      "name": "Reviewed import and consent",
+      "status": "PASS",
+      "detail": "Actual form; three synthetic source messages; no provider inference"
+    },
+    {
+      "name": "Search favorite and reload",
+      "status": "PASS",
+      "detail": "Body search and saved favorite; query route survives reload"
+    },
+    {
+      "name": "Actual download",
+      "status": "PASS",
+      "detail": "Synthetic complete JSON backup inspected independently"
+    },
+    {
+      "name": "Approved artwork and responsive destinations",
+      "status": "PASS",
+      "detail": "Exact checked-in header and atlas sources rendered; bounded logo; six card cells at desktop and phone widths"
+    },
+    {
+      "name": "Capability and payment boundaries",
+      "status": "PASS",
+      "detail": "Manual-analysis copy, browser-local storage and disabled checkout observed"
+    }
+  ],
+  "errors": [],
+  "artwork": [
+    {
+      "width": 1440,
+      "logo": {
+        "src": "/images/chatgrab-header-approved.png",
+        "naturalWidth": 1120,
+        "naturalHeight": 546,
+        "displayWidth": 148,
+        "displayHeight": 72,
+        "fit": "contain"
+      },
+      "illustrations": [
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: 0%; top: 0%;"
+        },
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: -100%; top: 0%;"
+        },
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: -200%; top: 0%;"
+        },
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: 0%; top: -100%;"
+        },
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: -100%; top: -100%;"
+        },
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: -200%; top: -100%;"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "logo": {
+        "src": "/images/chatgrab-header-approved.png",
+        "naturalWidth": 1120,
+        "naturalHeight": 546,
+        "displayWidth": 116,
+        "displayHeight": 57,
+        "fit": "contain"
+      },
+      "illustrations": [
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: 0%; top: 0%;"
+        },
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: -100%; top: 0%;"
+        },
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: -200%; top: 0%;"
+        },
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: 0%; top: -100%;"
+        },
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: -100%; top: -100%;"
+        },
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: -200%; top: -100%;"
+        }
+      ]
+    },
+    {
+      "width": 320,
+      "logo": {
+        "src": "/images/chatgrab-header-approved.png",
+        "naturalWidth": 1120,
+        "naturalHeight": 546,
+        "displayWidth": 116,
+        "displayHeight": 57,
+        "fit": "contain"
+      },
+      "illustrations": [
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: 0%; top: 0%;"
+        },
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: -100%; top: 0%;"
+        },
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: -200%; top: 0%;"
+        },
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: 0%; top: -100%;"
+        },
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: -100%; top: -100%;"
+        },
+        {
+          "src": "/images/workspace-metal-atlas.png",
+          "complete": true,
+          "naturalWidth": 1536,
+          "style": "width: 300%; height: 300%; left: -200%; top: -100%;"
+        }
+      ]
+    }
+  ],
+  "externalHostAcceptance": false
+}

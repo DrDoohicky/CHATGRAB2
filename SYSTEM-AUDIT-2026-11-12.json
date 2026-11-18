@@ -1,0 +1,56 @@
+{
+  "schema": "aichatlab-atlas-report/1",
+  "task": "CHATGRAB2 Issue 8 system acceptance audit",
+  "date": "2026-11-12",
+  "status": "BOUNDED_AUDIT_COMPLETE_WITH_BLOCKERS",
+  "production": {
+    "url": "https://chatgrab.app/",
+    "deployment": "dpl_2ULzAwkbUka2VnQ6kuAZzyjDfw4i",
+    "sha": "d8786f2525db750d5aeef9d6f80089b632e8a568",
+    "unchanged": true,
+    "paymentsEnabled": false
+  },
+  "repair": {
+    "branch": "codex/nov12-system-audit",
+    "codeSha": "878ccefec8985e40b0a956e309297343483a79ab",
+    "preview": "https://chatgrab-analysis-archiver-9xj06xjp7-inetatlanta.vercel.app",
+    "deployment": "dpl_3HEdKGWujgDDPtxW99sRkXGKzH3s",
+    "productionPublished": false
+  },
+  "tests": {
+    "unitPassed": 44,
+    "lint": "PASS",
+    "build": "PASS",
+    "liveRegressionGroups": 16,
+    "expandedResponsiveWidths": [
+      1440,
+      1280,
+      768,
+      390,
+      360,
+      320
+    ],
+    "realAuthorizedShareRemoteCapture": "FAIL: provider returned link-preview-only on repaired deployed API",
+    "realAuthorizedShareManualFileImport": "PASS: 4 exact IDs, roles and text, reload and actual backup download",
+    "crew": "PASS local portable reviewed handoff and human receipt; worker ACK unverified",
+    "stripe": "PASS existing TEST checkout via local app and hosted Stripe; no real money or membership"
+  },
+  "unverified": [
+    "Real native account export",
+    "Authenticated fresh ChatGPT restoration",
+    "Native plugin installation, thread panel and context grants",
+    "Physical Android/iPhone permissions and PWA",
+    "Actual worker ACK/execution",
+    "Production webhook fulfillment/entitlements/refunds"
+  ],
+  "humanInputNeeded": "One small nonsensitive native conversations.json export; user-operated fresh authenticated ChatGPT restoration for next acceptance gate. No secrets requested.",
+  "chatModeWorkForAtlas": [
+    "Consumer copy and accurate limits",
+    "Sample acceptance checklist and reviewed test export",
+    "Plugin metadata/spec review and host installation instructions",
+    "Prioritize P0 backlog from report"
+  ],
+  "report": "SYSTEM-AUDIT-2026-11-12.md",
+  "evidenceDirectory": "docs/evidence/2026-11-12/system-audit",
+  "privacy": "No user transcript, share token, credential or temporary preview access URL included."
+}

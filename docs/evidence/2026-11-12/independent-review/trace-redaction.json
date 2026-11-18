@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "syntheticOnly": true,
+  "credentialsIncluded": false,
+  "headerValuesRedacted": 298,
+  "exactTokenOccurrencesRedacted": 0,
+  "jwtPatternsRedacted": 0,
+  "jsonRecords": 1351,
+  "cookieContainersRedacted": 300,
+  "filmstripFramesOmitted": 411
+}

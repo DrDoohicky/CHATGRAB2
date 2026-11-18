@@ -1,44 +1,35 @@
+import {DownloadFile} from './DownloadFile';
 import React, { useState } from 'react';
+import {createPortal} from 'react-dom';
+import './print-report.css';
 import { X, FileText, Download, Copy, Check, Printer, Share2, Code } from 'lucide-react';
 import { ConversationThread } from '../types';
-
 interface ExportModalProps {
   isOpen: boolean;
   onClose: () => void;
   thread: ConversationThread;
 }
-
 export const ExportModal: React.FC<ExportModalProps> = ({
   isOpen,
   onClose,
   thread,
 }) => {
   const [copiedType, setCopiedType] = useState<string | null>(null);
-
   if (!isOpen) return null;
-
   const handlePrintPDF = () => {
     window.print();
   };
-
-  const handleDownloadJSON = () => {
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(thread, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `chatgrab-${thread.id}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-  };
-
-  const handleDownloadMarkdown = () => {
+  const markdown = (() => {
     let md = `# ${thread.title}\n\n`;
     md += `*Captured by ChatGrab on ${new Date(thread.capturedAt).toLocaleString()}*\n`;
     if (thread.sourceUrl) {
       md += `*Original URL: ${thread.sourceUrl}*\n`;
     }
     md += `*Model: ${thread.model}*\n\n`;
-
+    md += `*Conversation ID: ${thread.id}*\n\n`;
+    if(thread.reintegrationMeta){
+      md += `## Reviewed continuity record\nStatus: ${thread.reintegrationMeta.status}\nPurpose: ${thread.reintegrationMeta.purpose}\nConflict review: ${thread.reintegrationMeta.conflictReview}\n\n`;
+    }
     if (thread.insights) {
       md += `## Executive Summary\n${thread.insights.summary}\n\n`;
       md += `## Key Takeaways\n`;
@@ -51,42 +42,36 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       });
       md += `\n`;
     }
-
     md += `## Conversation Transcript\n\n`;
     thread.messages.forEach((msg) => {
-      md += `### ${msg.role === 'user' ? 'User' : 'Assistant'} (${msg.timestamp || ''})\n\n`;
+      md += `### ${msg.role} · ${msg.id}${msg.timestamp?' ('+msg.timestamp+')':''}\n\n`;
+      if(msg.sourceThreadId)md += `Source conversation: ${msg.sourceThreadId} · source message: ${msg.sourceMessageId || 'unavailable'}\n\n`;
       md += `${msg.content}\n\n---\n\n`;
     });
-
-    const dataStr = 'data:text/markdown;charset=utf-8,' + encodeURIComponent(md);
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `chatgrab-${thread.id}.md`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
-  };
-
-  const handleCopyLink = () => {
-    const shareUrl = thread.sourceUrl || window.location.href;
-    navigator.clipboard.writeText(shareUrl);
+    return md;
+  })();
+  const handleCopyLink = async () => {
+    const shareUrl = thread.sourceUrl;
+    if(!shareUrl)return;
+    try{await navigator.clipboard.writeText(shareUrl);}catch{setCopiedType('failed');return;}
     setCopiedType('link');
     setTimeout(() => setCopiedType(null), 2000);
   };
-
   return (
+    <>
+    {createPortal(<article id="chatgrab-print-report"><h1>{thread.title}</h1><p>Captured {new Date(thread.capturedAt).toLocaleString()} · {thread.model}</p>{thread.sourceUrl&&<p>Source: {thread.sourceUrl}</p>}{thread.insights&&<section><h2>Summary</h2><p>{thread.insights.summary}</p></section>}<h2>Original transcript</h2>{thread.messages.map(m=><section key={m.id}><h3>{m.role} · {m.id}</h3>{m.sourceThreadId&&<p>Source: {m.sourceThreadId} / {m.sourceMessageId}</p>}<p style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{m.content}</p></section>)}</article>,document.body)}
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
       <div
-        className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 sm:p-7"
+        className="relative w-full max-w-lg max-h-[92dvh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-slate-200 p-6 sm:p-7"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           onClick={onClose}
+          aria-label="Close export"
           className="absolute top-5 right-5 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
         >
           <X className="w-4 h-4" />
         </button>
-
         <div className="mb-5">
           <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-3">
             <Share2 className="w-5 h-5" />
@@ -96,7 +81,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             Preserve and export "{thread.title}" into standard knowledge formats.
           </p>
         </div>
-
+        {copiedType==='failed'&&<p role="alert">Clipboard access was denied. Copy the source URL from the transcript instead.</p>}
         <div className="space-y-3">
           {/* 1. Generate PDF */}
           <button
@@ -112,7 +97,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   Generate PDF / Print
                 </p>
                 <p className="text-xs text-slate-500">
-                  Formatted document report with summary, takeaways & transcript
+                  Readable document with the conversation, summary and any saved takeaways
                 </p>
               </div>
             </div>
@@ -120,10 +105,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               Print
             </span>
           </button>
-
           {/* 2. Export Markdown */}
-          <button
-            onClick={handleDownloadMarkdown}
+          <DownloadFile text={markdown} filename={`chatgrab-${thread.id}.md`} type="text/markdown;charset=utf-8"
             className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer group text-left"
           >
             <div className="flex items-center gap-3">
@@ -143,11 +126,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               <Download className="w-3.5 h-3.5" />
               .md
             </span>
-          </button>
-
+          </DownloadFile>
           {/* 3. Export JSON */}
-          <button
-            onClick={handleDownloadJSON}
+          <DownloadFile text={JSON.stringify(thread,null,2)} filename={`chatgrab-${thread.id}.json`} type="application/json"
             className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer group text-left"
           >
             <div className="flex items-center gap-3">
@@ -159,7 +140,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                   Export JSON (.json)
                 </p>
                 <p className="text-xs text-slate-500">
-                  Full schema archive with messages, insights, and metadata
+                  JSON file with saved messages, reviews and record details for reuse in compatible tools
                 </p>
               </div>
             </div>
@@ -167,11 +148,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               <Download className="w-3.5 h-3.5" />
               .json
             </span>
-          </button>
-
+          </DownloadFile>
           {/* 4. Copy Share Link */}
           <button
             onClick={handleCopyLink}
+            disabled={!thread.sourceUrl}
             className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer group text-left"
           >
             <div className="flex items-center gap-3">
@@ -180,10 +161,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               </div>
               <div>
                 <p className="text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">
-                  Copy Share / Thread Link
+                  Copy Original Share Link
                 </p>
                 <p className="text-xs text-slate-500 truncate max-w-[240px]">
-                  {thread.sourceUrl || 'Applet thread reference'}
+                  {thread.sourceUrl || 'This imported conversation has no public share link'}
                 </p>
               </div>
             </div>
@@ -204,5 +185,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         </div>
       </div>
     </div>
+    </>
   );
 };

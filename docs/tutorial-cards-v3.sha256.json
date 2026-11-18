@@ -1,0 +1,158 @@
+[
+  {
+    "file": "analytics--choose-analyses.webp",
+    "sha256": "0a36eda733d99da396a07d6749eb20048525469974a3eb1c09bc3967615d6acb",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "analytics--discover-connections.webp",
+    "sha256": "02e00e707039ae4b66ce15384613e0dde90a85bf781acdc99821db09814e6fc0",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "analytics--explain-contradictions.webp",
+    "sha256": "33be362928799a0caef81c41a4cf8354d39cc849f99591eddfb96c11f3b48c5a",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "analytics--select-sources.webp",
+    "sha256": "eb9aae8dca5ee41899a58edfa172f92f415b3f4dd9be3d6257196752d4b7d339",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "evidence--artifact.webp",
+    "sha256": "fcb346395e57db297ca7a1ede00f000dde93aa958e827650b1a780983b566ff2",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "evidence--behavior.webp",
+    "sha256": "b8f2dda6a65918dd5a1c41384a881a1c69a3b0ee86b531df5c1534ae0c1cc337",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "evidence--representation.webp",
+    "sha256": "d92c264ed8925e426235aef164fe80a781928c9b0392e3828b3db8f319e3a6d1",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "evolution--earlier-statement.webp",
+    "sha256": "10027ec66cb7ebcf5c2f038f5000c2a370074ef1064cd40ca5fddd0a543a3d98",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "evolution--knowledge-evolution.webp",
+    "sha256": "1440d8ccf06ef0cfaf87af30dd74f5ab2a33000db09038962614c5a1929b307d",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "evolution--later-statement.webp",
+    "sha256": "8ac8f8a7959b1a9778be74cb5ca4c82ae451be5c95a99c639574d94ee7720ff1",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "provenance--derived-insights.webp",
+    "sha256": "c756401b1e465ea134837750f57eaf18f8c5d53c37a23659bba41e7ba7880dcd",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "provenance--review-decisions.webp",
+    "sha256": "39bcaadf6a5e48251592ad5f90bce50d5d434d933df96b33c73faa1c6f345b45",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "provenance--source-record.webp",
+    "sha256": "0ffb61c4b0e98a63a8cadb47a0034bcf5dd42dfbb396267671069114d735c4fe",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "reintegration--destination.webp",
+    "sha256": "4eb5039314273cc8c5986e878cdeab78da8a1289fd16c57be7fb36752ef3d7cb",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "reintegration--purpose.webp",
+    "sha256": "8450cc1808a7f13e27e77f11cd0f736f3efad9bfb8a233d559a9788a18c7a7c4",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "reintegration--source.webp",
+    "sha256": "27a1cf11db76184530ba0a5fa0523c322e9c1e45edf8b1df2a6fcc02c1c26903",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "tutorial--choose-share.webp",
+    "sha256": "9c1e389c413713fb73f02017b4744c98adfd4afaf66fa8cff9386b08181755d7",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "tutorial--copy-link.webp",
+    "sha256": "d4783b1f0ed07cfb045a09d08fc985bb97469dbfffccaa67c26f329200504009",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "tutorial--open-chat.webp",
+    "sha256": "e3457bfe81bd198e1f99419eddb72dee98e2aa9d4574d8f5071438e5d767acef",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "tutorial--paste-into-chatgrab.webp",
+    "sha256": "d1724e9ad8f7f82aa91b7b058301c3fe8e9d5e4f19b6b52874e234808f5a3ab0",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "utility--documentation.webp",
+    "sha256": "52e3b484a2109bb2da6313e2bc7f0aeac38b939fbff8ca645eb5bef3010973ab",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "utility--engineering.webp",
+    "sha256": "19b83b6d3d3f87849b2acb9aa0b03230e5bfa1975efb9fff5171fc74df77bd47",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "utility--governance.webp",
+    "sha256": "65184e43ee4d1eb6446710cd45b9e720ed1e3b8ec386887828c15cac763d107b",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "utility--knowledge-management.webp",
+    "sha256": "737cc2c59031921a8d48b25347f4f4443aca68609a9ce2b328a99129ec198b5d",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "utility--operations.webp",
+    "sha256": "2eb620832006c52a99bb6f1a714899799743db122cec2aa2d5b2a987488c6bc1",
+    "width": 900,
+    "height": 1240
+  },
+  {
+    "file": "utility--research.webp",
+    "sha256": "716aaa16fc126a7f06f6fe368841e6243fc355941881a6fac7659bee74e7a4ca",
+    "width": 900,
+    "height": 1240
+  }
+]

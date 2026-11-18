@@ -1,0 +1,64 @@
+{
+  "workers": [
+    {
+      "worker_id": "atlas",
+      "canonical_name": "Atlas"
+    },
+    {
+      "worker_id": "lumen",
+      "canonical_name": "Lumen"
+    },
+    {
+      "worker_id": "clio",
+      "canonical_name": "Clio"
+    },
+    {
+      "worker_id": "ember",
+      "canonical_name": "Ember"
+    },
+    {
+      "worker_id": "beacon",
+      "canonical_name": "Beacon"
+    },
+    {
+      "worker_id": "mosaic",
+      "canonical_name": "Mosaic"
+    },
+    {
+      "worker_id": "sentry",
+      "canonical_name": "Sentry"
+    },
+    {
+      "worker_id": "antigravity",
+      "canonical_name": "Antigravity"
+    },
+    {
+      "worker_id": "forge",
+      "canonical_name": "Forge"
+    },
+    {
+      "worker_id": "ariadne",
+      "canonical_name": "Ariadne"
+    },
+    {
+      "worker_id": "docket",
+      "canonical_name": "Docket"
+    },
+    {
+      "worker_id": "relay",
+      "canonical_name": "Relay"
+    },
+    {
+      "worker_id": "relay_via_codex",
+      "canonical_name": "Relay via Codex"
+    }
+  ],
+  "lanes": [
+    {
+      "lane_id": "lane-atlas-console-pilot",
+      "worker_id": "atlas",
+      "display_name": "Worker-First Console Pilot",
+      "archived": false
+    }
+  ]
+}

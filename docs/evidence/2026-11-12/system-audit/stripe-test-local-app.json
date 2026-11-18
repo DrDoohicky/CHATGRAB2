@@ -1,0 +1,9 @@
+{
+  "hostedStripeTestPayment": "PASS",
+  "serverVerified1900USD": "PASS",
+  "repeatVerification": "PASS",
+  "crossBrowserReceiptDenied": "PASS",
+  "desktopMobile": "PASS",
+  "realMoney": false,
+  "membershipActivated": false
+}

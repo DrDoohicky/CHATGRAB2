@@ -1,0 +1,17 @@
+[
+  {
+    "name": "chatgrab-header-approved.png",
+    "sha256": "208566ff83f974d4c61d65f6db62c8fd4ebc3e88aa2f307f3ade77537df78ffc",
+    "deliveredBytesExact": true
+  },
+  {
+    "name": "workspace-metal-atlas.png",
+    "sha256": "c7c4884a42ca549e5f550ffbcaec2d4e0a947750db30fa472eef4118493f0209",
+    "deliveredBytesExact": true
+  },
+  {
+    "name": "capture-connected-record-v2.png",
+    "sha256": "5e701d3b1f4bfc4bc1a8f0dbc905bd8665e4552680a22412a91bd31f6cf116f0",
+    "deliveredBytesExact": true
+  }
+]

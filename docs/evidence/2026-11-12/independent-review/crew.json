@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "scope": "Local browser portable Crew handoff, real UI and shared IndexedDB",
+  "reviewConsent": true,
+  "sourceEmailRedacted": true,
+  "humanReceiptReturned": true,
+  "workerAcknowledgment": false,
+  "syntheticFixture": true
+}

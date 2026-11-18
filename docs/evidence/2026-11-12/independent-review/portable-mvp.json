@@ -1,0 +1,38 @@
+{
+  "base": "https://chatgrab-analysis-archiver-jlwk0ulmb-inetatlanta.vercel.app",
+  "results": [
+    {
+      "name": "Reviewed local manual capture",
+      "status": "PASS",
+      "detail": "Three explicit roles, code speaker marker ignored, exact whitespace; consent required"
+    },
+    {
+      "name": "Body search favorite and route history",
+      "status": "PASS",
+      "detail": "Library search finds message text; favorite persisted; bookmark/reload and back/forward"
+    },
+    {
+      "name": "Stable double-click folder and source",
+      "status": "PASS",
+      "detail": "Folder opens and source opens after the first click without a layout race"
+    },
+    {
+      "name": "Complete actual backup download",
+      "status": "PASS",
+      "detail": "Original binary bytes, conversations, favorite and folder layout present"
+    },
+    {
+      "name": "Phone-size complete restore integrity and replay",
+      "status": "PASS",
+      "detail": "Clean profile restores exact source + original blob after reload; repeated restore does not duplicate conversations, tampered file rejected"
+    },
+    {
+      "name": "Seven destinations and import review at six widths",
+      "status": "PASS",
+      "detail": "Emulated Chromium viewports, not physical mobile hardware"
+    }
+  ],
+  "browser": "Chromium/Linux",
+  "source": "Synthetic only",
+  "errors": []
+}

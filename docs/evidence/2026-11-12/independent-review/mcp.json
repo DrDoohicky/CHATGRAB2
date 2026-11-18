@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "base": "https://chatgrab-analysis-archiver-jlwk0ulmb-inetatlanta.vercel.app",
+  "transport": "Official MCP SDK streamable HTTP",
+  "tools": [
+    "get_plugin_status",
+    "get_workspace_link"
+  ],
+  "privateHistoryAccess": false,
+  "untrustedOriginDenied": true,
+  "chatGPTInstallationTested": false
+}

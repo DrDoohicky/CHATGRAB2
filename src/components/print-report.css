@@ -1,0 +1,2 @@
+#chatgrab-print-report{display:none}
+@media print{body>*:not(#chatgrab-print-report){display:none!important}#chatgrab-print-report{display:block!important;color:#111;background:white;font:11pt/1.5 Georgia,serif;padding:12mm}#chatgrab-print-report h1{font-size:24pt;font-weight:bold}#chatgrab-print-report h2{font-size:16pt;margin:18pt 0 8pt}#chatgrab-print-report h3{font-size:12pt;font-weight:bold;margin-top:14pt}#chatgrab-print-report section{break-inside:auto}#chatgrab-print-report h3{break-after:avoid}}

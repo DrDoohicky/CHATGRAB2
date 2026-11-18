@@ -6,3 +6,16 @@ coverage/
 *.log
 .env*
 !.env.example
+
+evidence/capture-desktop.png
+evidence/workspace-desktop.png
+evidence/explorer-preview.png
+
+evidence/
+patch-issue.py
+.chatgrab-bridge/
+
+# Also ignore dependency directories linked into isolated audit worktrees.
+node_modules
+
+.vercel/

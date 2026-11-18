@@ -1,3 +1,4 @@
+import { GrabMetadata } from './GrabMetadata';
 import React, { useState } from 'react';
 import {
   X,
@@ -25,6 +26,8 @@ interface CorpusModalProps {
   onSelectThread: (thread: ConversationThread) => void;
   onDeleteThread: (threadId: string) => void;
   onToggleFavorite: (threadId: string) => void;
+  onRenameThread: (threadId: string, nextTitle: string) => void;
+  onMergeThreads: (threadIds: string[]) => void;
   onOpenNewCapture: () => void;
 }
 
@@ -36,11 +39,24 @@ export const CorpusModal: React.FC<CorpusModalProps> = ({
   onSelectThread,
   onDeleteThread,
   onToggleFavorite,
+  onRenameThread,
+  onMergeThreads,
   onOpenNewCapture,
 }) => {
   const [activeTab, setActiveTab] = useState<'threads' | 'ask'>('threads');
   const [searchFilter, setSearchFilter] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  const toggleSelected = (threadId: string) => {
+    setSelectedIds(prev => prev.includes(threadId) ? prev.filter(id => id !== threadId) : [...prev, threadId]);
+  };
+
+  const mergeSelected = () => {
+    if (selectedIds.length < 2) return;
+    onMergeThreads(selectedIds);
+    setSelectedIds([]);
+  };
 
   // Ask Corpus AI State
   const [askQuery, setAskQuery] = useState('');
@@ -93,7 +109,10 @@ export const CorpusModal: React.FC<CorpusModalProps> = ({
         }),
       });
 
-      const data = await res.json();
+      const raw = await res.text();
+      let data: any;
+      try { data = JSON.parse(raw); }
+      catch { throw new Error('The cross-thread analysis service is unavailable. Your saved conversations are safe; try again later.'); }
       if (!res.ok || !data.success) {
         throw new Error(data.error || 'Failed to query corpus');
       }
@@ -133,7 +152,7 @@ export const CorpusModal: React.FC<CorpusModalProps> = ({
                 </span>
               </div>
               <p className="text-xs text-slate-500">
-                Your unified knowledge library across all captured conversations
+                Your saved conversations in one place. Reopen the original messages, search for details, or group related chats so you can pick up the work later.
               </p>
             </div>
           </div>
@@ -195,6 +214,16 @@ export const CorpusModal: React.FC<CorpusModalProps> = ({
         {/* Tab 1: All Threads */}
         {activeTab === 'threads' && (
           <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-blue-100 bg-blue-50/60 px-4 py-3">
+              <div>
+                <div className="text-xs font-bold text-[#102a56]">Library actions</div>
+                <div className="text-[11px] text-slate-500">Select two or more conversations to combine their messages in a new saved record. Use it to gather related discussions before review; the originals stay unchanged.</div>
+              </div>
+              <button type="button" onClick={mergeSelected} disabled={selectedIds.length < 2} className="px-3 py-2 rounded-xl bg-[#0e274c] text-white text-xs font-bold disabled:opacity-35">
+                Merge Selected ({selectedIds.length})
+              </button>
+            </div>
+
             {/* Search and Tag filter */}
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative flex-1">
@@ -256,6 +285,14 @@ export const CorpusModal: React.FC<CorpusModalProps> = ({
                   return (
                     <div
                       key={thread.id}
+                      draggable
+                      onDragStart={(e) => e.dataTransfer.setData('text/chatgrab-thread-id', thread.id)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const from = e.dataTransfer.getData('text/chatgrab-thread-id');
+                        if (from && from !== thread.id) onMergeThreads([from, thread.id]);
+                      }}
                       className={`group p-4 sm:p-5 rounded-2xl border transition-all ${
                         isActive
                           ? 'bg-blue-50/50 border-blue-400 ring-1 ring-blue-400'
@@ -265,6 +302,10 @@ export const CorpusModal: React.FC<CorpusModalProps> = ({
                       <div className="flex items-start justify-between gap-3 mb-2">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <label className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 cursor-pointer">
+                              <input type="checkbox" checked={selectedIds.includes(thread.id)} onChange={() => toggleSelected(thread.id)} />
+                              Select
+                            </label>
                             <span className="text-xs font-mono font-medium px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
                               {thread.model || 'GPT-4o'}
                             </span>
@@ -290,6 +331,18 @@ export const CorpusModal: React.FC<CorpusModalProps> = ({
                         </div>
 
                         <div className="flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const next = prompt('Rename this saved conversation', thread.title);
+                              if (next?.trim()) onRenameThread(thread.id, next.trim());
+                            }}
+                            className="px-2 py-1 rounded-lg text-[11px] font-semibold text-slate-500 hover:text-blue-700 hover:bg-blue-50"
+                            title="Rename thread"
+                          >
+                            Rename
+                          </button>
+
                           <button
                             type="button"
                             onClick={() => onToggleFavorite(thread.id)}
@@ -318,12 +371,7 @@ export const CorpusModal: React.FC<CorpusModalProps> = ({
                         </div>
                       </div>
 
-                      {/* Summary Snippet */}
-                      {thread.insights?.summary && (
-                        <p className="text-xs text-slate-600 leading-relaxed line-clamp-2 mb-3">
-                          {thread.insights.summary}
-                        </p>
-                      )}
+                      <GrabMetadata thread={thread}/>
 
                       {/* Footer: Tags and Open Button */}
                       <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
@@ -369,7 +417,7 @@ export const CorpusModal: React.FC<CorpusModalProps> = ({
                 </h3>
               </div>
               <p className="text-xs text-slate-600 leading-relaxed mb-4">
-                Query across all {corpus.length} saved threads simultaneously. ChatGrab synthesizes insights, compares decisions, and provides verified citations.
+                Query across {corpus.length} saved threads. AI synthesis can compare decisions and cite supplied conversation excerpts when the service is configured; citations require source review.
               </p>
 
               {/* Query suggestions if corpus has threads */}
@@ -395,7 +443,7 @@ export const CorpusModal: React.FC<CorpusModalProps> = ({
                 </div>
               ) : (
                 <p className="text-xs text-slate-500 mb-3 italic">
-                  No conversations saved in your corpus yet. Capture a public ChatGPT share URL to start querying your knowledge base.
+                  Your library is empty. Paste or import a conversation in Capture, check its messages, and save it. You can then search it or use it in a review.
                 </p>
               )}
 

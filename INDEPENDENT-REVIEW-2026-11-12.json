@@ -1,0 +1,58 @@
+{
+  "schema": "aichatlab-independent-review-delivery/1",
+  "date": "2026-11-12",
+  "status": "DELIVERED_FOR_INDEPENDENT_REVIEW",
+  "atlasAssignment": "d3be3a7",
+  "appSource": "5116bbecea0f2d53d63b348eb27e4e424510b753",
+  "harnessSource": "3b41351e7495ae15196baff0c8cdbec57fdf7235",
+  "preview": {
+    "url": "https://chatgrab-analysis-archiver-jlwk0ulmb-inetatlanta.vercel.app",
+    "deployment": "dpl_3vCwhSoq2oMkANAt6aT2Hoa4TF9u",
+    "state": "READY",
+    "target": "preview"
+  },
+  "reviewPack": {
+    "path": "docs/evidence/2026-11-12/independent-review/review-pack.zip",
+    "bytes": 23202117,
+    "sha256": "b2bc191ebc7b7b1153e84e571a759993862ff59037e40d37e359be084cc93cf1",
+    "contains": [
+      "Offline gallery",
+      "12 desktop/phone route screenshots",
+      "Selected header and illustration atlas references",
+      "Delivered image SHA-256 proofs",
+      "Synthetic backup",
+      "Credential-scrubbed Playwright action/DOM/network trace"
+    ],
+    "redundantFilmstripOmitted": true,
+    "rawTracesIncluded": false,
+    "credentialsIncluded": false
+  },
+  "observed": {
+    "deployedBrowserReplay": "PASS by Codex; not independent Atlas acceptance",
+    "offlineGalleryWithoutExternalDNS": "PASS on loopback with external requests blocked",
+    "assetBytes": "PASS delivered header, atlas and hero match repository bytes",
+    "visualApproval": "PENDING human judgment; old pastel composite explicitly historical, no pixel-perfect claim",
+    "nativeHostGates": "UNCHANGED/NOT TESTED",
+    "remoteAutomaticCapture": "Still last-observed provider metadata-only FAIL; no success claimed",
+    "stripeSandbox": "PASS fresh actual Stripe-hosted TEST checkout; server verified 1900 USD, repeat and foreign-browser rejection; no real money/membership",
+    "liveStripeOwnership": "NOT VERIFIED; page labeled unclaimed sandbox; no Claim action taken"
+  },
+  "tests": {
+    "app": 50,
+    "payment": 43,
+    "lint": "PASS",
+    "build": "PASS"
+  },
+  "production": {
+    "unchanged": true,
+    "deployment": "dpl_2ULzAwkbUka2VnQ6kuAZzyjDfw4i",
+    "source": "d8786f2525db750d5aeef9d6f80089b632e8a568",
+    "livePaymentsDisabled": true
+  },
+  "prs": [
+    "https://github.com/DrDoohicky/CHATGRAB2/pull/9",
+    "https://github.com/DrDoohicky/CHATGRAB2/pull/10"
+  ],
+  "privacy": "Synthetic sources only. Auth/cookie material removed before sharing; a failed private diagnostic log was scrubbed, and runner errors now print only a sanitized first line. No private transcript/provider credentials/browser profile/raw trace published.",
+  "paymentReplaySource": "15d44ccc32fa3323a0acbe8708babd4b53697b73"
+}

@@ -1,0 +1,8 @@
+{
+  "base": "https://chatgrab-analysis-archiver-fp8334hoj-inetatlanta.vercel.app",
+  "at": "2026-11-08T16:59:10.798Z",
+  "invalidPublicShare": "PASS; actual 404 upstream / 422 API twice, no record saved",
+  "sourceContentSearch": "PASS",
+  "markdownDownload": "PASS; bytes independently read",
+  "pdfPrintDOM": "PASS; OS print dialog not exercised"
+}

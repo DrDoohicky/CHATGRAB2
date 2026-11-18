@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Search, User, Bot, Copy, Check, MessageSquare, Clock, Filter } from 'lucide-react';
 import { ConversationThread } from '../types';
+import {messageAnchor,wrappedHit,literalParts} from '../lib/transcript-search';
+import './review-archive.css';
 import { MarkdownView } from './MarkdownView';
 
 interface ThreadViewerProps {
@@ -10,15 +12,17 @@ interface ThreadViewerProps {
 export const ThreadViewer: React.FC<ThreadViewerProps> = ({ thread }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'user' | 'assistant'>('all');
+  const [matchesOnly,setMatchesOnly]=useState(false);
+  const [hitIndex,setHitIndex]=useState(0);
   const [copiedMsgId, setCopiedMsgId] = useState<string | null>(null);
 
-  const filteredMessages = thread.messages.filter((msg) => {
-    if (roleFilter !== 'all' && msg.role !== roleFilter) return false;
-    if (searchQuery.trim()) {
-      return msg.content.toLowerCase().includes(searchQuery.toLowerCase());
-    }
-    return true;
-  });
+  const roleMessages=thread.messages.filter(m=>roleFilter==='all'||m.role===roleFilter);
+  const hits=searchQuery?roleMessages.filter(m=>m.content.toLocaleLowerCase().includes(searchQuery.toLocaleLowerCase())):[];
+  const filteredMessages=matchesOnly&&searchQuery?hits:roleMessages;
+  const activeId=hits[Math.min(hitIndex,Math.max(0,hits.length-1))]?.id;
+  useEffect(()=>{setSearchQuery('');setRoleFilter('all');setHitIndex(0);setMatchesOnly(false);},[thread.id]);
+  useEffect(()=>{setHitIndex(0);},[searchQuery,roleFilter,thread.messages]);
+  const navigate=(delta:number)=>{const next=wrappedHit(hitIndex,delta,hits.length);setHitIndex(next);const el=document.getElementById(messageAnchor(thread.id,hits[next]?.id||''));el?.focus({preventScroll:true});el?.scrollIntoView({block:'center',behavior:'instant'});};
 
   const totalWords = thread.messages.reduce((acc, m) => acc + m.content.split(/\s+/).length, 0);
   const readTimeMinutes = Math.max(1, Math.ceil(totalWords / 200));
@@ -37,7 +41,9 @@ export const ThreadViewer: React.FC<ThreadViewerProps> = ({ thread }) => {
         <div className="relative flex-1">
           <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
           <input
-            type="text"
+            type="search"
+            aria-label="Search transcript"
+            onKeyDown={e=>{if(e.key==='Enter'&&hits.length){e.preventDefault();navigate(e.shiftKey?-1:1);}}}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search transcript messages..."
@@ -96,6 +102,7 @@ export const ThreadViewer: React.FC<ThreadViewerProps> = ({ thread }) => {
         </div>
       </div>
 
+      <div className="cg-transcript-search-actions"><span role="status" aria-live="polite">{searchQuery?(hits.length?`Match ${Math.min(hitIndex+1,hits.length)} of ${hits.length} matching messages`:'No matching messages; surrounding context stays visible'):'Full transcript · search to navigate messages'}</span><button disabled={!hits.length} onClick={()=>navigate(-1)}>Previous match</button><button disabled={!hits.length} onClick={()=>navigate(1)}>Next match</button><label><input type="checkbox" checked={matchesOnly} onChange={e=>setMatchesOnly(e.target.checked)}/> Show matching messages only</label></div>
       {/* Messages Stream */}
       <div className="space-y-4">
         {filteredMessages.length === 0 ? (
@@ -110,7 +117,11 @@ export const ThreadViewer: React.FC<ThreadViewerProps> = ({ thread }) => {
 
             return (
               <div
-                key={msg.id || index}
+                key={messageAnchor(thread.id,msg.id)}
+                id={messageAnchor(thread.id,msg.id)}
+                tabIndex={-1}
+                data-search-active={Boolean(searchQuery&&msg.id===activeId)}
+                aria-label={`${msg.role} message ${msg.id}`}
                 className={`group relative rounded-2xl p-5 sm:p-6 transition-all ${
                   isUser
                     ? 'bg-slate-50 border border-slate-200/90'
@@ -135,7 +146,7 @@ export const ThreadViewer: React.FC<ThreadViewerProps> = ({ thread }) => {
 
                     <div>
                       <span className="text-xs font-bold text-slate-900">
-                        {isUser ? 'Prompt / User' : 'ChatGPT'}
+                        {isUser ? 'Prompt / User' : msg.role==='assistant'?'Assistant':msg.role||'Unknown'}
                       </span>
                       {msg.model && (
                         <span className="ml-2 text-[10px] font-mono font-medium px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -168,7 +179,7 @@ export const ThreadViewer: React.FC<ThreadViewerProps> = ({ thread }) => {
 
                 {/* Message Body with Markdown */}
                 <div className="text-slate-800">
-                  <MarkdownView content={msg.content} />
+                  {searchQuery?<pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed">{literalParts(msg.content,searchQuery).map((part,i)=>part.match?<mark className="cg-search-mark" key={i}>{part.text}</mark>:part.text)}</pre>:<MarkdownView content={msg.content}/> }
                 </div>
               </div>
             );

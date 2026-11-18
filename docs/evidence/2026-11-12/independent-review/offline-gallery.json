@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "loopbackOnly": true,
+  "publicDnsRequired": false,
+  "externalRequests": 0,
+  "phoneFilterWorks": true,
+  "allImagesDecoded": true,
+  "independentAtlasAcceptance": false
+}

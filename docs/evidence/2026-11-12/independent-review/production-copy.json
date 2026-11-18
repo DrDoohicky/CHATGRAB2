@@ -1,0 +1,12 @@
+{
+  "status": "PASS_WITH_CANDIDATE_COPY_CLARIFICATIONS",
+  "origin": "https://chatgrab.app",
+  "manualAnalysisLimitVisible": true,
+  "nativeSignInUnavailableVisible": true,
+  "livePaymentsDisabledVisible": true,
+  "remainingAmbiguities": [
+    "The visual guide leads with share capture without the reliable manual fallback",
+    "Context-helper label/future-integration wording is clarified in the new protected preview"
+  ],
+  "productionChanged": false
+}

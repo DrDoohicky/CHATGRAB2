@@ -1,3 +1,4 @@
+import {capturedRecord} from '../lib/capture-record';
 import React, { useState, useEffect } from 'react';
 import { X, Clipboard, ArrowRight, Loader2, Sparkles, FileText, CheckCircle2, AlertCircle } from 'lucide-react';
 import { ConversationThread } from '../types';
@@ -7,6 +8,7 @@ interface CaptureModalProps {
   onClose: () => void;
   onThreadCaptured: (thread: ConversationThread) => void;
   initialUrl?: string;
+  onOpenSupport?: () => void;
 }
 
 export const CaptureModal: React.FC<CaptureModalProps> = ({
@@ -14,6 +16,7 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
   onClose,
   onThreadCaptured,
   initialUrl,
+  onOpenSupport,
 }) => {
   const [url, setUrl] = useState(initialUrl || '');
   const [rawText, setRawText] = useState('');
@@ -101,6 +104,11 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
     const extractedFromRaw = extractChatGPTUrl(rawText);
     const targetUrl = extractedFromUrl || extractedFromRaw || (mode === 'url' ? url.trim() : null);
 
+    if (targetUrl && !extractChatGPTUrl(targetUrl)) {
+      setError('That is not a public ChatGPT share link. In ChatGPT, use the three-dot menu → Share → Copy link. The link must contain /share/.');
+      return;
+    }
+
     if (targetUrl) {
       // URL ingestion mode with rectified URL
       setUrl(targetUrl);
@@ -132,29 +140,26 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
+      const responseText = await res.text();
+      let data: any;
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error('The ChatGrab capture server did not return a valid response. The API may be unavailable; please try again shortly.');
+      }
 
       if (!res.ok || !data.success) {
         if (data.allowFallbackPaste) {
-          setError('Public page could not be read directly. You can paste the conversation transcript text directly.');
-          setMode('raw');
+          setError(data.error || 'The share page could not be read. Retry the link or switch to pasted text.');
           setIsLoading(false);
           return;
         }
         throw new Error(data.error || 'Failed to capture thread');
       }
 
-      const capturedThread: ConversationThread = {
-        id: `thread-${Date.now()}`,
-        title: data.data.title || 'Captured Conversation',
-        sourceUrl: data.data.sourceUrl || targetUrl || undefined,
-        capturedAt: new Date().toISOString(),
-        originalCreatedAt: data.data.originalCreatedAt || new Date().toISOString(),
-        model: data.data.model || 'GPT-4o',
-        messages: data.data.messages || [],
-      };
+      const capturedThread = capturedRecord(data.data,targetUrl||undefined);
 
-      // 2. Automatically generate intelligence with Gemini
+      // Optional analysis must not alter the preserved source or imply provider availability.
       try {
         const analyzeRes = await fetch('/api/analyze-thread', {
           method: 'POST',
@@ -218,7 +223,7 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
 
               {/* Subtitle */}
               <p className="text-slate-600 text-sm leading-relaxed mb-5">
-                Bring in a public ChatGPT share URL. ChatGrab preserves the source, analyzes the record, and connects it to your corpus.
+                Save a conversation so you can revisit the answers and the reasons behind them. Try a public ChatGPT share link, or paste or import the messages and check them before saving. Analysis is a separate step after capture.
               </p>
 
               {/* Mode Selector */}
@@ -240,6 +245,13 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
                   }`}
                 >
                   Paste Raw Conversation
+                </button>
+                <button
+                  type="button"
+                  onClick={onOpenSupport}
+                  className="pb-1 font-semibold text-slate-500 hover:text-blue-700 transition-colors cursor-pointer"
+                >
+                  Upload File / Artifact
                 </button>
               </div>
 
@@ -365,7 +377,7 @@ export const CaptureModal: React.FC<CaptureModalProps> = ({
 
             {/* Helper Footer */}
             <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
-              <span>Supports public ChatGPT share links and raw transcripts</span>
+              <span>Try a share link, paste conversation text, or import a file. Check that the messages you need were included.</span>
               <span className="font-medium text-slate-500">Stored locally in your corpus</span>
             </div>
           </div>

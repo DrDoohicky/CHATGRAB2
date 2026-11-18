@@ -1,0 +1,14 @@
+import React,{useEffect,useRef,useState} from 'react';
+import {ArrowUpRight,BookOpen,MessageCircle,PanelsTopLeft,Plug,X} from 'lucide-react';
+import type {CGPage} from './ChatGrabDashboard';
+import './plugin-experience.css';
+export function EdgeLauncher({onNavigate,onOpenContext}:{onNavigate:(page:CGPage)=>void;onOpenContext:()=>void}){
+ const [open,setOpen]=useState(false),[pinned,setPinned]=useState(false);const root=useRef<HTMLDivElement>(null),trigger=useRef<HTMLButtonElement>(null);
+ const close=(restoreFocus=false)=>{setOpen(false);setPinned(false);if(restoreFocus)trigger.current?.focus();};
+ useEffect(()=>{if(!open)return;const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.preventDefault();setOpen(false);setPinned(false);trigger.current?.focus();}};const outside=(e:PointerEvent)=>{if(!root.current?.contains(e.target as Node)){setOpen(false);setPinned(false);}};document.addEventListener('keydown',key);document.addEventListener('pointerdown',outside);return()=>{document.removeEventListener('keydown',key);document.removeEventListener('pointerdown',outside)};},[open]);
+ const go=(page:CGPage)=>{close();onNavigate(page);};
+ return <div ref={root} className="cg-edge-launcher" onPointerEnter={e=>{if(e.pointerType==='mouse'&&window.matchMedia('(hover: hover)').matches)setOpen(true)}} onPointerLeave={()=>{if(!pinned&&!root.current?.contains(document.activeElement))setOpen(false)}} onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node)){setOpen(false);setPinned(false)}}}>
+  <button ref={trigger} className="cg-edge-trigger" aria-label="ChatGrab quick access" aria-expanded={open} aria-controls="chatgrab-quick-access" onClick={()=>{if(pinned)close();else{setOpen(true);setPinned(true);}}}><img src="/images/chatgrab-plugin-icon-256.png" width="48" height="48" alt=""/><span className="cg-edge-indicator" aria-hidden="true"/></button>
+  {open&&<section id="chatgrab-quick-access" className="cg-edge-panel" aria-label="ChatGrab quick access panel"><div className="cg-edge-heading"><div><strong>ChatGrab</strong><small>Your workspace, within reach.</small></div><button aria-label="Close quick access" onClick={()=>close(true)}><X size={19}/></button></div><button onClick={()=>go('capture')}><MessageCircle size={20}/><span>Capture a conversation<small>Choose and preserve your source</small></span></button><button onClick={()=>go('library')}><BookOpen size={20}/><span>Open your library<small>Find and organize saved work</small></span></button><button onClick={()=>{close();onOpenContext();}}><PanelsTopLeft size={20}/><span>Prepare context<small>Open the website side window</small></span></button><button onClick={()=>go('plugin')}><Plug size={20}/><span>ChatGPT plugin<small>Connect and check your tools</small></span></button><a href="https://aichatlab.app/" target="_blank" rel="noopener noreferrer">AIChatLab.app <ArrowUpRight size={17}/></a></section>}
+ </div>;
+}

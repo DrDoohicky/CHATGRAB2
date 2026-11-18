@@ -1,0 +1,17 @@
+{
+  "base": "http://127.0.0.1:3070",
+  "results": [
+    "Exact supplied 925×258 header bytes/aspect and AIChatLab external links PASS",
+    "Hover reveal/leave, keyboard pin/Escape/focus, plugin navigation and reload PASS",
+    "Plugin page real setup, exact endpoint, clipboard success/manual fallback and truthful readiness PASS",
+    "Right-edge choice opens actual side window; unavailable direct AI remains disabled PASS",
+    "Responsive header/page/popup at 1440/1024/768/390/320 with no overflow/cropping PASS",
+    "Short-height phone popup scrolls within viewport PASS",
+    "Emulated touch open, library selection and close PASS"
+  ],
+  "logoHash": "ba0dcf9ac720cfad5fb7f929836a19d3136d63c81a0fd5b34057d8023653a951",
+  "uncaughtErrors": [],
+  "automaticPosts": 0,
+  "nativeChatGPTHostInvocation": false,
+  "touch": "Chromium emulation, not a physical device"
+}

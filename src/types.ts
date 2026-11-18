@@ -1,9 +1,24 @@
+export type PacketAnnotation = {category: 'decision' | 'constraint' | 'correction' | 'background'; rationale: string};
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp?: string;
   model?: string;
+  packetAnnotation?: PacketAnnotation;
+  sourceThreadId?: string;
+  sourceMessageId?: string;
+}
+
+export interface RetrospectiveFinding {
+  type: 'correction' | 'contradiction' | 'drift' | 'completion_claim' | 'unsupported_claim' | 'decision' | 'accomplishment' | 'attribution' | 'unresolved';
+  title: string;
+  context: string;
+  earlierPosition?: string;
+  laterPosition?: string;
+  humanPrompt?: string;
+  evidenceMessageIds?: string[];
+  confidence?: 'low' | 'medium' | 'high';
 }
 
 export interface ThreadInsights {
@@ -14,6 +29,15 @@ export interface ThreadInsights {
   qaIndex: { question: string; answer: string }[];
   reintegrationPrompts: { label: string; prompt: string; targetTool: string }[];
   tags: string[];
+  retrospective?: RetrospectiveFinding[];
+}
+
+export interface MergeSource {
+  id: string;
+  title: string;
+  capturedAt: string;
+  label: string;
+  messageCount: number;
 }
 
 export interface ConversationThread {
@@ -22,10 +46,33 @@ export interface ConversationThread {
   sourceUrl?: string;
   capturedAt: string;
   originalCreatedAt?: string;
+  captureLimitations?: string[];
   model: string;
   messages: ChatMessage[];
   insights?: ThreadInsights;
   isFavorite?: boolean;
+  renamedAt?: string;
+  supportAssetIds?: string[];
+  reintegrationMeta?: {supersedesId?:string;purpose: string; conflictReview: string; destinationId?: string; status: 'active' | 'withdrawn'; sources: {threadId: string; messageId: string}[]};
+  mergeMeta?: {
+    kind: 'derived_context_merge';
+    preservesSources: true;
+    sources: MergeSource[];
+  };
+}
+
+export interface SupportAsset {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  uploadedAt: string;
+  originalModifiedAt?: string;
+  kind: 'supplementary' | 'chat_artifact' | 'generated_media' | 'evidence' | 'other';
+  notes?: string;
+  linkedThreadId?: string;
+  linkedThreadTitle?: string;
+  textPreview?: string;
 }
 
 export interface CorpusQueryResponse {
@@ -72,4 +119,3 @@ export interface DeepAnalysisResult {
     color: string;
   }[];
 }
-

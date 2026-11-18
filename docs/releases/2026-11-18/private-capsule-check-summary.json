@@ -1,0 +1,16 @@
+{
+  "base": "http://127.0.0.1:3050",
+  "privateSource": false,
+  "sourceBytes": 452,
+  "sourceSha256": "99405dfa3a0b5bb6b737f20b18e715200ed0577b82796ab7eea309d642d263d5",
+  "topLevelFields": 5,
+  "reconstructedEvents": 1,
+  "excerptCharacters": 39,
+  "results": [
+    "Reviewed capsule import, reload and exact original JSON download PASS",
+    "Fresh-browser complete backup restore preserves exact capsule source PASS",
+    "Responsive layout and mobile tour navigation at 1440/1024/768/390/320 PASS"
+  ],
+  "uncaughtErrors": [],
+  "automaticPosts": 0
+}

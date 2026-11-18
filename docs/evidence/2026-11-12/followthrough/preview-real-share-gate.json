@@ -1,0 +1,9 @@
+{
+  "status": "FAIL",
+  "scope": "Real authorized public share on deployed API",
+  "httpStatus": 422,
+  "code": "SHARE_PREVIEW_ONLY",
+  "partialConversationSaved": false,
+  "manualFallbackVerifiedSeparately": true,
+  "privateSourcePublished": false
+}

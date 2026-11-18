@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "method": "Browser-readable authorized public share normalized to ChatGrab JSON then real file import/reload/download",
+  "messageCount": 4,
+  "exactSourceIdsRolesAndText": true,
+  "remoteServerCapture": false,
+  "notNativeAccountExport": true
+}

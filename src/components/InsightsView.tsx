@@ -39,7 +39,7 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
         </div>
         <h3 className="text-lg font-bold text-slate-900 mb-2">No Intelligence Generated Yet</h3>
         <p className="text-sm text-slate-500 max-w-md mx-auto mb-6">
-          ChatGrab uses Gemini to generate executive summaries, key takeaways, action items, and reusable prompts for this thread.
+          Use Chat Analysis to prepare a request for your own AI account, then paste its answer back for review. Direct analysis inside this view is in development. You can save and organize conversations now without an API key.
         </p>
         <button
           onClick={onReanalyze}
@@ -54,7 +54,7 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
           ) : (
             <>
               <Sparkles className="w-4 h-4" />
-              <span>Generate AI Intelligence</span>
+              <span>Generate AI review</span>
             </>
           )}
         </button>
@@ -93,7 +93,7 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
               Continuous Intelligence & Synthesis
             </h3>
             <p className="text-xs text-slate-600">
-              Extracted insights, action items, and cross-model continuity prompts
+              Review the AI’s suggestions, check proposed next steps, and prepare background to share with another AI tool.
             </p>
           </div>
         </div>
@@ -102,7 +102,7 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
           onClick={onReanalyze}
           disabled={isAnalyzing}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-blue-700 bg-white hover:bg-blue-50 border border-blue-200 transition-colors cursor-pointer shadow-2xs"
-          title="Re-run deep analysis with Gemini"
+          title="Re-run deep analysis with ChatGPT"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${isAnalyzing ? 'animate-spin' : ''}`} />
           <span>{isAnalyzing ? 'Analyzing...' : 'Refresh Insights'}</span>
@@ -226,7 +226,7 @@ export const InsightsView: React.FC<InsightsViewProps> = ({
                 Reintegration Engine (One-Click Hand-offs)
               </h4>
               <p className="text-xs text-blue-200/80">
-                Plug this captured context directly back into Claude, Cursor, ChatGPT, or team docs to keep working.
+                Copy the prepared material into your next AI chat or working document. Include the goals, reasons and corrections it needs, then check that the reply reflects them.
               </p>
             </div>
           </div>

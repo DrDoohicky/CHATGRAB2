@@ -1,4 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import {SourceDocumentPanel} from './components/SourceDocumentPanel';
+import {PluginPage} from './components/PluginPage';
+import {EdgeLauncher} from './components/EdgeLauncher';
+import {ReviewStorageContext} from './components/review-storage-context';
+import {PortableBackupPanel} from './components/PortableBackupPanel';
+import {ImportReview} from './components/ImportReview';
+import {capturedRecord,addCapturedRecord,sameCapturedSource} from './lib/capture-record';
+import { GrabMetadata } from './components/GrabMetadata';
+import {DownloadFile} from './components/DownloadFile';
+import {BatchImporter} from './lib/batch-import';
+import {BatchImportProgress} from './components/BatchImportProgress';
+import {CrewBridge} from './components/CrewBridge';
+import {parseConversationFile} from './lib/importConversations';
+import {downloadText} from './lib/download';
+import './chatgrab-mockup.css';
+import { WorkspaceNavigation } from './components/WorkspaceNavigation';
+import { MediaLibrary } from './components/MediaLibrary';
+import { ManualAnalysisPage } from './components/ManualAnalysisPage';
+import './components/media-library.css';
+import { HeroIntro } from './components/HeroIntro';
+import { LibraryExplorer } from './components/LibraryExplorer';
+import { ChatGrabDashboard } from './components/ChatGrabDashboard';
+import { ContinuityWorkspace } from './components/ContinuityWorkspace';
+import type { CGPage } from './components/ChatGrabDashboard';
+import React, { useState, useEffect, useRef, useSyncExternalStore } from 'react';
+import type { User } from '@supabase/supabase-js';
+import { cloud } from './lib/cloud';
+import { ChatGPTConnectionPanel } from './components/ChatGPTConnectionPanel';
 import {
   Sparkles,
   FileText,
@@ -21,17 +48,23 @@ import {
 } from 'lucide-react';
 import { ConversationThread, ThreadInsights } from './types';
 import { Header } from './components/Header';
-import { WorkspaceCards } from './components/WorkspaceCards';
 import { CaptureModal } from './components/CaptureModal';
 import { CorpusModal } from './components/CorpusModal';
 import { ExportModal } from './components/ExportModal';
-import { ThreadViewer } from './components/ThreadViewer';
+import { TranscriptReviewWorkspace } from './components/TranscriptReviewWorkspace';
 import { InsightsView } from './components/InsightsView';
-import { GeminiChatbot } from './components/GeminiChatbot';
-
+import { ChatGPTCompanion } from './components/ChatGPTCompanion';
+import { AdaptivePortionsView } from './components/AdaptivePortionsView';
+import { SupportMaterialModal } from './components/SupportMaterialModal';
+import { OnboardingGuideModal } from './components/OnboardingGuideModal';
+import './metallic-theme.css';
+import './components/workspace-navigation.css';
 const STORAGE_KEY = 'chatgrab_corpus_threads';
-
+const validPages=new Set(['capture','workspace','library','analyze','reintegrate','artifacts','export','media','bridge','guide','settings','plugin']);
+const initialNavigationPage=():CGPage=>{const raw=new URLSearchParams(window.location.search).get('page')||'capture';const p=({preserve:'capture',organize:'library',support:'artifacts',tutorial:'guide'} as Record<string,string>)[raw]||raw;return (validPages.has(p)?p:'capture') as CGPage;};
+const initialPage=():CGPage=>{const p=initialNavigationPage();return p==='reintegrate'?'workspace':p;};
 export default function App() {
+  const storageLoadFailed=useRef(false);
   // Load corpus from LocalStorage (clearing any old simulated items)
   const [corpus, setCorpus] = useState<ConversationThread[]>(() => {
     try {
@@ -39,65 +72,145 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
+          if(parsed.some(t=>!t||typeof t.id!=='string'||typeof t.title!=='string'||!Array.isArray(t.messages)||t.messages.some((m:any)=>!m||typeof m.content!=='string')))throw Error('Invalid saved library.');
           const simulatedIds = new Set(['thread-cache-architecture', 'thread-saas-gtm', 'thread-react-19']);
           const realThreads = parsed.filter((t: ConversationThread) => !simulatedIds.has(t.id));
           return realThreads;
         }
+        throw Error('Invalid saved library.');
       }
     } catch (e) {
       console.warn('Failed to load local corpus:', e);
+      storageLoadFailed.current=true;
     }
     return [];
   });
-
   // Active thread: starts as null when no conversation is loaded
   const [activeThread, setActiveThread] = useState<ConversationThread | null>(null);
-
   // Active Tab in Workspace
-  const [workspaceTab, setWorkspaceTab] = useState<'transcript' | 'insights'>('transcript');
-
+  const [workspaceTab, setWorkspaceTab] = useState<'transcript' | 'insights' | 'portions'>('transcript');
+  const requestedThreadTab = useRef<'transcript' | 'insights' | 'portions'>('transcript');
   // Modals state (Capture modal opens by default as in SS1.jpeg)
-  const [isCaptureModalOpen, setIsCaptureModalOpen] = useState(true);
+  const [reviewImport,setReviewImport]=useState(false);
+  const closeImportReview=React.useCallback(()=>setReviewImport(false),[]);
+  const [page, setPage] = useState<CGPage>(initialPage);
+  const [navigationPage,setNavigationPage]=useState<CGPage>(initialNavigationPage);
+  const [sidebarCollapsed,setSidebarCollapsed]=useState(()=>{try{return localStorage.getItem('chatgrab_sidebar_collapsed')==='true';}catch{return false;}});
+  const [mobileNavigation,setMobileNavigation]=useState(false);
+  const closeCompanion=React.useCallback(()=>setIsChatbotOpen(false),[]);
+  const closeNavigation=React.useCallback(()=>setMobileNavigation(false),[]);
+  const toggleSidebar=()=>setSidebarCollapsed(previous=>{const next=!previous;try{localStorage.setItem('chatgrab_sidebar_collapsed',String(next));}catch{}return next;});
+  const openPage = (next: CGPage) => {
+    const destination=next==='preserve'?'capture':next;
+    const anchor=next==='reintegrate'?'workspace-reintegration':null;
+    const url=new URL(window.location.href);url.searchParams.set('page',destination);if(anchor)url.hash=anchor;else url.hash='';if(url.href!==window.location.href)history.pushState(null,'',url);
+    setNavigationPage(destination);setPage(anchor?'workspace':destination);
+    if(anchor)setTimeout(()=>document.getElementById(anchor)?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'}),75);
+    else window.scrollTo({top:0,behavior:'instant'});
+  };
+  useEffect(()=>{const restore=()=>{setNavigationPage(initialNavigationPage());setPage(initialPage());setMobileNavigation(false);};window.addEventListener('popstate',restore);return()=>window.removeEventListener('popstate',restore);},[]);
+  useEffect(() => {
+    if (page === 'capture' && activeThread) {
+      document.getElementById('cg-active-thread')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [page, activeThread?.id, workspaceTab]);
+  const [isCaptureModalOpen, setIsCaptureModalOpen] = useState(false);
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
+  const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [isCorpusOpen, setIsCorpusOpen] = useState(false);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isChatbotOpen, setIsChatbotOpen] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-
   // Quick inline URL input in empty state
   const [quickUrl, setQuickUrl] = useState('');
+  const [quickCaptureError, setQuickCaptureError] = useState<string | null>(null);
+  const [captureNotice, setCaptureNotice] = useState<string | null>(null);
+  const [storageError,setStorageError]=useState<string|null>(()=>storageLoadFailed.current?'Your saved library could not be read. Its stored data has been preserved. Export any work from this tab, then use Reset local library only when you are ready to discard the unreadable data.':null);
+  const [batchMode, setBatchMode] = useState(false);
+  const [batchInput, setBatchInput] = useState('');
+  const [isQuickCapturing, setIsQuickCapturing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-
+  const [accountUser, setAccountUser] = useState<User | null>(null);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [libraryReady, setLibraryReady] = useState(!cloud);
+  const activeOwnerRef = useRef<string | null>(null);
+  const cloudQueue = useRef<Promise<void>>(Promise.resolve());
+  const [batchQueue]=useState(()=>new BatchImporter((thread,scope)=>{if(scope!==(activeOwnerRef.current||'guest'))throw Error('Account changed; resume imports in the matching account.');setCorpus(previous=>previous.some(existing=>existing.sourceUrl===thread.sourceUrl||existing.id===thread.id)?previous:[thread,...previous]);},fetch,(()=>{try{return localStorage;}catch{return undefined;}})()));
+  const batchState=useSyncExternalStore(batchQueue.subscribe,batchQueue.snapshot);
+  useEffect(()=>{if(!libraryReady)batchQueue.pause();batchQueue.setScope(accountUser?.id||'guest');},[batchQueue,accountUser?.id,libraryReady]);
+  useEffect(()=>()=>batchQueue.pause(),[batchQueue]);
+  const readGuest = (): ConversationThread[] => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch { return []; } };
+  const refreshAccount = async () => {
+    if (!cloud) return;
+    setLibraryReady(false);
+    const { data: { user } } = await cloud.auth.getUser();
+    activeOwnerRef.current = user?.id || null;
+    setAccountUser(user);
+    if (user) {
+      const { data, error } = await cloud.from('conversation_libraries').select('content').eq('owner_id', user.id).order('updated_at', { ascending: false });
+      if (error) {
+        console.error('Unable to load private library', error);
+        setLibraryReady(false);
+        return;
+      }
+      setCorpus((data || []).map((record: any) => record.content as ConversationThread));
+    } else {
+      setCorpus(readGuest());
+    }
+    setActiveThread(null);
+    setLibraryReady(true);
+  };
+  useEffect(() => {
+    if (!cloud) return;
+    void refreshAccount();
+    const { data: { subscription } } = cloud.auth.onAuthStateChange(() => { setTimeout(() => void refreshAccount(), 0); });
+    return () => subscription.unsubscribe();
+  }, []);
   // Persist corpus to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(corpus));
+      if (!libraryReady) return;
+      if (!accountUser) {
+        if(storageLoadFailed.current)return;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(corpus));
+        setStorageError(null);
+      } else if (cloud && activeOwnerRef.current === accountUser.id) {
+        const ownerId = accountUser.id;
+        const cloudClient = cloud;
+        const snapshot = [...corpus];
+        cloudQueue.current = cloudQueue.current.then(async () => {
+          if (activeOwnerRef.current !== ownerId) return;
+          const records = snapshot.map(t => ({owner_id: ownerId, thread_id: t.id, content: t, updated_at: new Date().toISOString()}));
+          if (records.length) {
+            const { error } = await cloudClient.from('conversation_libraries').upsert(records, {onConflict:'owner_id,thread_id'});
+            if (error) throw error;
+            const ids = records.map(r=>'"'+r.thread_id.replace(/["\\]/g,'')+'"').join(',');
+            const removed = await cloudClient.from('conversation_libraries').delete().eq('owner_id', ownerId).not('thread_id','in', '('+ids+')');
+            if (removed.error) throw removed.error;
+          } else {
+            const cleared = await cloudClient.from('conversation_libraries').delete().eq('owner_id', ownerId);
+            if (cleared.error) throw cleared.error;
+          }
+        }).catch(err => { console.error('Cloud library sync failed:', err); showToast('Cloud library sync failed. Export a backup before leaving.'); });
+      }
     } catch (e) {
       console.warn('Failed to save corpus to localStorage:', e);
+      setStorageError('Your latest changes could not be saved in this browser. Export a library backup now before reloading or closing this tab.');
     }
-  }, [corpus]);
-
+  }, [corpus, accountUser, libraryReady]);
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3000);
   };
-
   const handleThreadCaptured = (newThread: ConversationThread) => {
-    // Add to corpus (avoid duplicates by ID or update)
-    setCorpus((prev) => {
-      const existsIdx = prev.findIndex((t) => t.id === newThread.id);
-      if (existsIdx !== -1) {
-        const updated = [...prev];
-        updated[existsIdx] = newThread;
-        return updated;
-      }
-      return [newThread, ...prev];
-    });
-
-    setActiveThread(newThread);
+    setCaptureNotice(newThread.captureLimitations?.join(' ')||null);
+    const duplicate=corpus.find(t=>sameCapturedSource(t,newThread));
+    setCorpus(prev=>addCapturedRecord(prev,newThread));
+    openPage('capture');
+    setActiveThread(duplicate||newThread);
     setWorkspaceTab('transcript');
-    showToast(`Successfully captured "${newThread.title}"`);
+    showToast(duplicate?`Already preserved "${duplicate.title}"`: `Successfully captured "${newThread.title}"`);
   };
-
   const handleUpdateInsights = (updatedInsights: ThreadInsights) => {
     if (!activeThread) return;
     const updatedThread: ConversationThread = {
@@ -109,7 +222,6 @@ export default function App() {
       prev.map((t) => (t.id === updatedThread.id ? updatedThread : t))
     );
   };
-
   const handleReanalyze = async () => {
     if (!activeThread) return;
     setIsAnalyzing(true);
@@ -122,7 +234,6 @@ export default function App() {
           messages: activeThread.messages,
         }),
       });
-
       const data = await res.json();
       if (res.ok && data.success && data.insights) {
         handleUpdateInsights(data.insights);
@@ -137,7 +248,6 @@ export default function App() {
       setIsAnalyzing(false);
     }
   };
-
   const handleDeleteThread = (threadId: string) => {
     setCorpus((prev) => prev.filter((t) => t.id !== threadId));
     if (activeThread?.id === threadId) {
@@ -146,7 +256,6 @@ export default function App() {
     }
     showToast('Thread removed from corpus');
   };
-
   const handleToggleFavorite = (threadId: string) => {
     setCorpus((prev) =>
       prev.map((t) => (t.id === threadId ? { ...t, isFavorite: !t.isFavorite } : t))
@@ -155,62 +264,153 @@ export default function App() {
       setActiveThread((prev) => (prev ? { ...prev, isFavorite: !prev.isFavorite } : null));
     }
   };
-
+  const handleRenameThread = (threadId: string, nextTitle: string) => {
+    const title = nextTitle.trim();
+    if (!title) return;
+    const renamedAt = new Date().toISOString();
+    setCorpus(prev => prev.map(t => t.id === threadId ? { ...t, title, renamedAt } : t));
+    setActiveThread(prev => prev?.id === threadId ? { ...prev, title, renamedAt } : prev);
+    showToast('Conversation renamed');
+  };
+  const handleMergeThreads = (threadIds: string[]) => {
+    const selected = corpus.filter(t => threadIds.includes(t.id))
+      .sort((a, b) => new Date(a.capturedAt).getTime() - new Date(b.capturedAt).getTime());
+    if (selected.length < 2) return;
+    const base = selected[0].title || 'Merged context';
+    const proposed = selected.every(t => t.title.trim().toLowerCase() === base.trim().toLowerCase())
+      ? `${base} — Annotated + Furtherance`
+      : `${base} — Merged Context`;
+    const title = prompt('Name the merged context record', proposed)?.trim();
+    if (!title) return;
+    const messages = selected.flatMap((thread, sourceIndex) => thread.messages.map((m, messageIndex) => ({
+      ...m,
+      id: `merge-${sourceIndex + 1}:${m.id || messageIndex}`,
+      sourceThreadId: thread.id,
+      sourceMessageId: m.id,
+    })));
+    const merged: ConversationThread = {
+      id: crypto.randomUUID(),
+      title,
+      capturedAt: new Date().toISOString(),
+      model: 'Merged sources',
+      messages,
+      mergeMeta: {
+        kind: 'derived_context_merge',
+        preservesSources: true,
+        sources: selected.map((t, i) => ({
+          id: t.id,
+          title: t.title,
+          capturedAt: t.capturedAt,
+          label: i === 0 ? 'Annotated / first source' : i === 1 ? 'Furtherance / later source' : `Continuation ${i + 1}`,
+          messageCount: t.messages.length,
+        })),
+      },
+    };
+    setCorpus(prev => [merged, ...prev]);
+    setActiveThread(merged);
+    setWorkspaceTab('transcript');
+    showToast('Merged context created; originals preserved');
+  };
+  const handleAssetLinked = (threadId: string, assetId: string) => {
+    setCorpus(prev => prev.map(t => t.id === threadId
+      ? { ...t, supportAssetIds: Array.from(new Set([...(t.supportAssetIds || []), assetId])) }
+      : t));
+    setActiveThread(prev => prev?.id === threadId
+      ? { ...prev, supportAssetIds: Array.from(new Set([...(prev.supportAssetIds || []), assetId])) }
+      : prev);
+  };
   const handleExportCorpusBackup = () => {
-    const dataStr = 'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify(corpus, null, 2));
-    const downloadAnchor = document.createElement('a');
-    downloadAnchor.setAttribute('href', dataStr);
-    downloadAnchor.setAttribute('download', `chatgrab_corpus_backup_${new Date().toISOString().slice(0, 10)}.json`);
-    document.body.appendChild(downloadAnchor);
-    downloadAnchor.click();
-    downloadAnchor.remove();
+    downloadText(JSON.stringify(corpus,null,2),`chatgrab_corpus_backup_${new Date().toISOString().slice(0,10)}.json`,'application/json');
     showToast('Corpus backup downloaded');
   };
-
   const handleClearCorpus = () => {
+    storageLoadFailed.current=false;
     setCorpus([]);
     setActiveThread(null);
-    localStorage.removeItem(STORAGE_KEY);
+    if (!accountUser) localStorage.removeItem(STORAGE_KEY);
     showToast('Corpus cleared');
   };
-
+  // The landing-page capture bar is a complete capture workflow; it never opens a modal.
+  const extractPublicShareUrl = (text: string): string | null =>
+    text.match(/https?:\/\/(?:chatgpt\.com|chat\.openai\.com)\/share\/[a-zA-Z0-9_-]+/i)?.[0] || null;
   const handleQuickPaste = async () => {
+    setQuickCaptureError(null);
     try {
-      const text = await navigator.clipboard.readText();
-      if (text) {
-        const match = text.match(/(https?:\/\/(?:chatgpt\.com|chat\.openai\.com)\/share\/[a-zA-Z0-9_-]+)/i);
-        if (match) {
-          setQuickUrl(match[1]);
-          setIsCaptureModalOpen(true);
-          showToast(`Rectified shared link: ${match[1]}`);
-        } else {
-          setQuickUrl(text.trim());
-          setIsCaptureModalOpen(true);
-        }
+      const text = (await navigator.clipboard.readText()).trim();
+      const shareUrl = extractPublicShareUrl(text);
+      if (shareUrl) {
+        if (shareUrl !== quickUrl) { setQuickUrl(shareUrl); setCaptureNotice('Share link pasted from clipboard.'); }
+      } else if (text) {
+        // Keep what was copied visible for inspection, but never treat a private /s/t_ URL as a public share.
+        if (text !== quickUrl) { setQuickUrl(text); setCaptureNotice('Clipboard content loaded. A public /share/ URL is required for link capture.'); }
       } else {
-        setIsCaptureModalOpen(true);
+        // Empty clipboard: leave input untouched.
       }
     } catch {
-      setIsCaptureModalOpen(true);
+      setCaptureNotice('Paste directly into the field with Ctrl+V or Command+V.');
     }
   };
-
-  const handleQuickCaptureSubmit = (e: React.FormEvent) => {
+  const importConversationFile = async (file: File) => {
+    try {
+      setQuickCaptureError(null);setCaptureNotice(null);
+      if(file.size>15*1024*1024)throw new Error('Choose a file smaller than 15 MB. Split large exports into individual conversations first.');
+      if (file.type.startsWith('image/')) {
+        setIsSupportOpen(true);
+        setCaptureNotice('Use the artifact library to attach images as evidence.');
+        return;
+      }
+      setQuickUrl(await file.text());setReviewImport(true);
+    } catch (err: any) { setQuickCaptureError(err.message || 'Import failed.'); }
+  };
+  const importCopiedText = () => {
+    if (!quickUrl.trim()) { setQuickCaptureError('Paste conversation text into the field first.'); return; }
+    setQuickCaptureError(null);setCaptureNotice(null);
+    setReviewImport(true);
+  };
+  const handleQuickCaptureSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!quickUrl.trim()) {
-      setIsCaptureModalOpen(true);
+    if (isQuickCapturing) return;
+    setQuickCaptureError(null);
+    const shareUrl = extractPublicShareUrl(quickUrl);
+    if (!shareUrl) {
+      setQuickCaptureError('Please use a public ChatGPT share link containing /share/. The /s/t_ links are not public conversation shares.');
       return;
     }
-    setIsCaptureModalOpen(true);
+    setQuickUrl(shareUrl);
+    setIsQuickCapturing(true);
+    try {
+      const response = await fetch('/api/fetch-share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: shareUrl }),
+      });
+      const body = await response.text();
+      let result: any;
+      try {
+        result = JSON.parse(body);
+      } catch {
+        throw new Error('The capture service did not return a valid response. Please retry in a moment.');
+      }
+      if (!response.ok || !result.success || !Array.isArray(result.data?.messages) || !result.data.messages.length) {
+        throw new Error(result.error || 'Unable to read messages from this shared conversation.');
+      }
+      const thread = capturedRecord(result.data,shareUrl);
+      handleThreadCaptured(thread);
+      setQuickUrl('');
+      // Analysis is optional; successful preservation must never depend on an AI quota.
+    } catch (err: any) {
+      setQuickCaptureError(err?.message || 'Capture failed. Please check the link and try again.');
+    } finally {
+      setIsQuickCapturing(false);
+    }
   };
-
   const totalWords = activeThread
     ? activeThread.messages.reduce((acc, m) => acc + m.content.split(/\s+/).length, 0)
     : 0;
   const readTimeMinutes = Math.max(1, Math.ceil(totalWords / 200));
-
   return (
-    <div className="min-h-screen bg-slate-100/70 text-slate-900 flex flex-col font-sans selection:bg-blue-600/20">
+    <ReviewStorageContext.Provider key={accountUser?.id||'guest'} value={accountUser?.id?'account:'+accountUser.id:'local'}>
+    <div className="cg-app cg-v2 min-h-screen text-slate-900 flex flex-col font-sans">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 bg-slate-900 text-white text-xs font-semibold rounded-2xl shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-200">
@@ -218,136 +418,121 @@ export default function App() {
           <span>{toastMessage}</span>
         </div>
       )}
-
+      {reviewImport&&<ImportReview existing={corpus} initialText={quickUrl} onClose={closeImportReview} onSave={threads=>{setCorpus(old=>[...threads,...old]);setReviewImport(false);setQuickUrl('');setQuickCaptureError(null);setActiveThread(threads[0]);openPage('capture');setCaptureNotice('Reviewed import saved. Original records preserved.');}}/>}
+      {accountOpen && <ChatGPTConnectionPanel onClose={() => setAccountOpen(false)} />}
+      {cloud && !libraryReady && <div className="fixed inset-0 z-[90] bg-white/90 grid place-items-center"><p className="text-slate-700 font-semibold">Opening your private library…</p></div>}
       {/* Main Header */}
       <Header
+        onOpenNavigation={()=>setMobileNavigation(true)}
+        page={page}
+        onNavigate={openPage}
         corpusCount={corpus.length}
-        onOpenCapture={() => setIsCaptureModalOpen(true)}
-        onOpenCorpus={() => setIsCorpusOpen(true)}
+        onOpenCapture={() => openPage('capture')}
+        onOpenCorpus={() => openPage('library')}
         onOpenChat={() => setIsChatbotOpen(true)}
+        onOpenSupport={() => setIsSupportOpen(true)}
+        onOpenGuide={() => setIsGuideOpen(true)}
         onExportCorpusBackup={handleExportCorpusBackup}
         onClearCorpus={handleClearCorpus}
+        onOpenAccount={() => setAccountOpen(true)}
+        accountLabel={accountUser?.user_metadata?.display_name || (accountUser ? 'My Profile' : 'ChatGPT connection')}
       />
-
+      <div className="cg-body">
+      <WorkspaceNavigation page={navigationPage} onNavigate={openPage} collapsed={sidebarCollapsed} onCollapse={toggleSidebar} mobileOpen={mobileNavigation} onClose={closeNavigation}/>
       {/* Workspace Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-5">
-        {/* Workspace Top Bar (matching background in SS1.jpeg) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200">
-          <div>
-            <div className="text-[11px] font-bold tracking-widest text-[#2f558a] uppercase">
-              CHATGRAB WORKSPACE
-            </div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
-              {activeThread ? activeThread.title : 'No conversation loaded'}
-            </h1>
-          </div>
-
-          <div className="flex items-center gap-2 sm:gap-3 text-xs font-semibold text-slate-600">
-            {/* Generate PDF */}
-            <button
-              type="button"
-              onClick={() => {
-                if (activeThread) setIsExportOpen(true);
-                else setIsCaptureModalOpen(true);
-              }}
-              className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5"
-            >
-              <Printer className="w-3.5 h-3.5 text-rose-500" />
-              <span>Generate PDF</span>
-            </button>
-
-            {/* Share Link */}
-            <button
-              type="button"
-              onClick={() => {
-                if (activeThread) {
-                  navigator.clipboard.writeText(activeThread.sourceUrl || window.location.href);
-                  showToast('Link copied to clipboard!');
-                } else {
-                  setIsCaptureModalOpen(true);
-                }
-              }}
-              className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5"
-            >
-              <Share2 className="w-3.5 h-3.5 text-blue-600" />
-              <span>Share link</span>
-            </button>
-
-            {/* About / New Capture */}
-            <button
-              type="button"
-              onClick={() => setIsCaptureModalOpen(true)}
-              className="px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 shadow-2xs transition-colors cursor-pointer flex items-center gap-1.5"
-            >
-              <HelpCircle className="w-3.5 h-3.5 text-slate-500" />
-              <span>About / New Capture</span>
-            </button>
-          </div>
-        </div>
-
-        {/* If no conversation is active: Welcome & Getting Started view */}
-        {!activeThread ? (
-          <div className="bg-white rounded-3xl p-8 sm:p-12 border border-slate-200 shadow-sm text-center max-w-2xl mx-auto my-12 space-y-6">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto shadow-xs">
-              <MessageSquare className="w-7 h-7" />
-            </div>
-
-            <div>
-              <div className="text-xs font-bold tracking-wider text-blue-600 uppercase mb-1">
-                &gt; Getting started:
+      <main className="cg-main flex-1 w-full p-4 sm:p-6 space-y-5">
+        <aside className="cg-launch-notice" aria-label="Early access and storage"><strong>Browser-local early access</strong><span>Save backups before clearing browser data. Use a separate browser profile on shared devices.</span><a href="/founding/">Founding Member preview · payments unavailable ↗</a><a href="/privacy/">Privacy</a></aside>
+        {storageError&&<div role="alert" className="rounded-xl border border-red-300 bg-red-50 p-4 text-red-900">{storageError} {storageLoadFailed.current&&<button type="button" className="underline font-bold" onClick={()=>downloadText(localStorage.getItem(STORAGE_KEY)||'','chatgrab-preserved-storage.json','application/json')}>Download preserved storage</button>} <button type="button" className="underline font-bold" onClick={()=>openPage('export')}>Open backup exports</button></div>}
+        {(page === 'library' || page === 'organize') ? (
+          <LibraryExplorer key={accountUser?.id || 'guest'} threads={corpus} storageScope={accountUser?.id || 'guest'} analysis={false}
+            onBack={()=>openPage('workspace')} onRenameThread={handleRenameThread}
+            onOpenThread={(thread,tab)=>{setActiveThread(thread);setWorkspaceTab(tab);openPage('capture');}}
+            onImport={()=>setIsSupportOpen(true)} onOpenLegacy={()=>setIsCorpusOpen(true)} onToggleFavorite={id=>setCorpus(old=>old.map(t=>t.id===id?{...t,isFavorite:!t.isFavorite}:t))} />
+        ) : (page === 'artifacts' || page === 'support') ? (
+          <SupportMaterialModal inline isOpen onClose={()=>openPage('workspace')} threads={corpus} activeThread={activeThread} onAssetLinked={handleAssetLinked}/>
+        ) : page === 'analyze' ? (
+          <ManualAnalysisPage threads={corpus} onOpenAdvanced={()=>{openPage('workspace');setTimeout(()=>document.getElementById('workspace-analytics')?.scrollIntoView({block:'start'}),75);}}/>
+        ) : page === 'media' ? (
+          <MediaLibrary onTutorial={()=>openPage('guide')} onCapture={()=>openPage('capture')}/>
+        ) : page === 'guide' ? (
+          <OnboardingGuideModal inline isOpen onClose={()=>{}} onStartCapture={()=>openPage('capture')}/>
+        ) : page === 'bridge' ? (
+          <CrewBridge threads={corpus}/>
+        ) : page === 'export' ? (
+          <section className="cg-destination"><h1>Export your conversations</h1><PortableBackupPanel threads={corpus} localOnly={!accountUser&&!storageLoadFailed.current} onRestore={next=>{storageLoadFailed.current=false;setCorpus(next);setActiveThread(null);}}/><p>Save a portable JSON backup, or choose a conversation for Markdown, JSON and print-to-PDF.</p><div className="cg-destination-panel"><h2>Library backup</h2><p>{corpus.length} saved conversations. Supporting file originals remain in this browser; download those separately from Artifacts.</p><DownloadFile text={JSON.stringify(corpus,null,2)} filename={`chatgrab-library-${new Date().toISOString().slice(0,10)}.json`} type="application/json" disabled={!corpus.length} className="inline-block border rounded-lg px-4 py-3 mt-3 text-blue-700 font-bold">Download library JSON</DownloadFile></div><div className="cg-destination-panel"><h2>Conversation exports</h2>{corpus.length?corpus.map(thread=><div className="cg-export-row" key={thread.id}><div><strong>{thread.title}</strong><small>{thread.messages.length} messages · {new Date(thread.capturedAt).toLocaleString()}</small></div><button onClick={()=>{setActiveThread(thread);setIsExportOpen(true);}}>Export {thread.title}</button></div>):<p>Capture a conversation to enable exports.</p>}</div></section>
+        ) : page === 'settings' ? (
+          <section className="cg-destination"><h1>Settings</h1><div className="cg-destination-panel"><h2>Account and storage</h2><p>{accountUser?'Your conversation library is linked to your account.':'Your conversation library is saved in this browser.'} Supporting file originals are stored locally in IndexedDB.</p><button onClick={()=>setAccountOpen(true)}>ChatGPT connection</button><button onClick={()=>openPage('export')}>Backup and export</button></div><div className="cg-destination-panel"><h2>Navigation</h2><p>The desktop sidebar preference is saved on this device.</p><button onClick={toggleSidebar}>{sidebarCollapsed?'Expand desktop sidebar':'Collapse desktop sidebar'}</button><button onClick={()=>openPage('guide')}>Open capture guide</button></div></section>
+        ) : page === 'plugin' ? (<PluginPage onNavigate={openPage}/>) : page === 'capture' ? (<div className="cg-capture-original">
+        {/* If no conversation is active: visual landing workspace */}
+        <>
+          <div className="space-y-5 my-1">
+            <section className="cg-hero cg-capture-hero relative overflow-hidden rounded-[2rem] shadow-sm">
+              <div className="p-6 sm:p-9"><div className="text-sm font-bold text-blue-700">Your conversation workspace</div><h1 className="text-3xl font-bold text-slate-900 mt-2">Keep the messages. Keep the meaning.</h1><p className="mt-3 text-slate-700">Save a conversation or source document, review what matters, and bring the useful parts into your next conversation.</p><button type="button" onClick={()=>setReviewImport(true)} className="mt-5 px-5 py-3 rounded-xl bg-blue-800 text-white font-bold">Import a conversation or source file</button></div>
+              <form id="cg-capture" onSubmit={handleQuickCaptureSubmit} className="cg-capture relative mx-5 sm:mx-9 lg:mx-12 mb-7 sm:mb-9 p-3 sm:p-4 rounded-2xl bg-white/95 border border-blue-100 shadow-[0_12px_35px_rgba(29,78,216,.10)] grid lg:grid-cols-[1fr_auto] gap-2">
+                <div className="flex items-center gap-2 px-3 h-12 rounded-xl border border-slate-200 bg-white">
+                  <Share2 className="w-4 h-4 text-blue-600 shrink-0" />
+                  <input aria-label="ChatGPT share link or conversation text" value={quickUrl} onChange={e => { setQuickUrl(e.target.value); setQuickCaptureError(null); setCaptureNotice(null); }} placeholder="Optional: paste a public ChatGPT share URL…" className="w-full bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400" />
+                </div>
+                <button type="submit" disabled={isQuickCapturing} className="h-12 px-5 rounded-xl bg-[#0d5ed7] hover:bg-[#084fb9] text-white text-sm font-bold flex items-center justify-center gap-2">{isQuickCapturing ? "Capturing…" : "Capture Thread"} <ArrowRight className="w-4 h-4" /></button>
+                {captureNotice && <div role="status" className="lg:col-span-2 text-sm text-emerald-700 px-2">{captureNotice}</div>}
+                {quickCaptureError && <div role="alert" className="lg:col-span-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{quickCaptureError}<button type="button" className="block underline font-bold mt-2" onClick={()=>setReviewImport(true)}>Use reviewed manual import</button></div>}
+                <div className="lg:col-span-2 flex flex-wrap gap-2 pt-3 border-t border-blue-100">
+                  <button type="button" onClick={()=>setReviewImport(true)} className="px-4 py-2 text-sm font-bold text-white bg-blue-800 rounded-lg">Review paste / file import</button>
+                  <button type="button" onClick={() => void handleQuickPaste()} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Paste from clipboard</button>
+                  <label className="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import JSON <input className="hidden" type="file" accept=".json,application/json" onChange={e => { const f=e.target.files?.[0]; if(f) void importConversationFile(f); e.target.value=''; }} /></label>
+                  <button type="button" onClick={importCopiedText} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import copied text</button>
+                  <label className="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import file <input className="hidden" type="file" accept=".json,.txt,.md,.csv,text/*" onChange={e => { const f=e.target.files?.[0]; if(f) void importConversationFile(f); e.target.value=''; }} /></label>
+                  <button type="button" onClick={() => setIsSupportOpen(true)} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import image / artifact</button>
+                  <button type="button" onClick={() => setBatchMode(!batchMode)} className="ml-auto px-3 py-2 text-sm font-bold text-white bg-slate-800 rounded-lg">{batchMode ? 'Single' : 'Batch process'}</button>
+                </div>
+                {batchMode && <div className="cg-batch-form lg:col-span-2 space-y-2"><p className="text-sm text-slate-600">Import up to 100 public /share/ links, one per line. The queue continues while you use other pages in this tab.</p><textarea aria-label="Batch share links" maxLength={65000} value={batchInput} onChange={e=>setBatchInput(e.target.value)} rows={4} className="w-full border border-slate-300 rounded-xl p-3 text-sm" placeholder="One public share URL per line"/><button type="button" disabled={!batchInput.trim()||!libraryReady||isQuickCapturing||batchState.running||batchState.items.some(item=>item.status==='queued')} className="cg-batch-start bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg" onClick={()=>{try{batchQueue.start(batchInput);setQuickCaptureError(null);}catch(error){setQuickCaptureError(error instanceof Error?error.message:'Could not start imports.');}}}>Capture batch</button></div>}
+                <div className="lg:col-span-2 text-xs text-slate-500 px-1">Your library stays in this browser. Use complete backup in Export to include original supporting files. Share links may return only a preview; reviewed paste / file import is the reliable alternative.</div>
+              </form>
+            </section>
+            <section id="cg-workspace" className="cg-workspace rounded-[1.75rem] border border-slate-200 bg-white/95 p-5 sm:p-7 shadow-sm">
+              <div className="flex flex-wrap justify-between items-center gap-3 mb-5">
+                <div><div className="text-[11px] font-bold uppercase tracking-[.2em] text-blue-600">Continuity library</div><h3 className="text-2xl font-black text-[#102a56]">Your Workspace</h3><p className="text-sm text-slate-500">Captured conversations, organized and ready for review.</p></div>
+                <button type="button" onClick={() => setIsCorpusOpen(true)} className="px-4 py-2 rounded-xl border border-blue-200 text-blue-700 font-semibold text-sm">Browse Library ({corpus.length})</button>
               </div>
-              <h2 className="text-2xl font-extrabold text-slate-900 mb-2">
-                Bring in a public ChatGPT share URL
-              </h2>
-              <p className="text-sm text-slate-500 leading-relaxed max-w-md mx-auto">
-                ChatGrab preserves the source, analyzes the full back-and-forth record, and connects it to your personal corpus.
-              </p>
-            </div>
-
-            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-              <button
-                type="button"
-                onClick={handleQuickPaste}
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-semibold text-xs shadow-xs transition-colors cursor-pointer"
-              >
-                <Clipboard className="w-4 h-4 text-slate-500" />
-                <span>Paste Clipboard</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsCaptureModalOpen(true)}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#0e274c] hover:bg-[#163666] text-white font-semibold text-xs shadow-md transition-all cursor-pointer active:scale-95"
-              >
-                <span>Capture New Thread</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
+              {corpus.length > 0 ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {corpus.slice(0, 6).map(thread => (
+                    <button key={thread.id} type="button" onClick={() => { setActiveThread(thread); setWorkspaceTab('transcript'); }} className="text-left rounded-2xl p-4 bg-gradient-to-br from-[#10264e] to-[#184c89] text-white shadow-lg hover:shadow-xl transition">
+                      <MessageSquare className="w-6 h-6 mb-4 text-sky-300" />
+                      <div className="font-bold text-base line-clamp-2">{thread.title}</div>
+                      <GrabMetadata thread={thread}/><div className="text-xs text-blue-200 mt-3">{thread.messages.length} messages</div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl border border-dashed border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-7 text-center">
+                  <Database className="w-9 h-9 mx-auto text-blue-600 mb-2" />
+                  <p className="text-slate-700 font-semibold">Your first captured conversation will appear here, ready to explore.</p>
+                </div>
+              )}
+            </section>
           </div>
-        ) : (
+          {activeThread && (
           /* Active Thread Workspace */
-          <div className="space-y-5">
+          <div id="cg-active-thread" className="space-y-5" style={{scrollMarginTop:160}}>
             {/* Thread Metadata Strip */}
             <div className="bg-white rounded-2xl px-5 py-3 border border-slate-200 shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-3 flex-wrap">
                 <span className="font-mono font-medium px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  {activeThread.model || 'GPT-4o'}
+                  {activeThread.model || 'Model unspecified'}
                 </span>
-
                 <span className="text-slate-500 flex items-center gap-1">
                   <Calendar className="w-3.5 h-3.5 text-slate-400" />
                   Captured: {new Date(activeThread.capturedAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
                 </span>
-
                 <span className="text-slate-500 flex items-center gap-1">
                   <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
                   {activeThread.messages.length} messages
                 </span>
-
                 <span className="text-slate-500 flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5 text-slate-400" />
                   ~{readTimeMinutes} min read ({totalWords.toLocaleString()} words)
                 </span>
-
                 {activeThread.sourceUrl && (
                   <a
                     href={activeThread.sourceUrl}
@@ -360,9 +545,8 @@ export default function App() {
                   </a>
                 )}
               </div>
-
-              {/* View Selector Tabs (Transcript vs AI Intelligence) */}
-              <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+              {/* View Selector Tabs (Transcript vs AI review) */}
+              <div className="flex flex-wrap items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold">
                 <button
                   type="button"
                   onClick={() => setWorkspaceTab('transcript')}
@@ -375,7 +559,6 @@ export default function App() {
                   <BookOpen className="w-3.5 h-3.5 text-blue-600" />
                   <span>Transcript</span>
                 </button>
-
                 <button
                   type="button"
                   onClick={() => setWorkspaceTab('insights')}
@@ -386,20 +569,29 @@ export default function App() {
                   }`}
                 >
                   <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                  <span>AI Intelligence</span>
+                  <span>AI review</span>
                   {activeThread.insights && (
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   )}
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setWorkspaceTab('portions')}
+                  className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition-all cursor-pointer ${
+                    workspaceTab === 'portions' ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Database className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>Context Map</span>
+                </button>
               </div>
             </div>
-
+            <SourceDocumentPanel thread={activeThread}/>
             {/* Tab 1: Transcript */}
             {workspaceTab === 'transcript' && (
-              <ThreadViewer thread={activeThread} />
+              <TranscriptReviewWorkspace key={activeThread.id} thread={activeThread} threads={corpus} favorite={activeThread.isFavorite} storageScope={accountUser?.id||'guest'} onOpenThread={t=>{setActiveThread(t);setWorkspaceTab('transcript');}}/>
             )}
-
-            {/* Tab 2: AI Intelligence */}
+            {/* Tab 2: AI review */}
             {workspaceTab === 'insights' && (
               <InsightsView
                 thread={activeThread}
@@ -408,19 +600,41 @@ export default function App() {
                 isAnalyzing={isAnalyzing}
               />
             )}
+            {workspaceTab === 'portions' && (
+              <AdaptivePortionsView
+                thread={activeThread}
+                onOpenAssistantWithPortion={(portion) => {
+                  setIsChatbotOpen(true);
+                  showToast(`Assistant opened for ${portion.title}`);
+                }}
+              />
+            )}
           </div>
+          )}
+        </>
+        </div>) : (
+          <>
+          <ChatGrabDashboard
+            page={page}
+            onAnalyze={()=>openPage('analyze')}
+            onReintegrate={()=>{if(activeThread){setWorkspaceTab('portions');openPage('capture');}else{requestedThreadTab.current='portions';setIsCorpusOpen(true);}}}
+            onAccount={()=>setAccountOpen(true)}
+            count={corpus.length}
+            onNavigate={openPage}
+            onOpenLibrary={()=>openPage('library')}
+            onOpenSupport={()=>openPage('support')}
+            onOpenGuide={()=>openPage('guide')}
+            onExport={()=>{if(activeThread)setIsExportOpen(true);else if(corpus.length)handleExportCorpusBackup();else openPage('capture');}}
+          />
+          {page==='workspace' && <>
+            <ContinuityWorkspace threads={corpus} mode="analytics" onOpenThread={(thread)=>{setActiveThread(thread);setWorkspaceTab('transcript');openPage('capture');}} />
+            <ContinuityWorkspace onSaveDerived={thread=>{setCorpus(old=>[thread,...old]);showToast("Saved a derived continuity record; original conversations are unchanged.");}} onUpdateDerived={thread=>setCorpus(old=>old.map(item=>item.id===thread.id?thread:item))} threads={corpus} mode="reintegrate" onOpenThread={(thread)=>{setActiveThread(thread);setWorkspaceTab('transcript');openPage('capture');}} />
+          </>}
+          </>
         )}
-        <WorkspaceCards onAction={(action) => {
-          if (action === 'capture') setIsCaptureModalOpen(true);
-          else if (action === 'library' || action === 'corpus') setIsCorpusOpen(true);
-          else if (action === 'export') handleExportCorpusBackup();
-          else if (action === 'analyze') {
-            if (activeThread) { setWorkspaceTab('insights'); window.scrollTo({top:0,behavior:'smooth'}); }
-            else setIsCorpusOpen(true);
-          }
-        }} />
+        {page==='capture'&&<section className="rounded-2xl border border-blue-200 bg-white p-5 text-slate-800" aria-label="Latest ChatGrab milestones"><p className="text-sm font-bold text-blue-700">LATEST RELEASE · NOVEMBER 18, 2026</p><h2 className="text-xl font-bold my-2">Reviewed imports, clearer tools, and a guided tour.</h2><p>Import conversation exports, copied text, or a continuity capsule through a review step. Capsules retain their exact JSON and are clearly marked as reconstructed source documents. Keep packet notes beside selected messages, save and compare AI reviews, and restore your library from a complete backup. The sidebar brings your tools together, and Take the Tour includes the illustrated engineering overview.</p><p className="mt-2">The ChatGPT plugin connection guide and right-edge quick access are now available. Native capture, integrated AI replies and synchronized accounts remain in development.</p><div className="flex flex-wrap gap-3 mt-3"><button className="font-bold text-blue-800 underline" onClick={()=>openPage('analyze')}>Explore conversation analysis</button><button className="font-bold text-blue-800 underline" onClick={()=>openPage('plugin')}>ChatGPT plugin setup</button><a className="font-bold text-blue-800 underline" href="/downloads/ChatGrab-Production-Kit.zip" download="ChatGrab-Production-Kit.zip">Download the video production kit · ZIP</a><a className="font-bold text-blue-800 underline" href="/history/">Earlier builds and milestones</a></div></section>}
       </main>
-
+      </div>
       {/* Capture Modal (SS1.jpeg replica) */}
       <CaptureModal
         isOpen={isCaptureModalOpen}
@@ -429,12 +643,12 @@ export default function App() {
           setQuickUrl('');
         }}
         initialUrl={quickUrl}
+        onOpenSupport={() => { setIsCaptureModalOpen(false); setIsSupportOpen(true); }}
         onThreadCaptured={(thread) => {
           handleThreadCaptured(thread);
           setQuickUrl('');
         }}
       />
-
       {/* Corpus Library & Cross-Search Modal */}
       <CorpusModal
         isOpen={isCorpusOpen}
@@ -442,17 +656,20 @@ export default function App() {
         corpus={corpus}
         activeThreadId={activeThread?.id}
         onSelectThread={(t) => {
+          openPage('capture');
           setActiveThread(t);
-          setWorkspaceTab('transcript');
+          setWorkspaceTab(requestedThreadTab.current);
+          requestedThreadTab.current='transcript';
         }}
         onDeleteThread={handleDeleteThread}
         onToggleFavorite={handleToggleFavorite}
+        onRenameThread={handleRenameThread}
+        onMergeThreads={handleMergeThreads}
         onOpenNewCapture={() => {
           setIsCorpusOpen(false);
           setIsCaptureModalOpen(true);
         }}
       />
-
       {/* Export / PDF Print Modal */}
       {activeThread && (
         <ExportModal
@@ -461,28 +678,33 @@ export default function App() {
           thread={activeThread}
         />
       )}
-
-      {/* Floating Action Button for Gemini Chatbot */}
-      {!isChatbotOpen && (
-        <button
-          type="button"
-          onClick={() => setIsChatbotOpen(true)}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 px-4 py-3 bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-600 hover:from-blue-800 hover:to-indigo-700 text-white font-semibold text-xs rounded-2xl shadow-xl shadow-blue-900/20 hover:shadow-2xl transition-all cursor-pointer active:scale-95 group"
-          title="Open Gemini Multi-Turn Assistant"
-        >
-          <div className="w-5 h-5 rounded-lg bg-white/20 flex items-center justify-center">
-            <Sparkles className="w-3.5 h-3.5 text-white animate-pulse" />
-          </div>
-          <span>Gemini Assistant</span>
-        </button>
-      )}
-
-      {/* Gemini Multi-Turn Chatbot */}
-      <GeminiChatbot
-        isOpen={isChatbotOpen}
-        onClose={() => setIsChatbotOpen(false)}
+      <SupportMaterialModal
+        isOpen={isSupportOpen}
+        onClose={() => setIsSupportOpen(false)}
+        threads={corpus}
         activeThread={activeThread}
+        onAssetLinked={handleAssetLinked}
+      />
+      <OnboardingGuideModal
+        isOpen={isGuideOpen}
+        onClose={() => setIsGuideOpen(false)}
+        onStartCapture={() => setIsCaptureModalOpen(true)}
+      />
+      <BatchImportProgress enabled={libraryReady} queue={batchQueue} state={batchState} onOpen={()=>openPage('capture')}/>
+      {!isChatbotOpen&&<EdgeLauncher onNavigate={openPage} onOpenContext={()=>setIsChatbotOpen(true)}/>}
+      <footer className="cg-app-family-footer">Part of <a href="https://aichatlab.app/" target="_blank" rel="noopener noreferrer">AIChatLab.app ↗</a></footer>
+      {/* ChatGPT Multi-Turn Chatbot */}
+      <ChatGPTCompanion
+        isOpen={isChatbotOpen}
+        onClose={closeCompanion}
+        activeThread={activeThread}
+        threads={corpus}
+        page={navigationPage}
       />
     </div>
+    </ReviewStorageContext.Provider>
   );
 }
+
+
+
