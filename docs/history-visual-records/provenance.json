@@ -1,0 +1,78 @@
+{
+  "record_count": 117,
+  "families": {
+    "ChatGrab": 112,
+    "Crew Bridge": 3,
+    "ChatGrab Retest": 2
+  },
+  "access_checks": {
+    "public": 5,
+    "sign-in": 20,
+    "unavailable": 92
+  },
+  "snapshots": [
+    {
+      "deployment": "dpl_DSntimmyywjuZt7yXfLkN8No7FWd",
+      "source": "e420f85197353fe2cd7cd95db84bcf88a4a9e5ad",
+      "build_date": "2026-11-18 11:30 UTC",
+      "src": "/history/screenshots/dpl_DSntimmyywjuZt7yXfLkN8No7FWd.png",
+      "capturedAt": "2026-11-18T12:25:48.293Z",
+      "viewport": "1440 \u00d7 1000",
+      "page": "Capture \u00b7 empty browser-local library",
+      "sourceSha": "e420f85197353fe2cd7cd95db84bcf88a4a9e5ad",
+      "sha256": "f018d5d2b16e4af172619685ef7959d82aefee4c7b83c53ab9b26f0537dd8f1a"
+    },
+    {
+      "deployment": "dpl_wfCAV9ivLtuFVE1BgCJ1PrkfMhLD",
+      "source": "827ca83f73b6846aa631505185834c50e25386c1",
+      "build_date": "2026-11-18 11:27 UTC",
+      "src": "/history/screenshots/dpl_wfCAV9ivLtuFVE1BgCJ1PrkfMhLD.png",
+      "capturedAt": "2026-11-18T12:25:50.258Z",
+      "viewport": "1440 \u00d7 1000",
+      "page": "Capture \u00b7 empty browser-local library",
+      "sourceSha": "827ca83f73b6846aa631505185834c50e25386c1",
+      "sha256": "f018d5d2b16e4af172619685ef7959d82aefee4c7b83c53ab9b26f0537dd8f1a"
+    },
+    {
+      "deployment": "dpl_79WBcwLckv637C5Av9JehuJCehDo",
+      "source": "827ca83f73b6846aa631505185834c50e25386c1",
+      "build_date": "2026-11-18 11:26 UTC",
+      "src": "/history/screenshots/dpl_79WBcwLckv637C5Av9JehuJCehDo.png",
+      "capturedAt": "2026-11-18T12:25:52.393Z",
+      "viewport": "1440 \u00d7 1000",
+      "page": "Capture \u00b7 empty browser-local library",
+      "sourceSha": "827ca83f73b6846aa631505185834c50e25386c1",
+      "sha256": "f018d5d2b16e4af172619685ef7959d82aefee4c7b83c53ab9b26f0537dd8f1a"
+    },
+    {
+      "deployment": "dpl_8rEdRDZfcSgcLBuBFndrYtYrBcWa",
+      "source": "f6eb0d391838f4fed1fedda915b89cb44ead2819",
+      "build_date": "2026-11-18 08:40 UTC",
+      "src": "/history/screenshots/dpl_8rEdRDZfcSgcLBuBFndrYtYrBcWa.png",
+      "capturedAt": "2026-11-18T12:25:54.297Z",
+      "viewport": "1440 \u00d7 1000",
+      "page": "Capture \u00b7 empty browser-local library",
+      "sourceSha": "f6eb0d391838f4fed1fedda915b89cb44ead2819",
+      "sha256": "f018d5d2b16e4af172619685ef7959d82aefee4c7b83c53ab9b26f0537dd8f1a"
+    },
+    {
+      "deployment": "dpl_CscpyvSTL1dnRDPcrNjJVcuT98Zs",
+      "source": "5ef8998eb5f28cae71584d6d6c8d31df45fb6dba",
+      "build_date": "2026-11-14 18:04 UTC",
+      "src": "/history/screenshots/dpl_CscpyvSTL1dnRDPcrNjJVcuT98Zs.png",
+      "capturedAt": "2026-11-18T12:25:56.454Z",
+      "viewport": "1440 \u00d7 1000",
+      "page": "Capture \u00b7 empty browser-local library",
+      "sourceSha": "5ef8998eb5f28cae71584d6d6c8d31df45fb6dba",
+      "sha256": "39f4711821a6fa6981d808b5098f27797f335b97d2b383228d6536a8fec41ca3"
+    }
+  ],
+  "notes": [
+    "All prior embedded records retained, including two static records previously omitted from the old JavaScript data.",
+    "20 recent deployment records added from authenticated Vercel project metadata.",
+    "Availability checks use unauthenticated public URL requests; protected builds remain protected.",
+    "Screenshots were captured from five actually accessible exact deployments in new empty browser contexts. No imported chats, account sessions or private source material appear.",
+    "Screenshots show Capture at 1440x1000; capture date and original build date are separate.",
+    "No Nov9 records returned for the ChatGrab project query. The exact page meant by that phrase was not supplied; ChatGrab history is the active implementation scope."
+  ]
+}

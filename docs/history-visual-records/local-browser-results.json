@@ -1,0 +1,18 @@
+{
+  "base": "http://127.0.0.1:3052",
+  "recordsPreserved": 117,
+  "datedRealScreenshots": 5,
+  "correctAppAndGitHubDestinations": true,
+  "meaningfulLocalVercelDetails": true,
+  "expiredAppsDisabled": true,
+  "protectedAppsExplicit": true,
+  "screenshotDialogEscapeFocus": true,
+  "twoNamedVersionsComparedInPage": true,
+  "selectionSurvivesFilters": true,
+  "directTwoCommitDiff": true,
+  "comparisonReloadAndBack": true,
+  "changeComparisonVersion": true,
+  "missingImagesHonest": true,
+  "fiveResponsiveWidths": true,
+  "errors": []
+}
