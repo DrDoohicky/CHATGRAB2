@@ -24,3 +24,5 @@
 .cg-v2 .text-xs{font-size:13px;font-weight:600}.cg-v2 .text-sm{font-size:15px;font-weight:550}
 .cg-v2 .cg-source-document{margin-bottom:20px;overflow-wrap:anywhere}.cg-source-document a{color:#104eaa;font-weight:750;text-decoration:underline}.cg-source-document details{margin:16px 0}.cg-source-document li{margin:8px 0}
 .cg-v2 .cg-hero-content{animation:none}.cg-v2 .cg-topnav{margin-left:auto}.cg-v2 .cg-header-tools{margin-left:0}
+
+.cg-v2 .cg-capture-hero>div>p{color:#41566e!important;font-weight:550;max-width:70ch}

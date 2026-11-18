@@ -359,17 +359,13 @@ export default function App() {
         setCaptureNotice('Use the artifact library to attach images as evidence.');
         return;
       }
-      const imported=parseConversationFile(await file.text(),file.name,corpus);
-      if(!imported.length){setCaptureNotice('These conversations are already in your library.');return;}
-      setCorpus(old=>[...imported,...old]);setActiveThread(imported[0]);setWorkspaceTab('transcript');openPage('capture');
-      setCaptureNotice(imported.length+' conversation(s) imported. Existing conversations were preserved.');
+      setQuickUrl(await file.text());setReviewImport(true);
     } catch (err: any) { setQuickCaptureError(err.message || 'Import failed.'); }
   };
   const importCopiedText = () => {
     if (!quickUrl.trim()) { setQuickCaptureError('Paste conversation text into the field first.'); return; }
     setQuickCaptureError(null);setCaptureNotice(null);
-    handleThreadCaptured({ id: `text-${Date.now()}`, title: 'Pasted conversation text', capturedAt: new Date().toISOString(), model: 'Manual import', messages: [{ id: 'text-0', role: 'user', content: quickUrl }] });
-    setQuickUrl('');
+    setReviewImport(true);
   };
   const handleQuickCaptureSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -483,9 +479,9 @@ export default function App() {
                 <div className="lg:col-span-2 flex flex-wrap gap-2 pt-3 border-t border-blue-100">
                   <button type="button" onClick={()=>setReviewImport(true)} className="px-4 py-2 text-sm font-bold text-white bg-blue-800 rounded-lg">Review paste / file import</button>
                   <button type="button" onClick={() => void handleQuickPaste()} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Paste from clipboard</button>
-                  <label className="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import JSON <input className="hidden" type="file" accept=".json,application/json" onChange={e => { const f=e.target.files?.[0]; if(f) void f.text().then(text=>{setQuickUrl(text);setReviewImport(true);}).catch(()=>setQuickCaptureError('File could not be read.')); e.target.value=''; }} /></label>
+                  <label className="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import JSON <input className="hidden" type="file" accept=".json,application/json" onChange={e => { const f=e.target.files?.[0]; if(f) void importConversationFile(f); e.target.value=''; }} /></label>
                   <button type="button" onClick={importCopiedText} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import copied text</button>
-                  <label className="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import file <input className="hidden" type="file" accept=".json,.txt,.md,.csv,text/*" onChange={e => { const f=e.target.files?.[0]; if(f) void f.text().then(text=>{setQuickUrl(text);setReviewImport(true);}).catch(()=>setQuickCaptureError('File could not be read.')); e.target.value=''; }} /></label>
+                  <label className="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import file <input className="hidden" type="file" accept=".json,.txt,.md,.csv,text/*" onChange={e => { const f=e.target.files?.[0]; if(f) void importConversationFile(f); e.target.value=''; }} /></label>
                   <button type="button" onClick={() => setIsSupportOpen(true)} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import image / artifact</button>
                   <button type="button" onClick={() => setBatchMode(!batchMode)} className="ml-auto px-3 py-2 text-sm font-bold text-white bg-slate-800 rounded-lg">{batchMode ? 'Single' : 'Batch process'}</button>
                 </div>
@@ -515,12 +511,6 @@ export default function App() {
                 </div>
               )}
             </section>
-            <ChatGrabDashboard page="workspace" count={corpus.length} onNavigate={openPage}
-              onOpenLibrary={()=>openPage('library')} onOpenSupport={()=>openPage('support')}
-              onOpenGuide={()=>openPage('guide')} onExport={()=>{if(activeThread)setIsExportOpen(true);else handleExportCorpusBackup();}}
-              onAnalyze={()=>openPage('analyze')}
-              onReintegrate={()=>{if(activeThread){setWorkspaceTab('portions');openPage('capture');}else{requestedThreadTab.current='portions';setIsCorpusOpen(true);}}}
-              onAccount={()=>setAccountOpen(true)} />
           </div>
           {activeThread && (
           /* Active Thread Workspace */
@@ -642,7 +632,7 @@ export default function App() {
           </>}
           </>
         )}
-        {page==='capture'&&<section className="rounded-2xl border border-blue-200 bg-white p-5 text-slate-800" aria-label="Latest ChatGrab milestones"><p className="text-sm font-bold text-blue-700">LATEST RELEASE · NOVEMBER 14, 2026</p><h2 className="text-xl font-bold my-2">Find the answer and the discussion behind it. Keep your reviewed versions.</h2><p>Find words inside a conversation and read the surrounding messages to understand what they meant. Save AI reviews beside their original sources, compare versions, and include saved reviews in a complete backup. Import conversations, organize your library, and prepare questions to copy into your own AI account. You can also gather selected messages for reuse or prepare a Crew Console assignment.</p><p className="mt-2">The ChatGPT plugin connection guide and right-edge quick access are now available. Native capture, integrated AI replies and synchronized accounts remain in development.</p><div className="flex flex-wrap gap-3 mt-3"><button className="font-bold text-blue-800 underline" onClick={()=>openPage('analyze')}>Explore conversation analysis</button><button className="font-bold text-blue-800 underline" onClick={()=>openPage('plugin')}>ChatGPT plugin setup</button><a className="font-bold text-blue-800 underline" href="/downloads/ChatGrab-Production-Kit.zip" download="ChatGrab-Production-Kit.zip">Download the video production kit · ZIP</a><a className="font-bold text-blue-800 underline" href="/history/">Earlier builds and milestones</a></div></section>}
+        {page==='capture'&&<section className="rounded-2xl border border-blue-200 bg-white p-5 text-slate-800" aria-label="Latest ChatGrab milestones"><p className="text-sm font-bold text-blue-700">LATEST RELEASE · NOVEMBER 18, 2026</p><h2 className="text-xl font-bold my-2">Reviewed imports, clearer tools, and a guided tour.</h2><p>Import conversation exports, copied text, or a continuity capsule through a review step. Capsules retain their exact JSON and are clearly marked as reconstructed source documents. Keep packet notes beside selected messages, save and compare AI reviews, and restore your library from a complete backup. The sidebar brings your tools together, and Take the Tour includes the illustrated engineering overview.</p><p className="mt-2">The ChatGPT plugin connection guide and right-edge quick access are now available. Native capture, integrated AI replies and synchronized accounts remain in development.</p><div className="flex flex-wrap gap-3 mt-3"><button className="font-bold text-blue-800 underline" onClick={()=>openPage('analyze')}>Explore conversation analysis</button><button className="font-bold text-blue-800 underline" onClick={()=>openPage('plugin')}>ChatGPT plugin setup</button><a className="font-bold text-blue-800 underline" href="/downloads/ChatGrab-Production-Kit.zip" download="ChatGrab-Production-Kit.zip">Download the video production kit · ZIP</a><a className="font-bold text-blue-800 underline" href="/history/">Earlier builds and milestones</a></div></section>}
       </main>
       </div>
       {/* Capture Modal (SS1.jpeg replica) */}
