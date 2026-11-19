@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "base": "http://127.0.0.1:3058",
+  "transport": "Official MCP SDK streamable HTTP",
+  "tools": [
+    "get_plugin_status",
+    "get_workspace_link",
+    "open_chatgrab_panel",
+    "present_chatgrab_review"
+  ],
+  "privateHistoryAccess": false,
+  "untrustedOriginDenied": true,
+  "chatGPTInstallationTested": false
+}

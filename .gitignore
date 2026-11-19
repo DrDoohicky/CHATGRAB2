@@ -19,3 +19,6 @@ patch-issue.py
 node_modules
 
 .vercel/
+
+/public/chatgpt-app/panel.js
+/public/chatgpt-app/index.html

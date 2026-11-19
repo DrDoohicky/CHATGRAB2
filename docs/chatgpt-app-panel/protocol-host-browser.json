@@ -1,0 +1,47 @@
+{
+  "base": "http://127.0.0.1:3058",
+  "host": "Controlled MCP Apps protocol harness, not a real ChatGPT account",
+  "chatGPTAccountRenderingVerified": false,
+  "results": [
+    {
+      "width": 1440,
+      "standardMcpAppsBridge": true,
+      "explicitConsent": true,
+      "exactSourceInMessage": true,
+      "staleResultRejected": true,
+      "sourceHashVerified": true,
+      "downloadReviewedOnly": true,
+      "expandRequested": true,
+      "actualDownloadAndWorkspaceImport": true,
+      "originalExportRetained": true,
+      "reload": true
+    },
+    {
+      "width": 390,
+      "standardMcpAppsBridge": true,
+      "explicitConsent": true,
+      "exactSourceInMessage": true,
+      "staleResultRejected": true,
+      "sourceHashVerified": true,
+      "downloadReviewedOnly": true,
+      "expandRequested": true,
+      "actualDownloadAndWorkspaceImport": true,
+      "originalExportRetained": true,
+      "reload": true
+    },
+    {
+      "width": 320,
+      "standardMcpAppsBridge": true,
+      "explicitConsent": true,
+      "exactSourceInMessage": true,
+      "staleResultRejected": true,
+      "sourceHashVerified": true,
+      "downloadReviewedOnly": true,
+      "expandRequested": true,
+      "actualDownloadAndWorkspaceImport": true,
+      "originalExportRetained": true,
+      "reload": true
+    }
+  ],
+  "standaloneDisclosure": true
+}
