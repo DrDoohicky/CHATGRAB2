@@ -1,3 +1,4 @@
+import {EnvironmentSwitcher} from './components/EnvironmentSwitcher';
 import {GuidedWorkflow} from './components/GuidedWorkflow';
 import {SourceDocumentPanel} from './components/SourceDocumentPanel';
 import {PluginPage} from './components/PluginPage';
@@ -67,6 +68,7 @@ const initialPage=():CGPage=>{const p=initialNavigationPage();return p==='reinte
 export default function App() {
   const storageLoadFailed=useRef(false);
   // Load corpus from LocalStorage (clearing any old simulated items)
+  const [sharedSourceUrl,setSharedSourceUrl]=useState('');
   const [corpus, setCorpus] = useState<ConversationThread[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -93,7 +95,7 @@ export default function App() {
   const requestedThreadTab = useRef<'transcript' | 'insights' | 'portions'>('transcript');
   // Modals state (Capture modal opens by default as in SS1.jpeg)
   const [reviewImport,setReviewImport]=useState(false);
-  const closeImportReview=React.useCallback(()=>setReviewImport(false),[]);
+  const closeImportReview=React.useCallback(()=>{setReviewImport(false);if(sharedSourceUrl)setQuickUrl(sharedSourceUrl);},[sharedSourceUrl]);
   const [page, setPage] = useState<CGPage>(initialPage);
   const [navigationPage,setNavigationPage]=useState<CGPage>(initialNavigationPage);
   const [sidebarCollapsed,setSidebarCollapsed]=useState(()=>{try{return localStorage.getItem('chatgrab_sidebar_collapsed')==='true';}catch{return false;}});
@@ -396,10 +398,12 @@ export default function App() {
         throw new Error(result.error || 'Unable to read messages from this shared conversation.');
       }
       const thread = capturedRecord(result.data,shareUrl);
-      handleThreadCaptured(thread);
-      setQuickUrl('');
+      setSharedSourceUrl(shareUrl);
+      setQuickUrl(JSON.stringify(thread,null,2));
+      setReviewImport(true);
       // Analysis is optional; successful preservation must never depend on an AI quota.
     } catch (err: any) {
+      setSharedSourceUrl(shareUrl);
       setQuickCaptureError(err?.message || 'Capture failed. Please check the link and try again.');
     } finally {
       setIsQuickCapturing(false);
@@ -419,10 +423,11 @@ export default function App() {
           <span>{toastMessage}</span>
         </div>
       )}
-      {reviewImport&&<ImportReview existing={corpus} initialText={quickUrl} onClose={closeImportReview} onSave={threads=>{setCorpus(old=>[...threads,...old]);setReviewImport(false);setQuickUrl('');setQuickCaptureError(null);setActiveThread(threads[0]);openPage('capture');setCaptureNotice('Reviewed import saved. Original records preserved.');}}/>}
+      {reviewImport&&<ImportReview existing={corpus} initialText={quickUrl} sourceUrl={sharedSourceUrl} onClose={closeImportReview} onSave={threads=>{setCorpus(old=>[...threads,...old]);setReviewImport(false);setQuickUrl('');setSharedSourceUrl('');setQuickCaptureError(null);setActiveThread(threads[0]);openPage('capture');setCaptureNotice('Reviewed import saved. Original records preserved.');}}/>}
       {accountOpen && <ChatGPTConnectionPanel onClose={() => setAccountOpen(false)} />}
       {cloud && !libraryReady && <div className="fixed inset-0 z-[90] bg-white/90 grid place-items-center"><p className="text-slate-700 font-semibold">Opening your private library…</p></div>}
       {/* Main Header */}
+      <EnvironmentSwitcher/>
       <Header
         onOpenNavigation={()=>setMobileNavigation(true)}
         page={page}
@@ -461,7 +466,7 @@ export default function App() {
         ) : page === 'bridge' ? (
           <CrewBridge threads={corpus}/>
         ) : page === 'export' ? (
-          <section className="cg-destination"><h1>Export your conversations</h1><PortableBackupPanel threads={corpus} localOnly={!accountUser&&!storageLoadFailed.current} onRestore={next=>{storageLoadFailed.current=false;setCorpus(next);setActiveThread(null);}}/><p>Save a portable JSON backup, or choose a conversation for Markdown, JSON and print-to-PDF.</p><div className="cg-destination-panel"><h2>Library backup</h2><p>{corpus.length} saved conversations. Supporting file originals remain in this browser; download those separately from Artifacts.</p><DownloadFile text={JSON.stringify(corpus,null,2)} filename={`chatgrab-library-${new Date().toISOString().slice(0,10)}.json`} type="application/json" disabled={!corpus.length} className="inline-block border rounded-lg px-4 py-3 mt-3 text-blue-700 font-bold">Download library JSON</DownloadFile></div><div className="cg-destination-panel"><h2>Conversation exports</h2>{corpus.length?corpus.map(thread=><div className="cg-export-row" key={thread.id}><div><strong>{thread.title}</strong><small>{thread.messages.length} messages · {new Date(thread.capturedAt).toLocaleString()}</small></div><button onClick={()=>{setActiveThread(thread);setIsExportOpen(true);}}>Export {thread.title}</button></div>):<p>Capture a conversation to enable exports.</p>}</div></section>
+          <section className="cg-destination"><h1>Export &amp; Recover</h1><p>Keep a portable backup of your ChatGrab library, or bring in your ChatGPT data export.</p><PortableBackupPanel threads={corpus} localOnly={!accountUser&&!storageLoadFailed.current} onRestore={next=>{storageLoadFailed.current=false;setCorpus(next);setActiveThread(null);}}/><div className="cg-destination-panel"><h2>Bring in ChatGPT account data</h2><ol><li><a href="https://privacy.openai.com/" target="_blank" rel="noopener noreferrer">Request a data export from OpenAI ↗</a>. ChatGrab cannot check the request status.</li><li>When OpenAI emails you, download and keep the original ZIP.</li><li>Unzip it on your device, then import conversations.json. Direct ZIP import is not supported yet.</li></ol><button onClick={()=>{setQuickUrl('');setSharedSourceUrl('');setReviewImport(true);}}>Import ChatGPT export file</button><p>ChatGPT account exports and ChatGrab library backups are different. Browser-local libraries do not automatically sync between devices.</p></div><details className="cg-export-formats"><summary>Other export formats</summary><div className="cg-destination-panel"><h2>Library backup</h2><p>{corpus.length} saved conversations. Supporting file originals remain in this browser; download those separately from Artifacts.</p><DownloadFile text={JSON.stringify(corpus,null,2)} filename={`chatgrab-library-${new Date().toISOString().slice(0,10)}.json`} type="application/json" disabled={!corpus.length} className="inline-block border rounded-lg px-4 py-3 mt-3 text-blue-700 font-bold">Download library JSON</DownloadFile></div><div className="cg-destination-panel"><h2>Conversation exports</h2>{corpus.length?corpus.map(thread=><div className="cg-export-row" key={thread.id}><div><strong>{thread.title}</strong><small>{thread.messages.length} messages · {new Date(thread.capturedAt).toLocaleString()}</small></div><button onClick={()=>{setActiveThread(thread);setIsExportOpen(true);}}>Export {thread.title}</button></div>):<p>Capture a conversation to enable exports.</p>}</div></details></section>
         ) : page === 'settings' ? (
           <section className="cg-destination"><h1>Settings</h1><div className="cg-destination-panel"><h2>Account and storage</h2><p>{accountUser?'Your conversation library is linked to your account.':'Your conversation library is saved in this browser.'} Supporting file originals are stored locally in IndexedDB.</p><button onClick={()=>setAccountOpen(true)}>ChatGPT connection</button><button onClick={()=>openPage('export')}>Backup and export</button></div><div className="cg-destination-panel"><h2>Navigation</h2><p>The desktop sidebar preference is saved on this device.</p><button onClick={toggleSidebar}>{sidebarCollapsed?'Expand desktop sidebar':'Collapse desktop sidebar'}</button><button onClick={()=>openPage('guide')}>Open capture guide</button></div></section>
         ) : page === 'plugin' ? (<PluginPage onNavigate={openPage}/>) : page === 'capture' ? (<div className="cg-capture-original">
@@ -469,25 +474,25 @@ export default function App() {
         <>
           <div className="space-y-5 my-1">
             <section className="cg-hero cg-capture-hero relative overflow-hidden rounded-[2rem] shadow-sm">
-              <div className="cg-intake-intro"><div className="text-sm font-bold text-blue-700">Your source workspace</div><h1>{corpus.length?'Your source is ready to review.':'Keep the messages. Keep the meaning.'}</h1><p>{corpus.length?'Check the original, then prepare a request for your own ChatGPT account.':'Choose a conversation export, continuity capsule, or pasted text. Review it before saving.'}</p><div className="cg-intake-actions">{corpus.length>0&&<button type="button" className="cg-intake-primary" onClick={()=>openPage('analyze')}>Analyze selected source</button>}<button type="button" className={corpus.length?'cg-intake-secondary':'cg-intake-primary'} aria-label="Import a conversation or source file" onClick={()=>setReviewImport(true)}>{corpus.length?'Import another source':'Import source'}</button></div></div>
+              <div className="cg-intake-intro"><div className="text-sm font-bold text-blue-700">Your source workspace</div><h1>{corpus.length?'Your source is ready to review.':'Keep the messages. Keep the meaning.'}</h1><p>{corpus.length?'Check the original, then prepare a request for your own ChatGPT account.':'Paste a ChatGPT share link below, or import a conversation file or copied text. Review the messages before saving.'}</p><div className="cg-intake-actions">{corpus.length>0&&<button type="button" className="cg-intake-primary" onClick={()=>openPage('analyze')}>Analyze selected source</button>}<button type="button" className={corpus.length?'cg-intake-secondary':'cg-intake-primary'} aria-label="Import a conversation or source file" onClick={()=>setReviewImport(true)}>{corpus.length?'Import another source':'Import source'}</button></div></div>
               {captureNotice&&<p role="status" className="cg-intake-notice">{captureNotice}</p>}
-              <details className="cg-secondary-intake"><summary>Other intake options · share links, batches and artifacts</summary><p>Public share links sometimes provide only a preview. Reviewed file or text import preserves the material you supply.</p>
+              <div className="cg-share-entry"><h2>Import a ChatGPT conversation</h2><p>In ChatGPT, choose Share → Copy link, then paste it below.</p>
               <form id="cg-capture" onSubmit={handleQuickCaptureSubmit} className="cg-capture relative mx-5 sm:mx-9 lg:mx-12 mb-7 sm:mb-9 p-3 sm:p-4 rounded-2xl bg-white/95 border border-blue-100 shadow-[0_12px_35px_rgba(29,78,216,.10)] grid lg:grid-cols-[1fr_auto] gap-2">
                 <div className="flex items-center gap-2 px-3 h-12 rounded-xl border border-slate-200 bg-white">
                   <Share2 className="w-4 h-4 text-blue-600 shrink-0" />
-                  <input aria-label="ChatGPT share link or conversation text" value={quickUrl} onChange={e => { setQuickUrl(e.target.value); setQuickCaptureError(null); setCaptureNotice(null); }} placeholder="Optional: paste a public ChatGPT share URL…" className="w-full bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400" />
+                  <input aria-label="ChatGPT share link or conversation text" value={quickUrl} onChange={e => { setQuickUrl(e.target.value); setQuickCaptureError(null); setCaptureNotice(null); }} placeholder="https://chatgpt.com/share/…" className="w-full bg-transparent outline-none text-sm text-slate-800 placeholder:text-slate-400" />
                 </div>
-                <button type="submit" disabled={isQuickCapturing} className="h-12 px-5 rounded-xl bg-[#0d5ed7] hover:bg-[#084fb9] text-white text-sm font-bold flex items-center justify-center gap-2">{isQuickCapturing ? "Capturing…" : "Capture Thread"} <ArrowRight className="w-4 h-4" /></button>
-                {captureNotice && <div role="status" className="lg:col-span-2 text-sm text-emerald-700 px-2">{captureNotice}</div>}
-                {quickCaptureError && <div role="alert" className="lg:col-span-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{quickCaptureError}<button type="button" className="block underline font-bold mt-2" onClick={()=>setReviewImport(true)}>Use reviewed manual import</button></div>}
-                <div className="lg:col-span-2 flex flex-wrap gap-2 pt-3 border-t border-blue-100">
+                <button type="submit" disabled={isQuickCapturing} className="h-12 px-5 rounded-xl bg-[#0d5ed7] hover:bg-[#084fb9] text-white text-sm font-bold flex items-center justify-center gap-2">{isQuickCapturing ? "Reading share link…" : "Import share link"} <ArrowRight className="w-4 h-4" /></button>
+
+                {quickCaptureError && <div role="alert" className="lg:col-span-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{quickCaptureError}<ol><li><a href={extractPublicShareUrl(quickUrl)||sharedSourceUrl||"https://chatgpt.com/"} target="_blank" rel="noopener noreferrer">Open your conversation in ChatGPT ↗</a></li><li>Copy the message text, then come back here.</li></ol><button type="button" className="block underline font-bold mt-2" onClick={()=>{setSharedSourceUrl(extractPublicShareUrl(quickUrl)||sharedSourceUrl);setReviewImport(true);}}>Paste conversation text instead</button><p>Your library has not changed. Only the text you provide will be saved; a valid supplied share link stays attached.</p></div>}
+                <details className="cg-secondary-intake lg:col-span-2"><summary>Other intake options · batches and artifacts</summary><div className="flex flex-wrap gap-2 pt-3">
                   <button type="button" onClick={() => setIsSupportOpen(true)} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import image / artifact</button>
                   <button type="button" onClick={() => setBatchMode(!batchMode)} className="px-3 py-2 text-sm font-bold text-white bg-slate-800 rounded-lg">{batchMode ? 'Single link' : 'Batch process'}</button>
                 </div>
                 {batchMode && <div className="cg-batch-form lg:col-span-2 space-y-2"><p className="text-sm text-slate-600">Import up to 100 public /share/ links, one per line. The queue continues while you use other pages in this tab.</p><textarea aria-label="Batch share links" maxLength={65000} value={batchInput} onChange={e=>setBatchInput(e.target.value)} rows={4} className="w-full border border-slate-300 rounded-xl p-3 text-sm" placeholder="One public share URL per line"/><button type="button" disabled={!batchInput.trim()||!libraryReady||isQuickCapturing||batchState.running||batchState.items.some(item=>item.status==='queued')} className="cg-batch-start bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded-lg" onClick={()=>{try{batchQueue.start(batchInput);setQuickCaptureError(null);}catch(error){setQuickCaptureError(error instanceof Error?error.message:'Could not start imports.');}}}>Capture batch</button></div>}
-                <div className="lg:col-span-2 text-xs text-slate-500 px-1">Your library stays in this browser. Use complete backup in Export to include original supporting files. Share links may return only a preview; reviewed paste / file import is the reliable alternative.</div>
+                </details><p className="lg:col-span-2 cg-share-caveat">If ChatGPT returns only a link preview, we’ll help you import the copied messages. No API key required.</p>
               </form>
-              </details>
+              </div>
             </section>
             {corpus.length>0?<section id="cg-workspace" className="cg-workspace rounded-[1.75rem] border border-slate-200 bg-white/95 p-5 sm:p-7 shadow-sm">
               <div className="flex flex-wrap justify-between items-center gap-3 mb-5">
@@ -510,7 +515,7 @@ export default function App() {
                   <p className="text-slate-700 font-semibold">Your first captured conversation will appear here, ready to explore.</p>
                 </div>
               )}
-            </section>:<p className="cg-empty-source">No sources saved yet. Start with Import source above.</p>}
+            </section>:<p className="cg-empty-source">No sources saved yet. Import a share link, conversation file or copied text above. <button onClick={()=>openPage('export')}>Recover from an export or backup</button></p>}
           </div>
           {activeThread && (
           /* Active Thread Workspace */
@@ -633,7 +638,7 @@ export default function App() {
           </>}
           </>
         )}
-        {page==='capture'&&<section className="cg-whats-new" aria-label="Latest ChatGrab milestones"><strong>What’s new · November 18</strong><p>Guided source intake, clear analysis handoff, retained reviews and exact backup recovery.</p><a href="/history/releases.html">Read release details</a> · <a href="/history/">Visual build history</a><details><summary>More release information</summary><p>Reviewed imports preserve original JSON, source-linked notes and saved reviews. Complete backup restores your browser-local library and original files. Native chat capture, integrated AI replies and synchronized accounts remain in development.</p><a href="/downloads/ChatGrab-Production-Kit.zip" download>Download video production kit</a></details></section>}
+        {page==='capture'&&<details className="cg-whats-new" aria-label="Latest ChatGrab milestones"><summary><strong>What’s new · November 19</strong></summary><p>Guided source intake, clear analysis handoff, retained reviews and exact backup recovery.</p><a href="/history/releases.html">Read release details</a> · <a href="/history/">Visual build history</a><details><summary>More release information</summary><p>Reviewed imports preserve original JSON, source-linked notes and saved reviews. Complete backup restores your browser-local library and original files. Native chat capture, integrated AI replies and synchronized accounts remain in development.</p><a href="/downloads/ChatGrab-Production-Kit.zip" download>Download video production kit</a></details></details>}
 
       </main>
       </div>

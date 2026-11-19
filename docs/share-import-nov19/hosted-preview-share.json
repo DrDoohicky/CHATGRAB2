@@ -1,0 +1,68 @@
+{
+  "base": "https://chatgrab-analysis-archiver-5ns3mymcr-inetatlanta.vercel.app",
+  "realShareUrl": "https://chatgpt.com/share/6af5996d-d0ec-83e9-af20-fb4553bdd08d",
+  "results": [
+    {
+      "width": 1440,
+      "realPublicShare": true,
+      "messages": 4,
+      "fictionalFactPreserved": true,
+      "reviewConsent": true,
+      "exactSaveReload": true,
+      "actualBackupDownload": true,
+      "environmentSettings": true,
+      "noOverflow": true,
+      "errors": []
+    },
+    {
+      "width": 1024,
+      "realPublicShare": true,
+      "messages": 4,
+      "fictionalFactPreserved": true,
+      "reviewConsent": true,
+      "exactSaveReload": true,
+      "actualBackupDownload": true,
+      "environmentSettings": true,
+      "noOverflow": true,
+      "errors": []
+    },
+    {
+      "width": 768,
+      "realPublicShare": true,
+      "messages": 4,
+      "fictionalFactPreserved": true,
+      "reviewConsent": true,
+      "exactSaveReload": true,
+      "actualBackupDownload": true,
+      "environmentSettings": true,
+      "noOverflow": true,
+      "errors": []
+    },
+    {
+      "width": 390,
+      "realPublicShare": true,
+      "messages": 4,
+      "fictionalFactPreserved": true,
+      "reviewConsent": true,
+      "exactSaveReload": true,
+      "actualBackupDownload": true,
+      "environmentSettings": true,
+      "noOverflow": true,
+      "errors": []
+    },
+    {
+      "width": 320,
+      "realPublicShare": true,
+      "messages": 4,
+      "fictionalFactPreserved": true,
+      "reviewConsent": true,
+      "exactSaveReload": true,
+      "actualBackupDownload": true,
+      "environmentSettings": true,
+      "noOverflow": true,
+      "errors": []
+    }
+  ],
+  "controlledFailureFallback": "PASS · exact supplied text, retained link, roles unknown",
+  "rawSourcePublished": false
+}

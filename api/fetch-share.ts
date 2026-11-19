@@ -122,12 +122,14 @@ export default async function handler(req: any, res: any) {
   const cleanUrl=found[0];
   try {
     // Canonical HTTPS target, no redirects to unrelated hosts or private services.
+    // Request a full HTML document: background/cors fetches can receive only an OG preview.
+    // No cookies, sign-in credentials, challenge solving or private-chat endpoint is used.
     let target=new URL(cleanUrl);target.protocol='https:';
     let response:Response|undefined;
     const signal=AbortSignal.timeout(15000);
     for(let redirects=0;redirects<=3;redirects++){
       for(let attempt=0;attempt<2;attempt++){
-        response=await fetch(target,{headers:{'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 ChatGrab/1.0','Accept':'text/html,application/xhtml+xml'},signal,redirect:'manual'});
+        response=await fetch(target,{headers:{'User-Agent':'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 ChatGrab/1.0','Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8','Sec-Fetch-Mode':'navigate','Sec-Fetch-Dest':'document','Sec-Fetch-Site':'none','Upgrade-Insecure-Requests':'1','Accept-Language':'en-US,en;q=0.9'},signal,redirect:'manual'});
         const retryAfter=response.headers.get('retry-after');
         if(attempt===0&&[502,503,504].includes(response.status)&&(!retryAfter||/^0(?:\.\d+)?$/.test(retryAfter))){await response.body?.cancel();await waitToRetry(signal);continue;}
         break;
