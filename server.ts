@@ -1,3 +1,4 @@
+import environmentHealth from './api/environment-health.js';
 import mcp from './api/mcp.js';
 import {chatgptConnection as connection} from './lib/chatgpt-connection.js';
 import express from 'express';
@@ -9,6 +10,7 @@ app.use(express.json({limit:'15mb'}));
 if(process.env.BRIDGE_ENABLED==='true'&&!process.env.VERCEL){
  const {createBridgeRouter}=await import('./lib/bridge/router.js');app.use('/api/bridge',createBridgeRouter({enabled:true}).router);
 }else app.get('/api/bridge/status',(_req,res)=>res.json({available:false,mode:'portable-only',workerRuntime:false}));
+app.get('/api/environment-health',environmentHealth);
 app.all('/mcp',mcp);
 app.all('/api/mcp',mcp);
 app.post('/api/fetch-share',fetchShare);

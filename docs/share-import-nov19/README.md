@@ -1,0 +1,11 @@
+# November 19 ChatGrab repair
+
+Atlas assignments CHATGRAB-UX-SIMPLIFY-001 and CHATGRAB-ENV-SWITCH-001 read and implemented within existing direct live-release authority.
+
+Public share intake is visible. The server requests full HTML navigation rather than a background-resource representation and retains host/redirect/size/time limits. No credentials or challenge bypass. Actual supplied public test link returns four original messages locally, including the fictional Blue Lantern Garden test fact. Review and explicit approval precede saving. When the upstream does not provide a transcript, copy/paste recovery retains the link and labels unknown roles; preview-only content is never a successful import.
+
+Review & Analyze has concise handoff instructions. Export & Recover separates complete ChatGrab backup from OpenAI account exports; direct ZIP import is explicitly unsupported (unzip and choose conversations.json). Prior detailed instructions/history retained in expandable sections.
+
+Persistent build switcher has LIVE plus configurable LOCAL/REVIEW. Links open a new tab, retaining current draft in its original origin; only the validated page route is transferred. No content, credentials, or storage is copied. Local needs an owner-configured LAN endpoint on phones; local process startup is not claimed. Connection check is explicit, credential-free, times out and explains mixed-content/CORS/auth limitations. Review protection remains unchanged.
+
+70 unit tests, typecheck/build, actual share/save/reload/backup at five widths, controlled fallback, source-preserving workflow and manual analysis/backup restore acceptance passed locally. Production results are delivered separately to Atlas after deployment; this source file is not production-test evidence. User source content is not published in test artifacts. Approved reference board binary was not included in Atlas's GitHub packet; existing exact official logo is retained rather than claiming pixel-identical fidelity to an unseen board.
