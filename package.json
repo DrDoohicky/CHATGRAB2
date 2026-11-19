@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx server.ts",
-    "build": "vite build && node scripts/build-crew.mjs",
+    "build": "node scripts/build-chatgpt-panel.mjs && vite build && node scripts/build-crew.mjs",
     "start": "NODE_ENV=production tsx server.ts",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
@@ -16,6 +16,7 @@
     "test:acceptance": "node scripts/run-independent-acceptance.mjs"
   },
   "dependencies": {
+    "@modelcontextprotocol/ext-apps": "^2.0.4",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "@supabase/supabase-js": "^2.57.0",
     "@tailwindcss/vite": "^4.3.3",
