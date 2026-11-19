@@ -95,7 +95,7 @@ export default function App() {
   const requestedThreadTab = useRef<'transcript' | 'insights' | 'portions'>('transcript');
   // Modals state (Capture modal opens by default as in SS1.jpeg)
   const [reviewImport,setReviewImport]=useState(false);
-  const closeImportReview=React.useCallback(()=>setReviewImport(false),[]);
+  const closeImportReview=React.useCallback(()=>{setReviewImport(false);if(sharedSourceUrl)setQuickUrl(sharedSourceUrl);},[sharedSourceUrl]);
   const [page, setPage] = useState<CGPage>(initialPage);
   const [navigationPage,setNavigationPage]=useState<CGPage>(initialNavigationPage);
   const [sidebarCollapsed,setSidebarCollapsed]=useState(()=>{try{return localStorage.getItem('chatgrab_sidebar_collapsed')==='true';}catch{return false;}});
@@ -484,7 +484,7 @@ export default function App() {
                 </div>
                 <button type="submit" disabled={isQuickCapturing} className="h-12 px-5 rounded-xl bg-[#0d5ed7] hover:bg-[#084fb9] text-white text-sm font-bold flex items-center justify-center gap-2">{isQuickCapturing ? "Reading share link…" : "Import share link"} <ArrowRight className="w-4 h-4" /></button>
 
-                {quickCaptureError && <div role="alert" className="lg:col-span-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{quickCaptureError}<ol><li><a href={extractPublicShareUrl(quickUrl)||sharedSourceUrl||"https://chatgpt.com/"} target="_blank" rel="noopener noreferrer">Open your conversation in ChatGPT ↗</a></li><li>Copy the message text, then come back here.</li></ol><button type="button" className="block underline font-bold mt-2" onClick={()=>{setSharedSourceUrl(extractPublicShareUrl(quickUrl)||sharedSourceUrl);setReviewImport(true);}}>Paste conversation text instead</button><p>Your library has not changed. Only the text you provide will be saved; the original link stays attached.</p></div>}
+                {quickCaptureError && <div role="alert" className="lg:col-span-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{quickCaptureError}<ol><li><a href={extractPublicShareUrl(quickUrl)||sharedSourceUrl||"https://chatgpt.com/"} target="_blank" rel="noopener noreferrer">Open your conversation in ChatGPT ↗</a></li><li>Copy the message text, then come back here.</li></ol><button type="button" className="block underline font-bold mt-2" onClick={()=>{setSharedSourceUrl(extractPublicShareUrl(quickUrl)||sharedSourceUrl);setReviewImport(true);}}>Paste conversation text instead</button><p>Your library has not changed. Only the text you provide will be saved; a valid supplied share link stays attached.</p></div>}
                 <details className="cg-secondary-intake lg:col-span-2"><summary>Other intake options · batches and artifacts</summary><div className="flex flex-wrap gap-2 pt-3">
                   <button type="button" onClick={() => setIsSupportOpen(true)} className="px-3 py-2 text-sm font-semibold text-blue-800 bg-blue-50 rounded-lg">Import image / artifact</button>
                   <button type="button" onClick={() => setBatchMode(!batchMode)} className="px-3 py-2 text-sm font-bold text-white bg-slate-800 rounded-lg">{batchMode ? 'Single link' : 'Batch process'}</button>
