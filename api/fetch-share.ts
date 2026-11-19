@@ -1,10 +1,16 @@
 class CaptureFailure extends Error {
   constructor(message:string,public code:string,public status=502){super(message);}
 }
-function sourceText(message:any):string {
+const textOnlyNotice='Shared message text is preserved. Generated files, linked files and attachments are not downloaded. This is a text capture, not a complete file archive.';
+function sourceText(message:any,warnings:string[]):string {
   const content=message?.content;
-  if((Array.isArray(content?.parts)&&content.parts.some((p:any)=>typeof p!=='string'))||(content?.content_type&&!['text','multimodal_text'].includes(content.content_type)))throw new CaptureFailure('This shared conversation includes attachments or non-text content that cannot be preserved completely. Use a reviewed text export instead.','SHARE_UNSUPPORTED_CONTENT',422);
-  return Array.isArray(content?.parts)?content.parts.join('\n\n'):typeof content?.text==='string'?content.text:'';
+  const parts=Array.isArray(content?.parts)?content.parts:[];
+  const textParts=parts.filter((p:unknown)=>typeof p==='string');
+  const text=textParts.length?textParts.join('\n\n'):typeof content?.text==='string'?content.text:'';
+  if(parts.length!==textParts.length||(content?.content_type&&!['text','multimodal_text','code','execution_output'].includes(content.content_type))){
+    warnings.push('Non-text content in source message '+String(message?.id||'unknown').slice(0,100)+' was not imported. Only available text is included; import original files separately.');
+  }
+  return text;
 }
 function sourceDate(value:unknown){if(typeof value!=='number'||!Number.isFinite(value))return undefined;const date=new Date(value*1000);return Number.isFinite(date.getTime())?date.toISOString():undefined;}
 export function upstreamFailure(status:number){
@@ -15,7 +21,8 @@ export function upstreamFailure(status:number){
   return {status:422,code:'SHARE_UPSTREAM_RESPONSE',retryable:false,error:'The share page returned HTTP '+status+'. Open it in your browser to check it, or import copied text.'};
 }
 async function waitToRetry(signal:AbortSignal){await new Promise<void>((resolve,reject)=>{if(signal.aborted){reject(signal.reason);return}const aborted=()=>{clearTimeout(timer);reject(signal.reason)};const timer=setTimeout(()=>{signal.removeEventListener('abort',aborted);resolve()},350);signal.addEventListener('abort',aborted,{once:true})});}
-function parseShare(html: string) {
+function parseShare(html: string):{title:string;model:string;messages:any[];originalCreatedAt?:string;limitations?:string[]}|null {
+  const warnings:string[]=[textOnlyNotice];
   // Current public-share pages expose JSON data; never execute page scripts.
   const current=html.match(/<script\b(?=[^>]*\bid=["']__WEB_MOBILE_DATA__["'])(?=[^>]*\btype=["']application\/json["'])[^>]*>([\s\S]*?)<\/script>/i);
   if(current){try{
@@ -23,12 +30,12 @@ function parseShare(html: string) {
     if(c?.sharedSource&&c?.sharedContent&&Array.isArray(c.messages)&&c.messages.length){
       const ids=new Set<string>();
       const messages=c.messages.map((m:any)=>{
-        if(!m||!['user','assistant','system'].includes(m.role)||typeof m.content!=='string'||typeof m.id!=='string'||!m.id||ids.has(m.id)||m.attachments?.length||m.fileAttachments?.length)throw new CaptureFailure('This shared page contains content that cannot be preserved completely as text. Use a reviewed text export.','SHARE_UNSUPPORTED_CONTENT',422);
-        ids.add(m.id);return {id:m.id,role:m.role,content:m.content};
+        if(!m||!['user','assistant','system'].includes(m.role)||typeof m.content!=='string'||typeof m.id!=='string'||!m.id||ids.has(m.id))throw new CaptureFailure('This shared page contains content that cannot be preserved completely as text. Use a reviewed text export.','SHARE_UNSUPPORTED_CONTENT',422);
+        ids.add(m.id);if(m.attachments?.length||m.fileAttachments?.length)warnings.push('Source message '+m.id.slice(0,100)+' has attachments that were not downloaded.');return {id:m.id,role:m.role,content:m.content};
       });
       const rawDate=c.sharedContent.originalCreatedAt;
       const date=typeof rawDate==='number'?sourceDate(rawDate>100000000000?rawDate/1000:rawDate):undefined;
-      return {title:typeof c.title==='string'?c.title:typeof c.sharedContent.title==='string'?c.sharedContent.title:'Captured Conversation',model:'ChatGPT',messages,...(date?{originalCreatedAt:date}:{}),limitations:['Text and source links are preserved. Linked files and attachments are not downloaded by share capture.']};
+      return {title:typeof c.title==='string'?c.title:typeof c.sharedContent.title==='string'?c.sharedContent.title:'Captured Conversation',model:'ChatGPT',messages,...(date?{originalCreatedAt:date}:{}),limitations:warnings};
     }
   }catch(error){if(error instanceof CaptureFailure)throw error;}}
 
@@ -42,10 +49,10 @@ function parseShare(html: string) {
           const msg = entry.message;
           const role = msg?.author?.role;
           if (!['user','assistant'].includes(role)) return [];
-          const content = sourceText(msg);
+          const content = sourceText(msg,warnings);
           return content.trim() ? [{id: msg.id || 'msg-'+i, role, content,...(sourceDate(msg.create_time)?{timestamp:sourceDate(msg.create_time)}:{})}] : [];
         });
-        if (messages.length) return {title:d.title || 'Captured Conversation',model:d.model?.slug || 'ChatGPT',...(sourceDate(d.create_time)?{originalCreatedAt:sourceDate(d.create_time)}:{}),messages};
+        if (messages.length) return {title:d.title || 'Captured Conversation',model:d.model?.slug || 'ChatGPT',...(sourceDate(d.create_time)?{originalCreatedAt:sourceDate(d.create_time)}:{}),messages,limitations:warnings};
       }
     } catch(error) {if(error instanceof CaptureFailure)throw error;}
   }
@@ -86,13 +93,13 @@ function parseShare(html: string) {
         const msg=node?.message;
         const role=msg?.author?.role;
         if(!['user','assistant'].includes(role)) return [];
-        const content=sourceText(msg);
+        const content=sourceText(msg,warnings);
         return content.trim() ? [{id:msg.id || 'msg-'+i,role,content,...(sourceDate(msg.create_time)?{timestamp:sourceDate(msg.create_time)}:{})}] : [];
       });
       if(messages.length) {
         const titleIdx=arr.indexOf('pageTitle');
         const modelIdx=arr.indexOf('default_model_slug');
-        return {title: typeof arr[titleIdx+1]==='string' ? arr[titleIdx+1] : 'Captured Conversation',model:typeof arr[modelIdx+1]==='string' ? arr[modelIdx+1] : 'ChatGPT',messages};
+        return {title: typeof arr[titleIdx+1]==='string' ? arr[titleIdx+1] : 'Captured Conversation',model:typeof arr[modelIdx+1]==='string' ? arr[modelIdx+1] : 'ChatGPT',messages,limitations:warnings};
       }
     } catch(error) {if(error instanceof CaptureFailure)throw error;}
   }
@@ -147,7 +154,7 @@ export default async function handler(req: any, res: any) {
     const html=Buffer.concat(chunks).toString('utf8');
     const parsed=parseShare(html);
     if(!parsed){const previewOnly=/<meta[^>]+property=["']og:site_name["'][^>]+content=["']ChatGPT["']/i.test(html)&&!/<script/i.test(html);return res.status(422).json({success:false,code:previewOnly?'SHARE_PREVIEW_ONLY':'SHARE_PARSE_UNSUPPORTED',error:previewOnly?'The share service returned only a link preview, not the transcript. Your link has been kept. Open it in your browser, or import copied text.':'The shared page opened, but its transcript could not be extracted. Try pasting the transcript text.',allowFallbackPaste:true});}
-    return res.status(200).json({success:true,data:{...parsed,sourceUrl:cleanUrl,capturedAt:new Date().toISOString()}});
+    return res.status(200).json({success:true,data:{...parsed,limitations:parsed.limitations||[textOnlyNotice],sourceUrl:cleanUrl,capturedAt:new Date().toISOString()}});
   } catch(err:any) {
     if(err instanceof CaptureFailure)return res.status(err.status).json({success:false,code:err.code,error:err.message,allowFallbackPaste:true});
     const timeout=err?.name==='TimeoutError'||err?.name==='AbortError';
