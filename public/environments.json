@@ -1,1 +1,6 @@
-{"review":null,"note":"Owner-configured review endpoint; no credentials or automatic data transfer."}
+{
+  "review": "https://chatgrab-analysis-archiver-git-codex-share-i-d755f6-inetatlanta.vercel.app",
+  "updated": "2026-11-19",
+  "source_branch": "codex/share-import-and-mobile-nov19",
+  "note": "Current authorized review branch alias. Vercel sign-in may be required; no credentials or data transfer."
+}
