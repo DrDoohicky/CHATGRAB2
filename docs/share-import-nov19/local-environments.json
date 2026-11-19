@@ -1,0 +1,11 @@
+{
+  "fixtureLocalReviewRoundtrip": true,
+  "compatibleRoutePreserved": true,
+  "noOriginStorageTransfer": true,
+  "originalTabDraftsRetained": true,
+  "actualLocalHealthCheck": true,
+  "offlineLocalExplained": true,
+  "unreachableReviewExplained": true,
+  "keyboardEscapeFocus": true,
+  "mobileWidth": 390
+}
