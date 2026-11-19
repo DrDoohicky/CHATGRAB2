@@ -1,9 +1,13 @@
-# ChatGrab read-only phase one
+# ChatGrab companion panel · 0.2.0
 
-Two real SDK MCP tools: `get_plugin_status` and `get_workspace_link`. No API key, authentication, account identity, private data, writes, AI generation, payments or conversation context. No thread panel is advertised before its host gate is verified.
+Use the hosted server address **https://chatgrab.app/api/mcp**. No API key, local Python service or loopback tunnel is needed for these anonymous presentation tools.
 
-Start the isolated source with `PORT=3020 npm start` after `npm run build`. The package's `mcp.json` points to loopback `/mcp` for local Inspector/SDK testing. The verified Vercel endpoint is `/api/mcp`; `/mcp` is a local Express alias and returned 404 on the prior Vercel preview. For a supported ChatGPT host, use its Secure MCP Tunnel to this local server, or a separately authorized HTTPS deployment. A protected Vercel preview requires approved host-compatible access; do not disable protection or insert a temporary access token in the manifest. A loopback URL alone cannot be reached from the hosted ChatGPT server.
+Tools: get_plugin_status, get_workspace_link, open_chatgrab_panel and present_chatgrab_review. The last two expose the branded MCP Apps interface and present user-selected source/analysis with fingerprint validation. They do not read a private library or save server-side. Review the result and download it; import the reviewed JSON into ChatGrab to retain the source, analysis and original export.
 
-Official setup: https://developers.openai.com/plugins/deploy/connect-chatgpt . Where available, ChatGPT Plugins → Add custom MCP server → endpoint/tunnel → no authentication → review discovered tools → Create as a plugin. Account/workspace policies and platform availability apply. No key is required for these anonymous read-only tools. Installing the package in the host, invoking it with @, and observing actual mobile/thread-panel behavior remain human host tests. Local SDK success is not ChatGPT installation evidence.
+Refresh or reconnect the existing ChatGrab connection in the host to discover the new tools. Then ask: **Use ChatGrab to open its companion panel with open_chatgrab_panel.** If your account offers custom MCP connections, use the hosted address above with no authentication and inspect its four discovered tools. Account/workspace and app approval policies govern availability; installing this package alone is not proof of ChatGPT rendering. Never insert temporary preview credentials in the manifest.
 
-Package manifest and skill are provided for local marketplace installation using the official plugin packaging format: https://developers.openai.com/plugins/build/plugins . MCP status/link transport can also be connected directly without the skill. Do not publish this private test package or change production under this authorization.
+Interactive standalone preview: https://chatgrab.app/chatgpt-app/ . Outside ChatGPT it prepares requests and downloads but cannot send a live ChatGPT message. ChatGPT controls inline/expanded placement. No private history, account identity, automatic capture, cloud writeback, worker execution or payments are enabled.
+
+Local development remains available with PORT=3020 npm start after npm run build, then http://127.0.0.1:3020/mcp. The distributed manifest deliberately targets the production HTTPS endpoint instead.
+
+Implementation and controlled protocol-host tests are documented in docs/chatgpt-app-panel. Real ChatGPT-account rendering still requires human host acceptance. Official UI reference: https://developers.openai.com/apps-sdk/build/chatgpt-ui .
